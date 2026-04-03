@@ -126,35 +126,15 @@
         #containerSoma { background: var(--bg); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border); display: none; }
 
         @media print {
-            /* Esconde tudo o que não é o modal de resumo */
             body * { visibility: hidden; }
             #modalResumo, #modalResumo * { visibility: visible; }
-            
-            /* Ajusta o modal para ocupar a folha inteira e remover o scroll */
             #modalResumo { 
-                position: absolute; 
-                left: 0; 
-                top: 0; 
-                width: 100%; 
-                height: auto;
-                background: white;
+                position: absolute; left: 0; top: 0; width: 100%; height: auto; background: white;
             }
-
             .modal-content { 
-                max-height: none !important; 
-                overflow: visible !important; 
-                border: none !important;
-                width: 100% !important;
-                box-shadow: none !important;
-                padding: 0 !important;
-                margin: 0 !important;
+                max-height: none !important; overflow: visible !important; border: none !important;
+                width: 100% !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important;
             }
-
-            .extrato-container {
-                border: 1px solid #eee !important;
-            }
-
-            /* Esconde os botões de fechar e imprimir no PDF */
             .no-print { display: none !important; }
         }
     </style>
@@ -245,20 +225,37 @@
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let dbClientes = [], dbProdutos = [], clienteEmEdicao = null;
+    let pixConfig = {}; 
+
+    async function checkUser() {
+        carregarTema();
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (session) {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'block';
+            carregarDados();
+            configurarRealtime();
+        }
+    }
+
+    async function carregarDados() {
+        const { data: p } = await _supabase.from('produtos').select('*').order('nome');
+        dbProdutos = p || [];
+        const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
+        dbClientes = c || [];
+        const { data: config } = await _supabase.from('configuracoes').select('*').single();
+        if (config) pixConfig = config;
+        render();
+    }
 
     function toggleTheme() {
         const body = document.body;
-        const btn = document.getElementById('themeBtn');
         body.classList.toggle('dark-mode');
-        btn.innerHTML = body.classList.contains('dark-mode') ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
         localStorage.setItem('tema', body.classList.contains('dark-mode') ? 'dark' : 'light');
     }
 
     function carregarTema() {
-        if (localStorage.getItem('tema') === 'dark') {
-            document.body.classList.add('dark-mode');
-            document.getElementById('themeBtn').innerHTML = '<i class="fa-solid fa-sun"></i>';
-        }
+        if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-mode');
     }
 
     function mascaraData(input) {
@@ -266,22 +263,6 @@
         if (v.length > 2) v = v.substring(0, 2) + "/" + v.substring(2, 4);
         input.value = v;
     }
-
-    async function carregarDados() {
-    // Busca os produtos
-    const { data: p } = await _supabase.from('produtos').select('*').order('nome');
-    dbProdutos = p || [];
-    
-    // Busca os clientes
-    const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
-    dbClientes = c || [];
-
-    // BUSCA A CONFIGURAÇÃO DO PIX NA SUA TABELA
-    const { data: config } = await _supabase.from('configuracoes').select('*').single();
-    if (config) pixConfig = config;
-
-    render();
-}
 
     function configurarRealtime() {
         _supabase.channel('db_changes')
@@ -291,14 +272,6 @@
     }
 
     async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
-
-    async function carregarDados() {
-        const { data: p } = await _supabase.from('produtos').select('*').order('nome');
-        dbProdutos = p || [];
-        const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
-        dbClientes = c || [];
-        render();
-    }
 
     function render() {
         const busca = document.getElementById('buscaCliente').value.toLowerCase();
@@ -326,10 +299,7 @@
             card.className = 'card';
             card.innerHTML = `
                 <div class="card-header">
-                    <div>
-                        <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span> ${iconeMimo}
-                        ${c.aniversario ? `<small style="display:block; color:var(--accent); font-weight:600;"><i class="fa-solid fa-cake-candles"></i> ${c.aniversario}</small>` : ''}
-                    </div>
+                    <div><span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span> ${iconeMimo}</div>
                     <div style="display:flex; gap:10px;">
                         <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
@@ -352,35 +322,18 @@
         document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
     }
 
-    // LÓGICA DO RESUMO DA CONTA CORRIGIDA (APENAS PAGOS)
     window.abrirResumoConta = (id) => {
         const c = dbClientes.find(x => x.id === id);
         let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
         const compras = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
-        
         let itensPagos = [];
-        compras.forEach(item => {
-            if (totalPagos >= item.valor_total) {
-                itensPagos.push(item);
-                totalPagos -= item.valor_total;
-            }
-        });
-
+        compras.forEach(item => { if (totalPagos >= item.valor_total) { itensPagos.push(item); totalPagos -= item.valor_total; } });
         document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
         const corpo = document.getElementById('corpoExtrato');
-        
-        if (itensPagos.length === 0) {
-            corpo.innerHTML = "<div style='text-align:center; padding: 20px;'>Nenhum item quitado ainda.</div>";
-        } else {
+        if (itensPagos.length === 0) { corpo.innerHTML = "<div style='text-align:center; padding: 20px;'>Nenhum item quitado ainda.</div>"; } 
+        else {
             let html = `<div class="extrato-header"><span>DATA</span><span>QTD</span><span>PRODUTO</span><span style="text-align:right">VALOR</span></div>`;
-            itensPagos.forEach(m => {
-                html += `<div class="extrato-item">
-                    <span style="font-size: 11px;">${new Date(m.data).toLocaleDateString('pt-BR').substring(0, 5)}</span>
-                    <span class="qtd">${m.qtd}x</span>
-                    <span style="font-size: 13px;">${m.descricao}</span>
-                    <span class="valor">R$ ${m.valor_total.toFixed(2)}</span>
-                </div>`;
-            });
+            itensPagos.forEach(m => { html += `<div class="extrato-item"><span>${new Date(m.data).toLocaleDateString('pt-BR').substring(0, 5)}</span><span class="qtd">${m.qtd}x</span><span>${m.descricao}</span><span class="valor">R$ ${m.valor_total.toFixed(2)}</span></div>`; });
             corpo.innerHTML = html;
         }
         document.getElementById('modalResumo').style.display = 'block';
@@ -391,11 +344,7 @@
         let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
         const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
         let itensPendentes = [];
-        
-        comprasApenas.forEach(item => {
-            if (totalPagos >= item.valor_total) { totalPagos -= item.valor_total; } 
-            else { itensPendentes.push({...item, valor_exibir: item.valor_total - totalPagos}); totalPagos = 0; }
-        });
+        comprasApenas.forEach(item => { if (totalPagos >= item.valor_total) { totalPagos -= item.valor_total; } else { itensPendentes.push({...item, valor_exibir: item.valor_total - totalPagos}); totalPagos = 0; } });
 
         document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
         const listAbertos = document.getElementById('listaItensModal');
@@ -403,49 +352,29 @@
         
         itensPendentes.forEach(i => {
             const qT = i.qtd > 1 ? `${i.qtd}x ` : "";
-            listAbertos.innerHTML += `
-                <label class="item-selecionavel">
-                    <input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${qT}${i.descricao}" onchange="atualizarSoma()">
-                    <div class="item-detalhe">
-                        <div class="item-info-text">
-                            <small style="color:#999; font-size:10px;">${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</small>
-                            <span style="font-weight: 500;">${qT}${i.descricao}</span>
-                        </div>
-                        <b style="color: var(--accent); margin-left: 10px;">R$ ${i.valor_exibir.toFixed(2)}</b>
-                    </div>
-                </label>`;
+            listAbertos.innerHTML += `<label class="item-selecionavel"><input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${qT}${i.descricao}" onchange="atualizarSoma()"><div class="item-detalhe"><div><small>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</small><br>${qT}${i.descricao}</div><b>R$ ${i.valor_exibir.toFixed(2)}</b></div></label>`;
         });
-        
+
         document.getElementById('btnZapRapido').onclick = () => {
             if(itensPendentes.length === 0) return alert("Nada pendente!");
             let listaMsg = itensPendentes.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-            const texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:%0A%0A${listaMsg}%0A%0AÉ só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. 🍫`;
+            const texto = `Oi! ✨ Segue os seus pedidos na Brasil Doces:%0A%0A${listaMsg}%0A%0AQualquer dúvida estou à disposição! Beijos, Fer. 🍫`;
             window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
         };
 
         document.getElementById('btnFechamentoMensal').onclick = () => {
-    if(itensPendentes.length === 0) return alert("Nada pendente!");
-    
-    const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
-    const totalPendente = itensPendentes.reduce((acc, i) => acc + i.valor_exibir, 0);
-    let listaItens = itensPendentes.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-    
-    // Dados vindos do seu INSERT no Supabase
-    const chave = pixConfig.chave_pix || "44999022979";
-    const nomeTitular = pixConfig.nome_pix || "Fernanda Brasil";
+            if(itensPendentes.length === 0) return alert("Nada pendente!");
+            const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
+            const totalPendente = itensPendentes.reduce((acc, i) => acc + i.valor_exibir, 0);
+            let listaItens = itensPendentes.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+            const texto = `Olá! ✨ Fechamento de *${mesAtual}*:%0A%0A${listaItens}%0A%0A*TOTAL: R$ ${totalPendente.toFixed(2)}*%0A%0A*PIX:*%0A${pixConfig.chave_pix || "44999022979"}%0A${pixConfig.nome_pix || "Fernanda Brasil"}%0A%0A🍫❤️`;
+            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
+        };
 
-    const texto = `Olá! Tudo bem? ✨%0A%0A` +
-        `Estou passando para fecharmos o seu resumo de *${mesAtual}* na Brasil Doces. Segue o detalhamento:%0A%0A` +
-        `${listaItens}%0A%0A` +
-        `*TOTAL: R$ ${totalPendente.toFixed(2)}*%0A%0A` +
-        `----------------------------%0A` +
-        `*PAGAMENTO VIA PIX*%0A%0A` +
-        `*Chave (Copie abaixo):*%0A${chave}%0A%0A` +
-        `*Favorecido:* ${nomeTitular}%0A%0A` +
-        `Muito obrigada pela parceria de sempre! 🍫❤️`;
-
-    window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
-};
+        document.getElementById('btnMensagemCarinho').onclick = () => {
+            const texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! ❤️`;
+            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
+        };
 
         document.getElementById('btnPagarSelecionados').onclick = () => processarPagamento(id);
         document.getElementById('modalHistorico').style.display='block';
@@ -465,10 +394,20 @@
         checkboxes.forEach(cb => { somaTotal += parseFloat(cb.getAttribute('data-valor')); itensPagos.push(cb.getAttribute('data-desc')); });
         if (somaTotal <= 0) return alert("Selecione algo!");
         if (confirm(`Confirmar pagamento de R$ ${somaTotal.toFixed(2)}?`)) {
-            await _supabase.from('compras').insert([{ cliente_id: clienteId, descricao: (itensPagos.length === 1 ? itensPagos[0] : "DIVERSOS ITENS"), valor_total: -somaTotal }]);
+            await _supabase.from('compras').insert([{ cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -somaTotal }]);
             document.getElementById('modalHistorico').style.display = 'none';
             carregarDados();
         }
+    };
+
+    window.salvarVenda = async (id) => {
+        const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
+        const qt = parseInt(document.getElementById(`qt-${id}`).value) || 1;
+        const vl = parseFloat(document.getElementById(`vl-${id}`).value);
+        if(!vl) return alert("Insira o valor!");
+        await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }]);
+        document.getElementById(`it-${id}`).value = ''; document.getElementById(`vl-${id}`).value = '';
+        carregarDados();
     };
 
     window.prepararEdicao = (id) => {
@@ -479,19 +418,7 @@
         document.getElementById('novoLimite').value = c.limite;
         document.getElementById('novoNiver').value = c.aniversario || '';
         document.getElementById('btnCadastrar').innerText = "SALVAR ALTERAÇÕES";
-        document.getElementById('tituloFormCliente').innerText = "EDITANDO CADASTRO";
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    window.salvarVenda = async (id) => {
-        const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
-        const qt = parseInt(document.getElementById(`qt-${id}`).value) || 1;
-        const vl = parseFloat(document.getElementById(`vl-${id}`).value);
-        if(!vl) return alert("Insira o valor!");
-        await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }]);
-        document.getElementById(`it-${id}`).value = '';
-        document.getElementById(`vl-${id}`).value = '';
-        carregarDados();
     };
 
     window.excluir = async (id) => { if(confirm("Excluir cliente?")) await _supabase.from('clientes').delete().eq('id', id); };
@@ -508,7 +435,7 @@
         if(clienteEmEdicao) await _supabase.from('clientes').update(payload).eq('id', clienteEmEdicao);
         else await _supabase.from('clientes').insert([payload]);
         clienteEmEdicao = null;
-        document.getElementById('novoNome').value = ''; document.getElementById('novoTel').value = ''; document.getElementById('novoNiver').value = '';
+        document.getElementById('novoNome').value = ''; document.getElementById('novoTel').value = '';
         document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE";
         carregarDados();
     };
