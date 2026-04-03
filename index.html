@@ -232,39 +232,69 @@
     let itensPendentesGlobal = []; // Essa "gaveta" vai guardar os itens do cliente aberto
 
     function gerarPixCopiaCola(chave, nome, valor, cidade) {
-    // 1. Limpeza e Formatação
+
     const limpaChave = chave.replace(/\D/g, '');
-    const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+
+    // Limpa acentos e garante que o nome não ultrapasse 25 caracteres
+
+    const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
+
     const cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
+
     const valorTxt = valor.toFixed(2);
 
-    // Função auxiliar para montar os blocos (ID + Tamanho + Conteúdo)
+
+
+    // Função f: Garante o ID + Tamanho com 2 dígitos + Valor
+
     const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
 
-    // 2. Montagem do corpo do PIX
-    let payload = "000201";
-    payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
-    payload += "52040000";
-    payload += "5303986";
-    payload += f("54", valorTxt);
-    payload += "5802BR";
-    payload += f("59", nomeLimpo); // O sistema calcula se é 27, 28 ou 29 letras sozinho
-    payload += f("60", cidadeLimpa); 
-    payload += "62070503***";
-    payload += "6304"; // Início do código de segurança
 
-    // 3. Cálculo do CRC16 (O "selo" que valida o QR Code)
+
+    let payload = "000201";
+
+    payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
+
+    payload += "52040000";
+
+    payload += "5303986";
+
+    payload += f("54", valorTxt);
+
+    payload += "5802BR";
+
+    payload += f("59", nomeLimpo); // Aqui o sistema lerá "FERNANDA BRASIL" e colocará o tamanho 15
+
+    payload += f("60", cidadeLimpa); 
+
+    payload += "62070503***";
+
+    payload += "6304"; 
+
+
+
+    // Cálculo do CRC16 CCITT (Obrigatório para o banco aceitar)
+
     let crc = 0xFFFF;
+
     for (let i = 0; i < payload.length; i++) {
+
         crc ^= (payload.charCodeAt(i) << 8);
+
         for (let j = 0; j < 8; j++) {
+
             if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
+
             else crc <<= 1;
+
         }
+
     }
+
     const crcFinal = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-    
+
     return payload + crcFinal;
+
 }
 
     async function checkUser() {
