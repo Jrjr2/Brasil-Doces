@@ -386,12 +386,12 @@
 
             const saldoFinal = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
             
-            // A LINHA DE SALDO DEVEDOR FOI REMOVIDA DAQUI
-
-            corpo.innerHTML = html;
-        }
-        document.getElementById('modalResumo').style.display = 'block';
-    };
+            html += `
+                <div class="extrato-total">
+                    <span style="font-weight:800; color:var(--brown)">SALDO DEVEDOR ATUAL:</span>
+                    <span style="font-size:1.4em; font-weight:900; color:var(--accent)">R$ ${saldoFinal.toFixed(2)}</span>
+                </div>
+            `;
 
             corpo.innerHTML = html;
         }
