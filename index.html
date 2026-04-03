@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="icon" type="image/png" href="logo.png">
-<link rel="apple-touch-icon" href="logo.png">
-<meta name="theme-color" content="#ff85a2">
-<meta name="apple-mobile-web-app-status-bar-style" content="#ff85a2">
+    
+    <link rel="icon" type="image/png" sizes="512x512" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#ff85a2">
+    <meta name="theme-color" content="#ff85a2">
+
     <title>Brasil Doces®</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
@@ -55,14 +59,17 @@
         
         #nomeClienteModal, #nomeClienteResumo { color: #2d3436 !important; text-align: center; font-weight: 800 !important; font-size: 1.5em !important; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 10px; display: block; }
         
-        .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 10px; border-bottom: 1px solid #f9f9f9; cursor: pointer; border-radius: 10px; }
-        .item-detalhe { flex: 1; display: flex; justify-content: space-between; font-size: 0.9em; }
+        /* CORREÇÃO DO ALINHAMENTO AQUI */
+        .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 10px; border-bottom: 1px solid #f2f2f2; cursor: pointer; border-radius: 10px; }
+        .item-selecionavel input[type="checkbox"] { width: 20px; height: 20px; margin: 0; flex-shrink: 0; cursor: pointer; }
+        .item-detalhe { flex: 1; display: flex; justify-content: space-between; align-items: center; font-size: 0.95em; }
+        .section-title { font-weight: 800; font-size: 12px; color: #999; text-transform: uppercase; margin-bottom: 10px; display: block; }
 
         .extrato-container { background: #fff; border: 1px dashed var(--border); border-radius: 12px; padding: 15px; font-family: 'Courier New', Courier, monospace; font-size: 0.85em; color: #333; }
         .extrato-linha { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dotted #eee; }
         .cor-saida { color: var(--success); font-weight: bold; }
 
-        #containerSoma { background: var(--bg); padding: 12px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--border); display: none; }
+        #containerSoma { background: var(--bg); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border); display: none; }
 
         @media print {
             body * { visibility: hidden; }
@@ -216,7 +223,6 @@
         document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
     }
 
-    // MELHORIA: PREPARAR EDIÇÃO
     window.prepararEdicao = (id) => {
         const c = dbClientes.find(x => x.id === id);
         clienteEmEdicao = id;
@@ -226,7 +232,7 @@
         
         const btn = document.getElementById('btnCadastrar');
         btn.innerText = "SALVAR ALTERAÇÕES";
-        btn.style.background = "#f39c12"; // Cor de alerta/edicao
+        btn.style.background = "#f39c12"; 
         document.getElementById('tituloFormCliente').innerText = "EDITANDO CADASTRO";
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -256,8 +262,6 @@
         }
         resetarForm();
     };
-
-    // --- MANTENDO AS DEMAIS FUNÇÕES DO SISTEMA ---
 
     window.abrirResumoConta = (id) => {
         const c = dbClientes.find(x => x.id === id);
@@ -302,7 +306,14 @@
         listAbertos.innerHTML = itensPendentes.length === 0 ? '<div style="text-align:center; color:var(--success); padding:20px;">TUDO PAGO! ✅</div>' : '';
         itensPendentes.forEach(i => {
             const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
-            listAbertos.innerHTML += `<label class="item-selecionavel"><input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" onchange="atualizarSoma()"><div class="item-detalhe"><span><small>${dataF}</small> ${i.descricao}</span><b>R$ ${i.valor_exibir.toFixed(2)}</b></div></label>`;
+            listAbertos.innerHTML += `
+                <label class="item-selecionavel">
+                    <input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" onchange="atualizarSoma()">
+                    <div class="item-detalhe">
+                        <span><small style="color:#999; display:block; font-size:10px;">${dataF}</small> ${i.descricao}</span>
+                        <b>R$ ${i.valor_exibir.toFixed(2)}</b>
+                    </div>
+                </label>`;
         });
         document.getElementById('btnZapRapido').onclick = () => {
             if(saldoFinal <= 0) return alert("Saldo zerado!");
