@@ -232,46 +232,45 @@
     let itensPendentesGlobal = []; // Essa "gaveta" vai guardar os itens do cliente aberto
 
     function gerarPixCopiaCola(chave, nome, valor, cidade) {
-    const chavePix = chave.trim();
-    
-    // Remove acentos e caracteres especiais do nome e cidade
-    const limparTexto = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z0-9 ]/gi, "").toUpperCase();
+    const f = (id, val) => {
+        const len = val.length.toString().padStart(2, '0');
+        return id + len + val;
+    };
 
-    const nomeLimpo = limparTexto(nome).substring(0, 25);
-    const cidadeLimpa = limparTexto(cidade).substring(0, 15);
-    const valorTxt = valor.toFixed(2);
+    const limpar = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z0-9 ]/gi, "").toUpperCase();
 
-    const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
+    const nomeL = limpar(nome).substring(0, 25);
+    const cidadeL = limpar(cidade).substring(0, 15);
+    const valorL = valor.toFixed(2);
+    const chaveL = chave.trim();
 
+    // Montagem estruturada
     let payload = "000201";
-    payload += f("26", "0014BR.GOV.BCB.PIX" + f("01", chavePix));
+    payload += f("26", "0014BR.GOV.BCB.PIX" + f("01", chaveL));
     payload += "52040000";
     payload += "5303986";
-    payload += f("54", valorTxt);
+    payload += f("54", valorL);
     payload += "5802BR";
-    payload += f("59", nomeLimpo);
-    payload += f("60", cidadeLimpa);
-
-    // Correção do Campo 62 (TXID)
-    const txid = "BRDOCES" + Date.now().toString().slice(-10);
-    const campoTXID = f("05", txid); 
-    payload += f("62", campoTXID);
+    payload += f("59", nomeL);
+    payload += f("60", cidadeL);
+    
+    // TXID dinâmico (O f() calcula o 62 baseado no conteúdo do 05 automaticamente)
+    const txidConteudo = "BRDOCES" + Date.now().toString().slice(-10);
+    payload += f("62", f("05", txidConteudo));
 
     payload += "6304";
 
-    // Cálculo do CRC16
+    // Cálculo do CRC16 (Não altere nada aqui)
     let crc = 0xFFFF;
     for (let i = 0; i < payload.length; i++) {
         crc ^= (payload.charCodeAt(i) << 8);
         for (let j = 0; j < 8; j++) {
-            if ((crc & 0x8000) !== 0) {
-                crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
-            } else {
-                crc = (crc << 1) & 0xFFFF;
-            }
+            if ((crc & 0x8000) !== 0) crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+            else crc = (crc << 1) & 0xFFFF;
         }
     }
     const crcFinal = crc.toString(16).toUpperCase().padStart(4, '0');
+    
     return payload + crcFinal;
 }
     async function checkUser() {
