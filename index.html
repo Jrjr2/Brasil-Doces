@@ -24,7 +24,6 @@
             --brown: #6d4c41; --info: #3498db;
         }
 
-        /* Variáveis Modo Escuro */
         body.dark-mode {
             --bg: #121212; --card: #1e1e1e; --text: #f0f0f0; 
             --border: #333; --brown: #ffb5c5; --primary: #d63384;
@@ -75,9 +74,18 @@
         .modal-content { background: var(--card); border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; color: var(--text); border: 1px solid var(--border); }
         
         #nomeClienteModal, #nomeClienteResumo { color: var(--text) !important; text-align: center; font-weight: 800 !important; font-size: 1.5em !important; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: block; }
+
+        /* AJUSTE TÍTULO PENDENTES */
+        .modal-section-title { font-weight: 800; font-size: 11px; color: #999; text-transform: uppercase; margin: 15px 0 10px 5px; display: block; letter-spacing: 0.5px; }
+
+        /* AJUSTE DOS ITENS SELECIONÁVEIS */
+        .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 10px; transition: background 0.2s; }
+        .item-selecionavel:hover { background: rgba(0,0,0,0.03); }
+        body.dark-mode .item-selecionavel:hover { background: rgba(255,255,255,0.05); }
         
-        .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 10px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 10px; }
         .item-detalhe { flex: 1; display: flex; justify-content: space-between; align-items: center; font-size: 0.95em; }
+        .item-info-text { display: flex; flex-direction: column; }
+        .chk-item { width: 18px; height: 18px; flex-shrink: 0; margin: 0; cursor: pointer; }
 
         .extrato-container { background: var(--card); border: 1px dashed var(--border); border-radius: 12px; padding: 15px; font-family: 'Courier New', Courier, monospace; font-size: 0.85em; color: var(--text); }
         .extrato-linha { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dotted var(--border); }
@@ -139,7 +147,7 @@
 <div id="modalHistorico" class="modal">
     <div class="modal-content">
         <h3 id="nomeClienteModal"></h3>
-        <span style="font-weight: 800; font-size: 12px; color: #999; text-transform: uppercase; margin-bottom: 10px; display: block;">Itens Pendentes</span>
+        <span class="modal-section-title">Itens Pendentes</span>
         <div id="listaItensModal"></div>
         <div id="containerSoma">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -178,7 +186,6 @@
 
     let dbClientes = [], dbProdutos = [], clienteEmEdicao = null;
 
-    // Função de Tema
     function toggleTheme() {
         const body = document.body;
         const btn = document.getElementById('themeBtn');
@@ -381,8 +388,11 @@
                 <label class="item-selecionavel">
                     <input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${qT}${i.descricao}" onchange="atualizarSoma()">
                     <div class="item-detalhe">
-                        <span><small style="color:#999; display:block; font-size:10px;">${dataF}</small> ${qT}${i.descricao}</span>
-                        <b>R$ ${i.valor_exibir.toFixed(2)}</b>
+                        <div class="item-info-text">
+                            <small style="color:#999; font-size:10px;">${dataF}</small>
+                            <span style="font-weight: 500;">${qT}${i.descricao}</span>
+                        </div>
+                        <b style="color: var(--accent); margin-left: 10px;">R$ ${i.valor_exibir.toFixed(2)}</b>
                     </div>
                 </label>`;
         });
