@@ -228,39 +228,33 @@
 
     let dbClientes = [], dbProdutos = [], clienteEmEdicao = null;
     let pixConfig = {}; 
+    let clienteAbertoId = null; // Variável global para saber qual cliente está no modal
+    let itensPendentesGlobal = []; // Variável global para armazenar os itens do cliente atual
 
-    // FUNÇÃO GERADORA DE PIX COPIA E COLA
     function gerarPixCopiaCola(chave, nome, valor, cidade) {
-    const limpaChave = chave.replace(/\D/g, '');
-    const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
-    const cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
-    const valorTxt = valor.toFixed(2);
+        const limpaChave = chave.replace(/\D/g, '');
+        const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
+        const cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
+        const valorTxt = valor.toFixed(2);
+        const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
 
-    const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
+        let payload = "000201";
+        payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
+        payload += "52040000"; payload += "5303986";
+        payload += f("54", valorTxt); payload += "5802BR";
+        payload += f("59", nomeLimpo); payload += f("60", cidadeLimpa); 
+        payload += "62070503***"; payload += "6304";
 
-    let payload = "000201";
-    payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
-    payload += "52040000";
-    payload += "5303986";
-    payload += f("54", valorTxt);
-    payload += "5802BR";
-    payload += f("59", nomeLimpo);
-    payload += f("60", cidadeLimpa); 
-    payload += "62070503***";
-    payload += "6304";
-
-    // Cálculo do CRC16 (Dígito de segurança)
-    let crc = 0xFFFF;
-    for (let i = 0; i < payload.length; i++) {
-        crc ^= (payload.charCodeAt(i) << 8);
-        for (let j = 0; j < 8; j++) {
-            if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
-            else crc <<= 1;
+        let crc = 0xFFFF;
+        for (let i = 0; i < payload.length; i++) {
+            crc ^= (payload.charCodeAt(i) << 8);
+            for (let j = 0; j < 8; j++) {
+                if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
+                else crc <<= 1;
+            }
         }
+        return payload + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
     }
-    const crcFinal = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-    return payload + crcFinal;
-}
 
     async function checkUser() {
         carregarTema();
@@ -278,7 +272,7 @@
         dbProdutos = p || [];
         const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
         dbClientes = c || [];
-        const { data: config } = await _supabase.from('configuracoes').select('*').single();
+        const { data: config } = await _supabase.from('configuracoes').select('*').limit(1).single();
         if (config) pixConfig = config;
         render();
     }
@@ -289,30 +283,15 @@
         localStorage.setItem('tema', body.classList.contains('dark-mode') ? 'dark' : 'light');
     }
 
-    function carregarTema() {
-        if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-mode');
-    }
-
-    function mascaraData(input) {
-        let v = input.value.replace(/\D/g, "");
-        if (v.length > 2) v = v.substring(0, 2) + "/" + v.substring(2, 4);
-        input.value = v;
-    }
-
-    function configurarRealtime() {
-        _supabase.channel('db_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, () => carregarDados())
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => carregarDados())
-            .subscribe();
-    }
-
+    function carregarTema() { if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-mode'); }
+    function mascaraData(input) { let v = input.value.replace(/\D/g, ""); if (v.length > 2) v = v.substring(0, 2) + "/" + v.substring(2, 4); input.value = v; }
+    function configurarRealtime() { _supabase.channel('db_changes').on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, () => carregarDados()).on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => carregarDados()).subscribe(); }
     async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
 
     function render() {
         const busca = document.getElementById('buscaCliente').value.toLowerCase();
         const listaDiv = document.getElementById('lista');
         listaDiv.innerHTML = '<datalist id="lista-prod">' + dbProdutos.map(p => `<option value="${p.nome}">`).join('') + '</datalist>';
-        
         let totalH = 0, totalG = 0;
         const hoje = new Date().toLocaleDateString('pt-BR').substring(0,5);
 
@@ -321,20 +300,11 @@
             totalG += saldo;
             c.compras.forEach(cp => { if(new Date(cp.data).toLocaleDateString('pt-BR').substring(0,5) === hoje && cp.valor_total > 0) totalH += cp.valor_total; });
 
-            let iconeMimo = "";
-            if (c.aniversario && c.aniversario.includes('/')) {
-                const [dia, mes] = c.aniversario.split('/');
-                const hojeDate = new Date();
-                const dataNiver = new Date(hojeDate.getFullYear(), mes - 1, dia);
-                const diffDays = Math.ceil((dataNiver - hojeDate) / (1000 * 60 * 60 * 24));
-                if (diffDays >= 0 && diffDays <= 7) iconeMimo = `<i class="fa-solid fa-gift niver-semana"></i>`;
-            }
-
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
                 <div class="card-header">
-                    <div><span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span> ${iconeMimo}</div>
+                    <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
                     <div style="display:flex; gap:10px;">
                         <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
@@ -358,95 +328,93 @@
     }
 
     window.abrirHistorico = (id) => {
+        clienteAbertoId = id;
         const c = dbClientes.find(x => x.id === id);
         let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
         const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
-        let itensPendentes = [];
-        comprasApenas.forEach(item => { if (totalPagos >= item.valor_total) { totalPagos -= item.valor_total; } else { itensPendentes.push({...item, valor_exibir: item.valor_total - totalPagos}); totalPagos = 0; } });
+        
+        itensPendentesGlobal = [];
+        comprasApenas.forEach(item => { 
+            if (totalPagos >= item.valor_total) { totalPagos -= item.valor_total; } 
+            else { itensPendentesGlobal.push({...item, valor_exibir: item.valor_total - totalPagos}); totalPagos = 0; } 
+        });
 
         document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
         const listAbertos = document.getElementById('listaItensModal');
-        listAbertos.innerHTML = itensPendentes.length === 0 ? '<div style="text-align:center; color:var(--success); padding:20px;">TUDO PAGO! ✅</div>' : '';
+        listAbertos.innerHTML = itensPendentesGlobal.length === 0 ? '<div style="text-align:center; color:var(--success); padding:20px;">TUDO PAGO! ✅</div>' : '';
         
-        itensPendentes.forEach(i => {
+        itensPendentesGlobal.forEach(i => {
             const qT = i.qtd > 1 ? `${i.qtd}x ` : "";
             listAbertos.innerHTML += `<label class="item-selecionavel"><input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${qT}${i.descricao}" onchange="atualizarSoma()"><div class="item-detalhe"><div><small>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</small><br>${qT}${i.descricao}</div><b>R$ ${i.valor_exibir.toFixed(2)}</b></div></label>`;
         });
 
-        document.getElementById('btnZapRapido').onclick = () => {
-            if(itensPendentes.length === 0) return alert("Nada pendente!");
-            let listaMsg = itensPendentes.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-            const texto = `Oi! ✨ Segue os seus pedidos na Brasil Doces:%0A%0A${listaMsg}%0A%0AQualquer dúvida estou à disposição! Beijos, Fer. 🍫`;
-            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
-        };
-
-        // Ação do Botão 1: Resumo
-document.getElementById('btnFechamentoMensal').onclick = () => {
-    if(itensPendentes.length === 0) return alert("Nada pendente!");
-    const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
-    const totalPendente = itensPendentes.reduce((acc, i) => acc + i.valor_exibir, 0);
-    const valorFormatado = totalPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    let listaItens = itensPendentes.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-
-    const textoResumo = `Olá! Tudo bem? ✨%0A%0A` +
-        `Estou passando para fecharmos o seu resumo de *${mesAtual}* aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:%0A%0A` +
-        `${listaItens}%0A%0A` +
-        `*TOTAL: ${valorFormatado}*%0A%0A` +
-        `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍫❤️`;
-
-    window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${textoResumo}`, '_blank');
-};
-
-document.getElementById('btnEnviarPixApenas').onclick = () => {
-    // 1. Localiza o cliente e os dados do banco
-    const c = dbClientes.find(x => x.id === clienteAbertoId);
-    const totalPendente = itensPendentes.reduce((acc, i) => acc + i.valor_exibir, 0);
-
-    // 2. Puxa seus dados reais do Supabase (JSON que você me mandou)
-    const chave = pixConfig.chave_pix;   // Vai puxar "44999022979"
-    const nome = pixConfig.nome_pix;     // Vai puxar "FERNANDA MARA SANTOS BRASIL"
-    const cidade = pixConfig.cidade_pix; // Vai puxar "MARINGA"
-
-    // 3. Gera o código com o valor CERTINHO da conta atual
-    const pixDinamico = gerarPixCopiaCola(chave, nome, totalPendente, cidade);
-    
-    // 4. Abre o Zap
-    window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${pixDinamico}`, '_blank');
-};
-
-        document.getElementById('btnMensagemCarinho').onclick = () => {
-            const texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! ❤️`;
-            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
-        };
-
-        document.getElementById('btnPagarSelecionados').onclick = () => processarPagamento(id);
         document.getElementById('modalHistorico').style.display='block';
     };
 
+    // BOTÃO 1: RESUMO MENSAL
+    document.getElementById('btnFechamentoMensal').onclick = () => {
+        const c = dbClientes.find(x => x.id === clienteAbertoId);
+        if(!itensPendentesGlobal.length) return alert("Nada pendente!");
+        const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
+        const total = itensPendentesGlobal.reduce((acc, i) => acc + i.valor_exibir, 0);
+        let lista = itensPendentesGlobal.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+        const texto = `Olá! Tudo bem? ✨%0A%0AEstou passando para fecharmos o seu resumo de *${mesAtual}* aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:%0A%0A${lista}%0A%0A*TOTAL: R$ ${total.toFixed(2)}*%0A%0AQuando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍫❤️`;
+        window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
+    };
+
+    // BOTÃO 2: CHAVE PIX
+    document.getElementById('btnEnviarPixApenas').onclick = () => {
+        const c = dbClientes.find(x => x.id === clienteAbertoId);
+        const total = itensPendentesGlobal.reduce((acc, i) => acc + i.valor_exibir, 0);
+        const pix = gerarPixCopiaCola(pixConfig.chave_pix, pixConfig.nome_pix, total, pixConfig.cidade_pix);
+        window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${pix}`, '_blank');
+    };
+
+    // BOTÃO INFORMAR CONSUMO (ZAP RÁPIDO)
+    document.getElementById('btnZapRapido').onclick = () => {
+        const c = dbClientes.find(x => x.id === clienteAbertoId);
+        let listaMsg = itensPendentesGlobal.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+        const texto = `Oi! ✨ Segue os seus pedidos na Brasil Doces:%0A%0A${listaMsg}%0A%0AQualquer dúvida estou à disposição! Beijos, Fer. 🍫`;
+        window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
+    };
+
+    // BOTÃO RESUMO DA CONTA (PDF)
+    window.abrirResumoConta = (id) => {
+        const c = dbClientes.find(x => x.id === id);
+        document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
+        const corpo = document.getElementById('corpoExtrato');
+        corpo.innerHTML = '<div class="extrato-header"><div>DATA</div><div>QTD</div><div>PRODUTO</div><div style="text-align:right">VALOR</div></div>';
+        c.compras.filter(i => i.valor_total > 0).forEach(i => {
+            corpo.innerHTML += `<div class="extrato-item"><div>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</div><div class="qtd">${i.qtd}x</div><div>${i.descricao}</div><div class="valor">R$ ${i.valor_total.toFixed(2)}</div></div>`;
+        });
+        document.getElementById('modalResumo').style.display = 'block';
+    };
+
+    document.getElementById('btnMensagemCarinho').onclick = () => {
+        const c = dbClientes.find(x => x.id === clienteAbertoId);
+        window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! ❤️`, '_blank');
+    };
+
     window.atualizarSoma = () => {
-        const checkboxes = document.querySelectorAll('.chk-item:checked');
         let soma = 0;
-        checkboxes.forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
+        document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
         document.getElementById('txtSoma').innerText = `R$ ${soma.toFixed(2)}`;
         document.getElementById('containerSoma').style.display = soma > 0 ? 'block' : 'none';
     };
 
     window.processarPagamento = async (clienteId) => {
-        const checkboxes = document.querySelectorAll('.chk-item:checked');
-        let somaTotal = 0;
-        checkboxes.forEach(cb => somaTotal += parseFloat(cb.getAttribute('data-valor')));
-        if (somaTotal <= 0) return alert("Selecione algo!");
-        if (confirm(`Confirmar pagamento de R$ ${somaTotal.toFixed(2)}?`)) {
-            await _supabase.from('compras').insert([{ cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -somaTotal }]);
+        let soma = 0;
+        document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
+        if (soma <= 0) return alert("Selecione algo!");
+        if (confirm(`Confirmar pagamento de R$ ${soma.toFixed(2)}?`)) {
+            await _supabase.from('compras').insert([{ cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma }]);
             document.getElementById('modalHistorico').style.display = 'none';
             carregarDados();
         }
     };
 
     window.salvarVenda = async (id) => {
-        const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
-        const qt = parseInt(document.getElementById(`qt-${id}`).value) || 1;
-        const vl = parseFloat(document.getElementById(`vl-${id}`).value);
+        const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES", qt = parseInt(document.getElementById(`qt-${id}`).value) || 1, vl = parseFloat(document.getElementById(`vl-${id}`).value);
         if(!vl) return alert("Insira o valor!");
         await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }]);
         document.getElementById(`it-${id}`).value = ''; document.getElementById(`vl-${id}`).value = '';
@@ -454,18 +422,13 @@ document.getElementById('btnEnviarPixApenas').onclick = () => {
     };
 
     window.prepararEdicao = (id) => {
-        const c = dbClientes.find(x => x.id === id);
-        clienteEmEdicao = id;
-        document.getElementById('novoNome').value = c.nome;
-        document.getElementById('novoTel').value = c.tel;
-        document.getElementById('novoLimite').value = c.limite;
-        document.getElementById('novoNiver').value = c.aniversario || '';
-        document.getElementById('btnCadastrar').innerText = "SALVAR ALTERAÇÕES";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const c = dbClientes.find(x => x.id === id); clienteEmEdicao = id;
+        document.getElementById('novoNome').value = c.nome; document.getElementById('novoTel').value = c.tel;
+        document.getElementById('novoLimite').value = c.limite; document.getElementById('novoNiver').value = c.aniversario || '';
+        document.getElementById('btnCadastrar').innerText = "SALVAR ALTERAÇÕES"; window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     window.excluir = async (id) => { if(confirm("Excluir cliente?")) await _supabase.from('clientes').delete().eq('id', id); };
-    
     window.atualizarPreco = (input, cId) => {
         const prod = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
         if (prod) document.getElementById(`vl-${cId}`).value = prod.preco;
@@ -477,10 +440,8 @@ document.getElementById('btnEnviarPixApenas').onclick = () => {
         const payload = { nome, tel, aniversario: niver, limite: parseFloat(lim) };
         if(clienteEmEdicao) await _supabase.from('clientes').update(payload).eq('id', clienteEmEdicao);
         else await _supabase.from('clientes').insert([payload]);
-        clienteEmEdicao = null;
-        document.getElementById('novoNome').value = ''; document.getElementById('novoTel').value = '';
-        document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE";
-        carregarDados();
+        clienteEmEdicao = null; document.getElementById('novoNome').value = ''; document.getElementById('novoTel').value = '';
+        document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE"; carregarDados();
     };
 
     document.getElementById('btnLogin').onclick = async () => {
