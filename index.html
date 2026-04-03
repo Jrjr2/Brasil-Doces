@@ -233,34 +233,31 @@
 
     function gerarPixCopiaCola(chave, nome, valor, cidade) {
     const limpaChave = chave.replace(/\D/g, '');
-    const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
+    // Remove acentos e garante que o nome tenha o tamanho correto no cabeçalho
+    const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
     const cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
     const valorTxt = valor.toFixed(2);
 
     const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
 
-    // Montagem do Payload conforme padrão BRCode
     let payload = "000201";
     payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
     payload += "52040000";
     payload += "5303986";
     payload += f("54", valorTxt);
     payload += "5802BR";
-    payload += f("59", nomeLimpo);
+    payload += f("59", nomeLimpo); // Aqui ele vai calcular o tamanho real (Ex: 27 para BRASIL)
     payload += f("60", cidadeLimpa); 
     payload += "62070503***";
-    payload += "6304"; // Início do CRC16
+    payload += "6304"; 
 
-    // Cálculo do CRC16 CCITT (O "segredo" para o banco aceitar)
+    // Cálculo do CRC16 exato
     let crc = 0xFFFF;
     for (let i = 0; i < payload.length; i++) {
         crc ^= (payload.charCodeAt(i) << 8);
         for (let j = 0; j < 8; j++) {
-            if ((crc & 0x8000) !== 0) {
-                crc = (crc << 1) ^ 0x1021;
-            } else {
-                crc <<= 1;
-            }
+            if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
+            else crc <<= 1;
         }
     }
     const crcFinal = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
