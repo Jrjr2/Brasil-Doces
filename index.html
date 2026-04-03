@@ -227,30 +227,36 @@
     let dbClientes = [], dbProdutos = [], clienteEmEdicao = null;
     let pixConfig = {}; 
     
-    function gerarPayloadPix(chave, nome, cidade, valor) {
-    const limpaChave = chave.replace(/\D/g, ''); // Remove parênteses e traços do celular
-    const v = valor.toFixed(2).replace('.', ''); // Formata valor para o padrão do payload
-    
-    // Montagem simplificada do padrão EMV-QRCPS (BR Code)
-    // Nota: O cálculo de CRC16 no final é fixo para fins de exemplo simplificado, 
-    // mas a maioria dos bancos aceita o código de montagem básica.
+    function gerarPixCopiaCola(chave, nome, valor) {
+    const limpaChave = chave.replace(/\D/g, '');
+    const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
+    const valorTxt = valor.toFixed(2);
+
     const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
 
+    // Montagem do Payload
     let payload = "000201";
     payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
     payload += "52040000";
     payload += "5303986";
-    payload += f("54", valor.toFixed(2));
+    payload += f("54", valorTxt);
     payload += "5802BR";
-    payload += f("59", nome.toUpperCase().substring(0, 25));
-    payload += f("60", cidade.toUpperCase().substring(0, 15));
+    payload += f("59", nomeLimpo);
+    payload += f("60", "CURITIBA"); // Cidade padrão
     payload += "62070503***";
     payload += "6304";
 
-    // Para um PIX 100% funcional em todos os bancos, o ideal é o uso de uma biblioteca de CRC16.
-    // Como estamos em um ambiente simples, vamos enviar a Chave + Valor destacados 
-    // que é o método mais seguro contra erros de colagem.
-    return payload; 
+    // Cálculo do CRC16 (Obrigatório para o banco aceitar o código)
+    let crc = 0xFFFF;
+    for (let i = 0; i < payload.length; i++) {
+        crc ^= (payload.charCodeAt(i) << 8);
+        for (let j = 0; j < 8; j++) {
+            if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
+            else crc <<= 1;
+        }
+    }
+    const crcFinal = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+    return payload + crcFinal;
 }
 
     async function checkUser() {
@@ -397,17 +403,19 @@
     
     let listaItens = itensPendentes.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
     
-    const chave = pixConfig.chave_pix || "44999022979";
-    const nome = pixConfig.nome_pix || "Fernanda Brasil";
+    const chave = pixConfig.chave_pix || "44999022979"; // Sua chave
+    const nomeLoja = "Brasil Doces"; // Nome que aparece no banco
+
+    // GERA O CÓDIGO COPIA E COLA
+    const codigoPix = gerarPixCopiaCola(chave, nomeLoja, totalPendente);
 
     const texto = `Olá! ✨ Fechamento de *${mesAtual}*:%0A%0A` +
         `${listaItens}%0A%0A` +
         `*VALOR TOTAL: ${valorFormatado}*%0A%0A` +
         `----------------------------%0A` +
-        `*PAGAMENTO VIA PIX*%0A%0A` +
-        `Para sua comodidade, a chave abaixo já está vinculada ao valor total. Basta copiar e colar no seu banco:%0A%0A` +
-        `*Chave PIX (Celular):*%0A${chave}%0A%0A` +
-        `*Favorecido:* ${nome}%0A%0A` +
+        `*PAGAMENTO VIA PIX (Copia e Cola)*%0A%0A` +
+        `Toque no código abaixo para copiar, depois abra o seu banco e escolha a opção "Pix Copia e Cola":%0A%0A` +
+        `\`${codigoPix}\` %0A%0A` + // O uso de crase aqui faz o código ficar fácil de copiar no celular
         `Muito obrigada! 🍫❤️`;
 
     window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
