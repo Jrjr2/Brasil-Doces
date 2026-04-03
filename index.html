@@ -24,7 +24,6 @@
             --brown: #6d4c41; --info: #3498db;
         }
 
-        /* Variáveis Modo Escuro Ajustadas */
         body.dark-mode {
             --bg: #121212;
             --card: #1e1e1e;
@@ -36,15 +35,12 @@
             --success: #4cd137;
         }
 
-        /* Ajustes específicos para o Modo Escuro */
         body.dark-mode .zn-brand-text { color: var(--primary); }
         body.dark-mode .zn-icon-badge { background: var(--primary); }
         body.dark-mode .price-tag { color: var(--primary); }
         body.dark-mode .dash-val { color: var(--primary); }
         body.dark-mode input { background: #252525; border-color: #444; }
         body.dark-mode .btn-action { background: #2a2a2a; color: var(--primary); border-color: var(--border); }
-
-        /* NOVO: Ajuste do Slogan para Modo Escuro */
         body.dark-mode .zn-slogan { color: #b5a1a1; }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; transition: background 0.3s, color 0.3s; }
@@ -53,11 +49,8 @@
         .login-logo { width: 220px; height: auto; display: block; margin: 0 auto -25px auto; mix-blend-mode: multiply; position: relative; z-index: 10; }
         .login-card { background: var(--card); padding: 30px; border-radius: 24px; width: 100%; max-width: 320px; box-shadow: 0 10px 30px rgba(214, 51, 132, 0.1); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
 
-        /* AJUSTES DO CABEÇALHO E LOGO */
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .zn-brand-container { display: flex; align-items: center; gap: 12px; }
-        .zn-icon-badge { width: 45px; height: 45px; background: var(--brown); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        
         .zn-column-titles { display: flex; flex-direction: column; justify-content: center; }
         .zn-brand-text { font-family: 'Pacifico', cursive; font-size: 1.6em; color: var(--brown); margin: 0; line-height: 1.1; }
         .zn-slogan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #8e736b; margin-top: -2px; }
@@ -96,27 +89,65 @@
         .modal-content { background: var(--card); border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; color: var(--text); border: 1px solid var(--border); }
         
         #nomeClienteModal, #nomeClienteResumo { color: var(--text) !important; text-align: center; font-weight: 800 !important; font-size: 1.5em !important; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: block; }
-
         .modal-section-title { font-weight: 800; font-size: 11px; color: #999; text-transform: uppercase; margin: 15px 0 10px 5px; display: block; letter-spacing: 0.5px; }
 
         .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 10px; transition: background 0.2s; }
-        .item-selecionavel:hover { background: rgba(0,0,0,0.03); }
-        body.dark-mode .item-selecionavel:hover { background: rgba(255,255,255,0.05); }
-        
         .item-detalhe { flex: 1; display: flex; justify-content: space-between; align-items: center; font-size: 0.95em; }
         .item-info-text { display: flex; flex-direction: column; }
         .chk-item { width: 18px; height: 18px; flex-shrink: 0; margin: 0; cursor: pointer; }
 
-        .extrato-container { background: var(--card); border: 1px dashed var(--border); border-radius: 12px; padding: 15px; font-family: 'Courier New', Courier, monospace; font-size: 0.85em; color: var(--text); }
-        .extrato-linha { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dotted var(--border); }
-        .cor-saida { color: var(--success); font-weight: bold; }
+        /* ESTILO DO EXTRATO */
+        .extrato-container { 
+            background: var(--card); 
+            border: 1px dashed var(--border); 
+            border-radius: 12px; 
+            padding: 15px; 
+            font-family: 'Inter', sans-serif; 
+            font-size: 0.9em; 
+            color: var(--text); 
+        }
+
+        .extrato-header {
+            display: grid;
+            grid-template-columns: 45px 35px 1fr 70px;
+            gap: 5px;
+            font-weight: 800;
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #999;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .extrato-item {
+            display: grid;
+            grid-template-columns: 45px 35px 1fr 70px;
+            gap: 5px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+
+        .extrato-item .qtd { font-weight: 700; color: var(--accent); text-align: center; }
+        .extrato-item .valor { text-align: right; font-weight: 700; }
+        .extrato-item.pagamento { color: var(--success); font-style: italic; }
+
+        .extrato-total {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 2px solid var(--brown);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
         #containerSoma { background: var(--bg); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border); display: none; }
 
         @media print {
             body * { visibility: hidden; }
             #modalResumo, #modalResumo * { visibility: visible; }
-            #modalResumo { position: absolute; left: 0; top: 0; width: 100%; }
+            #modalResumo { position: absolute; left: 0; top: 0; width: 100%; border:none; box-shadow: none; }
             .no-print { display: none !important; }
         }
     </style>
@@ -184,7 +215,6 @@
             <button id="btnZapRapido" class="btn-zap"><i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO</button>
             <button id="btnFechamentoMensal" class="btn-action" style="background:var(--bg); border:1px solid var(--primary);"><i class="fa-solid fa-calendar-check"></i> FECHAMENTO MENSAL</button>
             <button id="btnMensagemCarinho" class="btn-action" style="background:#e8f8f5; border:1px solid var(--success); color:#1a1a1a"><i class="fa-solid fa-heart" style="color:var(--success);"></i> AGRADECER PAGAMENTO</button>
-            <button id="btnPixZap" class="btn-pix"><i class="fa-solid fa-copy"></i> ENVIAR PIX COM VALOR</button>
             <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
         </div>
     </div>
@@ -212,7 +242,6 @@
         const body = document.body;
         const btn = document.getElementById('themeBtn');
         body.classList.toggle('dark-mode');
-        
         if (body.classList.contains('dark-mode')) {
             btn.innerHTML = '<i class="fa-solid fa-sun"></i>';
             localStorage.setItem('tema', 'dark');
@@ -248,13 +277,9 @@
     }
 
     function configurarRealtime() {
-        const canal = _supabase.channel('db_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, (payload) => {
-                carregarDados();
-            })
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, (payload) => {
-                carregarDados();
-            })
+        _supabase.channel('db_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, () => carregarDados())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => carregarDados())
             .subscribe();
     }
 
@@ -288,9 +313,7 @@
                 const dataNiver = new Date(hoje.getFullYear(), mes - 1, dia);
                 const diffTime = dataNiver - hoje;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                if (diffDays >= 0 && diffDays <= 7) {
-                    iconeMimo = `<i class="fa-solid fa-gift niver-semana" title="Aniversário chegando!"></i>`;
-                }
+                if (diffDays >= 0 && diffDays <= 7) iconeMimo = `<i class="fa-solid fa-gift niver-semana"></i>`;
             }
 
             const card = document.createElement('div');
@@ -325,6 +348,56 @@
         document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
     }
 
+    // FUNÇÃO DE RESUMO DETALHADO (EXTRATO)
+    window.abrirResumoConta = (id) => {
+        const c = dbClientes.find(x => x.id === id);
+        const corpo = document.getElementById('corpoExtrato');
+        document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
+
+        const movimentos = [...c.compras].sort((a, b) => new Date(a.data) - new Date(b.data));
+
+        if (movimentos.length === 0) {
+            corpo.innerHTML = "<div style='text-align:center; padding: 20px;'>Nenhuma movimentação encontrada.</div>";
+        } else {
+            let html = `
+                <div class="extrato-header">
+                    <span>DATA</span>
+                    <span>QTD</span>
+                    <span>PRODUTO</span>
+                    <span style="text-align:right">VALOR</span>
+                </div>
+            `;
+
+            movimentos.forEach(m => {
+                const dataF = new Date(m.data).toLocaleDateString('pt-BR').substring(0, 5);
+                const isPagamento = m.valor_total < 0;
+                
+                html += `
+                    <div class="extrato-item ${isPagamento ? 'pagamento' : ''}">
+                        <span style="font-size: 11px;">${dataF}</span>
+                        <span class="qtd">${isPagamento ? '-' : m.qtd + 'x'}</span>
+                        <span style="font-size: 13px;">
+                            ${m.descricao} ${isPagamento ? ' <i class="fa-solid fa-check-circle"></i>' : ''}
+                        </span>
+                        <span class="valor">R$ ${Math.abs(m.valor_total).toFixed(2)}</span>
+                    </div>
+                `;
+            });
+
+            const saldoFinal = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
+            
+            html += `
+                <div class="extrato-total">
+                    <span style="font-weight:800; color:var(--brown)">SALDO DEVEDOR ATUAL:</span>
+                    <span style="font-size:1.4em; font-weight:900; color:var(--accent)">R$ ${saldoFinal.toFixed(2)}</span>
+                </div>
+            `;
+
+            corpo.innerHTML = html;
+        }
+        document.getElementById('modalResumo').style.display = 'block';
+    };
+
     window.prepararEdicao = (id) => {
         const c = dbClientes.find(x => x.id === id);
         clienteEmEdicao = id;
@@ -357,30 +430,9 @@
         const lim = document.getElementById('novoLimite').value;
         if(!nome || !tel) return alert("Preencha tudo!");
         const payload = { nome, tel, aniversario: niverSalvar, limite: parseFloat(lim) };
-        if(clienteEmEdicao) {
-            await _supabase.from('clientes').update(payload).eq('id', clienteEmEdicao);
-        } else {
-            await _supabase.from('clientes').insert([payload]);
-        }
+        if(clienteEmEdicao) await _supabase.from('clientes').update(payload).eq('id', clienteEmEdicao);
+        else await _supabase.from('clientes').insert([payload]);
         resetarForm();
-    };
-
-    window.abrirResumoConta = (id) => {
-        const c = dbClientes.find(x => x.id === id);
-        const corpo = document.getElementById('corpoExtrato');
-        document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
-        const pagtos = c.compras.filter(m => m.valor_total < 0).sort((a, b) => new Date(a.data) - new Date(b.data));
-        if (pagtos.length === 0) {
-            corpo.innerHTML = "<div style='text-align:center; padding: 20px;'>Nenhum pagamento registrado.</div>";
-        } else {
-            let html = "";
-            pagtos.forEach(m => {
-                const dataF = new Date(m.data).toLocaleDateString('pt-BR').substring(0, 5);
-                html += `<div class="extrato-linha"><span class="cor-saida">${dataF} ${m.descricao} (PAGO)</span><span class="cor-saida">R$ ${Math.abs(m.valor_total).toFixed(2)}</span></div>`;
-            });
-            corpo.innerHTML = html;
-        }
-        document.getElementById('modalResumo').style.display = 'block';
     };
 
     window.salvarVenda = async (id) => {
@@ -469,20 +521,22 @@
     };
 
     window.excluir = async (id) => { if(confirm("Excluir cliente?")) await _supabase.from('clientes').delete().eq('id', id); };
-    window.atualizarPreco = (input, cId) => {
-        const p = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
-        if(p) document.getElementById(`vl-${cId}`).value = p.preco;
-    };
     
-    document.getElementById('btnLogin').onclick = async () => {
-        const { error } = await _supabase.auth.signInWithPassword({ 
-            email: document.getElementById('loginEmail').value, 
-            password: document.getElementById('loginPassword').value 
-        });
-        if(error) alert("Erro ao acessar: " + error.message);
-        checkUser();
+    window.atualizarPreco = (input, cId) => {
+        const prod = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
+        if (prod) document.getElementById(`vl-${cId}`).value = prod.preco;
     };
-    window.onload = checkUser;
+
+    document.getElementById('btnLogin').onclick = async () => {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPassword').value;
+        const { error } = await _supabase.auth.signInWithPassword({ email, password: pass });
+        if(error) alert("Erro: " + error.message);
+        else checkUser();
+    };
+
+    checkUser();
 </script>
+
 </body>
 </html>
