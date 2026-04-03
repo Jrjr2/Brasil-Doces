@@ -383,13 +383,15 @@
             const nomeFavorecido = "Fernanda Mara Santos Brasil";
             const codigoPix = gerarPixCopiaCola(chave, nomeFavorecido, totalPendente);
 
+            // Mensagem formatada para facilitar a cópia manual ou automática no WhatsApp
             const texto = `Olá! ✨ Fechamento de *${mesAtual}*:%0A%0A` +
                 `${listaItens}%0A%0A` +
                 `*VALOR TOTAL: ${valorFormatado}*%0A%0A` +
                 `----------------------------%0A` +
-                `*PAGAMENTO VIA PIX*%0A%0A` +
-                `Para pagar, copie o código abaixo e utilize a opção "PIX Copia e Cola" no seu banco:%0A%0A` +
-                `\`${codigoPix}\` %0A%0A` +
+                `*PIX COPIA E COLA*%0A` +
+                `_(Toque e segure no código abaixo para copiar)_%0A%0A` +
+                `${codigoPix}%0A%0A` + // Linha isolada e limpa
+                `----------------------------%0A` +
                 `*Favorecido:* ${nomeFavorecido}%0A` +
                 `Muito obrigada! 🍫❤️`;
 
