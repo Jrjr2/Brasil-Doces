@@ -28,11 +28,18 @@
 }
 
 .login-logo {
-    width: 220px; /* Tamanho proporcional */
+    width: 200px;
     height: auto;
-    margin-bottom: -15px; /* Puxa o card para mais perto do logo */
-    mix-blend-mode: multiply; /* MÁGICA: Remove o fundo branco da imagem */
+    margin-bottom: -20px;
     display: block;
+    mix-blend-mode: multiply; /* Remove o fundo branco */
+    filter: contrast(110%);    /* Dá mais nitidez ao logo */
+    object-fit: contain;      /* Garante que a imagem não seja cortada */
+    position: relative;
+    z-index: 10;
+    /* Essa linha abaixo mata qualquer borda residual da imagem */
+    outline: none;
+    border: none;
 }
 
 .login-card {
@@ -81,10 +88,10 @@
 </head>
 <body>
 
-<div id="authContainer">
+<div id="authContainer" style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px;">
     <img src="logo.jpg" alt="Brasil Doces" class="login-logo">
     
-    <div class="login-card">
+    <div class="login-card" style="margin-top: 0;">
         <input type="email" id="loginEmail" placeholder="E-mail">
         <input type="password" id="loginPassword" placeholder="Senha">
         <button id="btnLogin" class="btn-main">ACESSAR SISTEMA</button>
