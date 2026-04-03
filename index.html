@@ -229,31 +229,31 @@
     let dbClientes = [], dbProdutos = [], clienteEmEdicao = null;
     let pixConfig = {}; 
     let clienteAbertoId = null; // Variável global para saber qual cliente está no modal
-    let itensPendentesGlobal = []; // Variável global para armazenar os itens do cliente atual
+    let itensPendentesGlobal = []; // Essa "gaveta" vai guardar os itens do cliente aberto
 
     function gerarPixCopiaCola(chave, nome, valor, cidade) {
-    // 1. Limpa os dados
+    // 1. Limpeza e Formatação
     const limpaChave = chave.replace(/\D/g, '');
     const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
     const cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
     const valorTxt = valor.toFixed(2);
 
-    // Função para formatar os blocos (ID + Tamanho + Conteúdo)
+    // Função auxiliar para montar os blocos (ID + Tamanho + Conteúdo)
     const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
 
-    // 2. Monta o corpo do PIX (Payload)
+    // 2. Montagem do corpo do PIX
     let payload = "000201";
     payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
     payload += "52040000";
     payload += "5303986";
     payload += f("54", valorTxt);
     payload += "5802BR";
-    payload += f("59", nomeLimpo); // Aqui ele vai colocar 27 e o nome completo
+    payload += f("59", nomeLimpo); // O sistema calcula se é 27, 28 ou 29 letras sozinho
     payload += f("60", cidadeLimpa); 
     payload += "62070503***";
-    payload += "6304"; // Início do selo de segurança
+    payload += "6304"; // Início do código de segurança
 
-    // 3. O "Cálculo Matemático" que os bancos exigem (CRC16)
+    // 3. Cálculo do CRC16 (O "selo" que valida o QR Code)
     let crc = 0xFFFF;
     for (let i = 0; i < payload.length; i++) {
         crc ^= (payload.charCodeAt(i) << 8);
@@ -373,14 +373,21 @@
         window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
     };
 
-    // BOTÃO 2: CHAVE PIX
     document.getElementById('btnEnviarPixApenas').onclick = () => {
+    // 1. Verifica se temos um cliente selecionado
     const c = dbClientes.find(x => x.id === clienteAbertoId);
-    
-    // Puxa o valor real da dívida do cliente agora
+    if (!c) return alert("Selecione um cliente primeiro!");
+
+    // 2. Verifica se a lista de itens está vazia
+    if (!itensPendentesGlobal || itensPendentesGlobal.length === 0) {
+        return alert("Não há itens pendentes para gerar o PIX.");
+    }
+
+    // 3. Soma o valor exato dos itens que estão na tela
     const totalPendente = itensPendentesGlobal.reduce((acc, i) => acc + i.valor_exibir, 0);
 
-    // GERA O CÓDIGO NOVO (Com o valor certo e o nome completo)
+    // 4. Gera o PIX usando os dados das suas Configurações do Supabase
+    // Nomes exatos da sua tabela: chave_pix, nome_pix, cidade_pix
     const pixValido = gerarPixCopiaCola(
         pixConfig.chave_pix, 
         pixConfig.nome_pix, 
@@ -388,6 +395,7 @@
         pixConfig.cidade_pix
     );
     
+    // 5. Envia para o WhatsApp
     window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${pixValido}`, '_blank');
 };
 
