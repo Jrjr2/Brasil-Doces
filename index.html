@@ -226,11 +226,23 @@
     }
 
     function configurarRealtime() {
-        _supabase.channel('custom-all-channel')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, () => carregarDados())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => carregarDados())
-        .subscribe();
-    }
+    const canal = _supabase.channel('db_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, (payload) => {
+            console.log('Mudança em compras:', payload);
+            carregarDados();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, (payload) => {
+            console.log('Mudança em clientes:', payload);
+            carregarDados();
+        })
+        .subscribe((status) => {
+            console.log("Status do Realtime:", status);
+            if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+                // Tenta reconectar após 5 segundos se cair
+                setTimeout(configurarRealtime, 5000);
+            }
+        });
+}
 
     async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
 
