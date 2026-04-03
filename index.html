@@ -215,33 +215,35 @@
 
     // NOVA FUNÇÃO: RESUMO DA CONTA (Cupom Fiscal)
     window.abrirResumoConta = (id) => {
-        const c = dbClientes.find(x => x.id === id);
-        const corpo = document.getElementById('corpoExtrato');
-        document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
-        
-        let html = "";
-        const todosMovimentos = c.compras.sort((a, b) => new Date(a.data) - new Date(b.data));
+    const c = dbClientes.find(x => x.id === id);
+    const corpo = document.getElementById('corpoExtrato');
+    document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
+    
+    let html = "";
+    // Filtra APENAS os pagamentos (valores menores que zero)
+    const apenasPagos = c.compras
+        .filter(m => m.valor_total < 0)
+        .sort((a, b) => new Date(b.data) - new Date(a.data)); // Mais recentes primeiro
 
-        if (todosMovimentos.length === 0) {
-            html = "<div style='text-align:center'>Nenhuma movimentação.</div>";
-        } else {
-            todosMovimentos.forEach(m => {
-                const dataF = new Date(m.data).toLocaleDateString('pt-BR').substring(0, 5);
-                const ehPagamento = m.valor_total < 0;
-                html += `
-                    <div class="extrato-linha">
-                        <span class="${ehPagamento ? 'cor-saida' : 'cor-entrada'}">
-                            ${dataF} ${ehPagamento ? '✅ PAGO:' : m.qtd + 'x'} ${m.descricao}
-                        </span>
-                        <span class="${ehPagamento ? 'cor-saida' : ''}">
-                            ${ehPagamento ? '-' : ''} R$ ${Math.abs(m.valor_total).toFixed(2)}
-                        </span>
-                    </div>`;
-            });
-        }
-        corpo.innerHTML = html;
-        document.getElementById('modalResumo').style.display = 'block';
-    };
+    if (apenasPagos.length === 0) {
+        html = "<div style='text-align:center; padding: 20px;'>Nenhum pagamento registrado ainda.</div>";
+    } else {
+        apenasPagos.forEach(m => {
+            const dataF = new Date(m.data).toLocaleDateString('pt-BR').substring(0, 5);
+            html += `
+                <div class="extrato-linha">
+                    <span class="cor-saida">
+                        ${dataF} ✅ RECEBIDO: ${m.descricao}
+                    </span>
+                    <span class="cor-saida">
+                        R$ ${Math.abs(m.valor_total).toFixed(2)}
+                    </span>
+                </div>`;
+        });
+    }
+    corpo.innerHTML = html;
+    document.getElementById('modalResumo').style.display = 'block';
+};
 
     window.salvarVenda = async (id) => {
         const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
@@ -253,44 +255,67 @@
     };
 
     window.abrirHistorico = (id) => {
-        const c = dbClientes.find(x => x.id === id);
-        const saldoFinal = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
-        let totalPagosExistentes = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
-        const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
+    const c = dbClientes.find(x => x.id === id);
+    const saldoFinal = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
+    
+    // Lógica para calcular o que falta pagar (seus itens pendentes)
+    let totalPagosExistentes = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
+    const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
+    
+    let itensPendentes = [];
+    comprasApenas.forEach(item => {
+        if (totalPagosExistentes >= item.valor_total) {
+            totalPagosExistentes -= item.valor_total;
+        } else {
+            itensPendentes.push({...item, valor_exibir: item.valor_total - totalPagosExistentes});
+            totalPagosExistentes = 0;
+        }
+    });
+
+    document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
+    const listAbertos = document.getElementById('listaItensModal');
+    listAbertos.innerHTML = '';
+
+    if(itensPendentes.length === 0) {
+        listAbertos.innerHTML = '<div style="text-align:center; color:var(--success); padding:20px; font-weight:bold;">TUDO PAGO! ✅</div>';
+    } else {
+        itensPendentes.forEach(i => {
+            const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
+            listAbertos.innerHTML += `
+                <label class="item-selecionavel">
+                    <input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" onchange="atualizarSoma()">
+                    <div class="item-detalhe">
+                        <span><small>${dataF}</small> ${i.descricao}</span>
+                        <b>R$ ${i.valor_exibir.toFixed(2)}</b>
+                    </div>
+                </label>`;
+        });
+    }
+
+    // --- CORREÇÃO DO WHATSAPP AQUI ---
+    document.getElementById('btnZapRapido').onclick = () => {
+        if(saldoFinal <= 0) return alert("Não há saldo devedor!");
         
-        let itensPendentes = [];
-        comprasApenas.forEach(item => {
-            if (totalPagosExistentes >= item.valor_total) {
-                totalPagosExistentes -= item.valor_total;
-            } else {
-                itensPendentes.push({...item, valor_exibir: item.valor_total - totalPagosExistentes});
-                totalPagosExistentes = 0;
-            }
+        let listaMsg = "";
+        itensPendentes.forEach(i => {
+            listaMsg += `• ${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}%0A`;
         });
 
-        document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
-        const listAbertos = document.getElementById('listaItensModal');
-        listAbertos.innerHTML = '';
-        document.getElementById('containerSoma').style.display = 'none';
-
-        if(itensPendentes.length === 0) {
-            listAbertos.innerHTML = '<div style="text-align:center; color:var(--success); padding:20px; font-weight:bold;">TUDO PAGO! ✅</div>';
-        } else {
-            itensPendentes.forEach(i => {
-                const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
-                listAbertos.innerHTML += `
-                    <label class="item-selecionavel">
-                        <input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" onchange="atualizarSoma()">
-                        <div class="item-detalhe">
-                            <span><small>${dataF}</small> ${i.descricao}</span>
-                            <b>R$ ${i.valor_exibir.toFixed(2)}</b>
-                        </div>
-                    </label>`;
-            });
-        }
-        document.getElementById('btnPagarSelecionados').onclick = () => processarPagamento(id);
-        document.getElementById('modalHistorico').style.display='block';
+        const texto = `*BRASIL DOCES*%0A%0AOlá, *${c.nome.toUpperCase()}*!%0A%0ASeu resumo de consumo pendente:%0A%0A${listaMsg}%0A💰 *TOTAL A PAGAR: R$ ${saldoFinal.toFixed(2)}*`;
+        
+        window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
     };
+
+    document.getElementById('btnPixZap').onclick = () => {
+        if(saldoFinal <= 0) return alert("Saldo zerado.");
+        const pixCod = gerarPixCopiaECola(saldoFinal);
+        const msgPix = `*PAGAMENTO PIX - BRASIL DOCES*%0A%0AValor: *R$ ${saldoFinal.toFixed(2)}*%0A%0ACopie o código abaixo:%0A%0A\`${pixCod}\``;
+        window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${msgPix}`, '_blank');
+    };
+
+    document.getElementById('btnPagarSelecionados').onclick = () => processarPagamento(id);
+    document.getElementById('modalHistorico').style.display='block';
+};
 
     window.atualizarSoma = () => {
         const checkboxes = document.querySelectorAll('.chk-item:checked');
