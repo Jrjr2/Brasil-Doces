@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Brasil Doces®</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root { 
+            --bg: #fff0f3; --card: #ffffff; --primary: #ff85a2; --accent: #d63384; 
+            --text: #4a4a4a; --danger: #e74c3c; --border: #ffd1dc; --success: #2ecc71;
+            --brown: #6d4c41;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; }
+        
+        /* HEADER */
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .zn-brand-container { display: flex; align-items: center; gap: 12px; }
+        .zn-icon-badge { width: 45px; height: 45px; background: var(--brown); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(109,76,65,0.2); }
+        .zn-brand-text { font-family: 'Pacifico', cursive; font-size: 1.8em; color: var(--brown); margin: 0; }
+        
+        .btn-logout { background: white; border: 1px solid var(--danger); color: var(--danger); padding: 8px 15px; border-radius: 10px; font-size: 12px; width: auto; margin: 0; }
+
+        /* DASHBOARD */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .dash-label { font-size: 10px; color: #999; text-transform: uppercase; display: block; margin-bottom: 5px; font-weight: 700; }
+        .dash-val { font-size: 1.2em; font-weight: 800; color: var(--accent); }
+
+        /* CARDS */
+        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 18px; border: 1px solid var(--border); border-left: 5px solid var(--primary); position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .price-tag { color: var(--brown); font-size: 1.8em; font-weight: 900; margin-bottom: 12px; display: block; }
+        
+        .limit-container { height: 8px; background: #fdf2f4; border-radius: 10px; overflow: hidden; margin-bottom: 15px; border: 1px solid #fee; }
+        .limit-bar { height: 100%; transition: 0.5s; background: var(--primary); }
+
+        input { width: 100%; padding: 14px; margin: 6px 0; border-radius: 12px; border: 1px solid var(--border); background: #fff; color: var(--text); box-sizing: border-box; font-size: 16px; outline: none; }
+        input:focus { border-color: var(--primary); }
+        
+        button { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
+        
+        .btn-main { background: var(--accent); color: white; }
+        .btn-action { background: #fff; color: var(--brown); border: 1px solid var(--border); }
+        .btn-zap { background: #25D366; color: white; }
+        .btn-pix { background: #00b0ff; color: white; }
+        .btn-delete { color: #ddd; background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
+
+        /* MODAL */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); }
+        .modal-content { background: white; border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+        .item-hist { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f9f9f9; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<div id="authContainer" style="text-align:center; margin-top:80px;">
+    <h1 style="font-family:'Pacifico'; color: var(--brown); font-size: 2.5em;">Brasil Doces®</h1>
+    <div style="background:var(--card); padding:30px; border-radius:24px; max-width:320px; margin:auto; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid var(--border);">
+        <input type="email" id="loginEmail" placeholder="E-mail">
+        <input type="password" id="loginPassword" placeholder="Senha">
+        <button id="btnLogin" class="btn-main">ACESSAR SISTEMA</button>
+    </div>
+</div>
+
+<div id="mainContainer" style="display:none; max-width:480px; margin:auto;">
+    <div class="header-top">
+        <div class="zn-brand-container">
+            <div class="zn-icon-badge"><i class="fa-solid fa-cookie-bite" style="color:white;"></i></div>
+            <h1 class="zn-brand-text">Brasil Doces</h1>
+        </div>
+        <button onclick="sair()" class="btn-logout">SAIR</button>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="dash-box"><span class="dash-label">PEDIDOS HOJE</span><div class="dash-val" id="totalHoje">R$ 0,00</div></div>
+        <div class="dash-box"><span class="dash-label">SALDO CLIENTES</span><div class="dash-val" id="totalGeral">R$ 0,00</div></div>
+    </div>
+
+    <div class="card" style="border-top: 3px solid var(--accent); border-left: none;">
+        <div style="font-weight: 800; margin-bottom: 10px; color: var(--brown);">CADASTRAR CLIENTE</div>
+        <input type="text" id="novoNome" placeholder="Nome Completo">
+        <input type="tel" id="novoTel" placeholder="WhatsApp">
+        <input type="number" id="novoLimite" placeholder="Limite de Crédito" value="1000">
+        <button id="btnCadastrar" class="btn-main">ADICIONAR CLIENTE</button>
+    </div>
+
+    <input type="text" id="buscaCliente" placeholder="🔍 Procurar por nome..." onkeyup="render()">
+    <div id="lista"></div>
+</div>
+
+<div id="modalHistorico" class="modal">
+    <div class="modal-content">
+        <h3 id="nomeClienteModal" style="color: var(--brown); text-align: center; font-family: 'Pacifico'; font-size: 1.8em; margin-bottom: 10px;"></h3>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <button id="btnZapRapido" class="btn-zap" style="border-radius: 30px; font-size: 13px; width: auto; display: inline-flex; padding: 10px 20px;">
+                <i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO
+            </button>
+        </div>
+        <div id="listaItensModal"></div>
+        <button id="btnPixZap" class="btn-pix" style="margin-top:20px;"><i class="fa-solid fa-copy"></i> ENVIAR PIX COM VALOR</button>
+        <button id="btnEnviarExtrato" class="btn-zap"><i class="fa-brands fa-whatsapp"></i> EXTRATO FECHAMENTO MENSAL</button>
+        <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
+    </div>
+</div>
+
+<script>
+    // --- ATENÇÃO: COLOQUE AQUI AS CREDENCIAIS DO NOVO PROJETO ---
+    const SUPABASE_URL = 'https://SUA_URL.supabase.co'; 
+    const SUPABASE_KEY = 'SUA_KEY'; 
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let CONFIG_PIX = { chave: '', nome_pix: '', cidade_pix: '' };
+    let dbClientes = [], dbProdutos = [];
+
+    async function checkUser() {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (session) {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'block';
+            carregarDados();
+        }
+    }
+
+    async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
+
+    async function carregarDados() {
+        const { data: cfg } = await _supabase.from('configuracoes').select('*').single();
+        if(cfg) CONFIG_PIX = { chave: cfg.chave_pix, nome_pix: cfg.nome_pix, cidade_pix: cfg.cidade_pix };
+        const { data: p } = await _supabase.from('produtos').select('*').order('nome');
+        dbProdutos = p || [];
+        const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
+        dbClientes = c || [];
+        render();
+    }
+
+    function agruparItens(compras) {
+        const agrupado = {};
+        compras.forEach(i => {
+            const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
+            const chave = i.valor_total < 0 ? `PGTO_${i.id}` : `${dataF}_${i.descricao.toUpperCase()}`;
+            if (agrupado[chave]) {
+                agrupado[chave].qtd = (agrupado[chave].qtd || 1) + (i.qtd || 1);
+                agrupado[chave].valor_total += i.valor_total;
+            } else { agrupado[chave] = { ...i, dataF, qtd: i.qtd || 1 }; }
+        });
+        return Object.values(agrupado).sort((a,b) => new Date(b.data) - new Date(a.data));
+    }
+
+    function gerarPixCopiaECola(valor) {
+        const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
+        const v = Math.abs(valor).toFixed(2);
+        let p = "000201" + f('26', f('00', 'br.gov.bcb.pix') + f('01', CONFIG_PIX.chave)) + "520400005303986" + f('54', v) + "5802BR" + f('59', CONFIG_PIX.nome_pix) + f('60', CONFIG_PIX.cidade_pix) + "620405006304";
+        function crc16(data) {
+            let res = 0xFFFF;
+            for (let i = 0; i < data.length; i++) {
+                res ^= data.charCodeAt(i) << 8;
+                for (let j = 0; j < 8; j++) {
+                    if ((res & 0x8000) !== 0) res = (res << 1) ^ 0x1021; else res <<= 1;
+                }
+            }
+            return (res & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+        }
+        return p + crc16(p);
+    }
+
+    function render() {
+        const busca = document.getElementById('buscaCliente').value.toLowerCase();
+        const listaDiv = document.getElementById('lista');
+        listaDiv.innerHTML = '<datalist id="lista-prod">' + dbProdutos.map(p => `<option value="${p.nome}">`).join('') + '</datalist>';
+        
+        let totalH = 0, totalG = 0;
+        const hoje = new Date().toLocaleDateString('pt-BR').substring(0,5);
+
+        dbClientes.filter(c => c.nome.toLowerCase().includes(busca)).forEach(c => {
+            const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
+            totalG += saldo;
+            c.compras.forEach(cp => { if(new Date(cp.data).toLocaleDateString('pt-BR').substring(0,5) === hoje && cp.valor_total > 0) totalH += cp.valor_total; });
+
+            const limite = c.limite || 1000;
+            const perc = Math.min((saldo / limite) * 100, 100);
+            let corBarra = saldo > 0 ? (perc > 85 ? 'var(--danger)' : 'var(--primary)') : '#ddd';
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.style.borderLeftColor = corBarra;
+            card.innerHTML = `
+                <div class="card-header">
+                    <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
+                    <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+                <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
+                <div class="limit-container"><div class="limit-bar" style="width:${perc}%; background:${corBarra}"></div></div>
+                <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
+                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
+                    <input type="number" id="qt-${c.id}" value="1">
+                    <input type="number" id="vl-${c.id}" placeholder="R$">
+                </div>
+                <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                    <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR</button>
+                    <button class="btn-action" onclick="pagar(${c.id})">PAGOU</button>
+                </div>`;
+            listaDiv.appendChild(card);
+        });
+        document.getElementById('totalHoje').innerText = `R$ ${totalH.toFixed(2)}`;
+        document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
+    }
+
+    window.salvarVenda = async (id) => {
+        const nomeInput = document.getElementById(`it-${id}`).value.toUpperCase();
+        const it = nomeInput || "DOCES";
+        const qt = parseInt(document.getElementById(`qt-${id}`).value) || 1;
+        const vl = parseFloat(document.getElementById(`vl-${id}`).value);
+        if(!vl) return alert("Insira o valor!");
+        await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }]);
+        const existe = dbProdutos.find(p => p.nome.toUpperCase() === it);
+        if(!existe && nomeInput !== "") await _supabase.from('produtos').insert([{ nome: it, preco: vl }]);
+        carregarDados();
+    };
+
+    window.abrirHistorico = (id) => {
+        const c = dbClientes.find(x => x.id === id);
+        const itens = agruparItens(c.compras);
+        const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
+        document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
+        const list = document.getElementById('listaItensModal');
+        list.innerHTML = '';
+        itens.forEach(i => {
+            const cor = i.valor_total < 0 ? 'var(--success)' : 'var(--text)';
+            list.innerHTML += `<div class="item-hist" style="color:${cor}"><span><small>${i.dataF}</small> ${i.qtd > 1 ? '('+i.qtd+'x) ' : ''}${i.descricao}</span><b>R$ ${i.valor_total.toFixed(2)}</b></div>`;
+        });
+        
+        document.getElementById('btnZapRapido').onclick = () => {
+            let d = "";
+            itens.forEach(i => {
+                const s = i.valor_total < 0 ? '✅' : '🍩';
+                const q = (i.valor_total > 0 && i.qtd > 1) ? `(${i.qtd}x) ` : '';
+                d += `${s} ${i.dataF} - ${q}${i.descricao}: R$ ${Math.abs(i.valor_total).toFixed(2)}%0A`;
+            });
+            const msg = `*Brasil Doces* 🍩%0A%0AOlá, *${c.nome.toUpperCase()}*! Tudo bem?%0A%0APassando para te enviar o resumo atual do seu consumo aqui com a gente:%0A%0A${d}%0A💰 *SALDO RESTANTE: R$ ${saldo.toFixed(2)}*%0A%0AQualquer dúvida é só chamar! Valeu pela parceria! 🧁✨`;
+            window.open(`https://wa.me/55${c.tel}?text=${msg}`, '_blank');
+        };
+
+        document.getElementById('btnPixZap').onclick = () => {
+            window.open(`https://wa.me/55${c.tel}?text=${gerarPixCopiaECola(saldo)}`, '_blank');
+        };
+
+        document.getElementById('btnEnviarExtrato').onclick = () => {
+            let d = "";
+            itens.forEach(i => {
+                const s = i.valor_total < 0 ? '✅' : '🔸';
+                const q = (i.valor_total > 0 && i.qtd > 1) ? `(${i.qtd}x)` : '(1x)';
+                d += `${s} ${i.dataF} - ${i.descricao} ${q} - R$ ${Math.abs(i.valor_total).toFixed(2)}%0A`;
+            });
+            const msg = `*Brasil Doces* 🍩%0A%0AFala, *${c.nome.toUpperCase()}*! Beleza?%0APassando para organizar o fechamento do mês aqui na Brasil Doces. 📋%0A%0AConfere aí o que rolou na sua conta:%0A%0A${d}%0A💰 *TOTAL DO MÊS: R$ ${saldo.toFixed(2)}*%0A%0ADá uma conferida se está tudo certinho e me avisa para a gente zerar essa! Valeu pela parceria de sempre! 🧁✨`;
+            window.open(`https://wa.me/55${c.tel}?text=${msg}`, '_blank');
+        };
+        document.getElementById('modalHistorico').style.display='block';
+    };
+
+    window.atualizarPreco = (input, cId) => {
+        const p = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
+        if(p) document.getElementById(`vl-${cId}`).value = p.preco;
+    };
+    window.pagar = async (id) => {
+        const v = parseFloat(prompt("Valor recebido:"));
+        if(v) { await _supabase.from('compras').insert([{ cliente_id: id, descricao: "PAGAMENTO ✅", valor_total: -v }]); carregarDados(); }
+    };
+    document.getElementById('btnCadastrar').onclick = async () => {
+        const n = document.getElementById('novoNome').value;
+        const t = document.getElementById('novoTel').value.replace(/\D/g,'');
+        if(n && t) { await _supabase.from('clientes').insert([{ nome: n, tel: t, limite: parseFloat(document.getElementById('novoLimite').value) || 1000 }]); carregarDados(); }
+    };
+    window.excluir = async (id) => { if(confirm("Excluir cliente?")) { await _supabase.from('clientes').delete().eq('id', id); carregarDados(); } };
+    document.getElementById('btnLogin').onclick = async () => {
+        await _supabase.auth.signInWithPassword({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value });
+        checkUser();
+    };
+    window.onload = checkUser;
+</script>
+</body>
+</html>
