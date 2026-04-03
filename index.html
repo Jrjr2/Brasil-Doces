@@ -35,8 +35,6 @@
         .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 18px; border: 1px solid var(--border); border-left: 5px solid var(--primary); position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .price-tag { color: var(--brown); font-size: 1.8em; font-weight: 900; margin-bottom: 12px; display: block; }
-        .limit-container { height: 8px; background: #fdf2f4; border-radius: 10px; overflow: hidden; margin-bottom: 15px; border: 1px solid #fee; }
-        .limit-bar { height: 100%; transition: 0.5s; background: var(--primary); }
 
         input { width: 100%; padding: 14px; margin: 6px 0; border-radius: 12px; border: 1px solid var(--border); background: #fff; color: var(--text); box-sizing: border-box; font-size: 16px; outline: none; }
         button { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
@@ -49,22 +47,14 @@
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); }
         .modal-content { background: white; border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; }
         
-        #nomeClienteModal, #nomeClienteResumo { color: #2d3436 !important; text-align: center; font-family: 'Inter', sans-serif !important; font-weight: 800 !important; font-size: 1.5em !important; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 10px; display: block; }
+        #nomeClienteModal, #nomeClienteResumo { color: #2d3436 !important; text-align: center; font-weight: 800 !important; font-size: 1.5em !important; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 10px; display: block; }
         
-        .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 10px; border-bottom: 1px solid #f9f9f9; cursor: pointer; border-radius: 10px; transition: 0.2s; }
-        .item-selecionavel:active { background: #fff0f3; }
-        .item-selecionavel input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+        .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 10px; border-bottom: 1px solid #f9f9f9; cursor: pointer; border-radius: 10px; }
         .item-detalhe { flex: 1; display: flex; justify-content: space-between; font-size: 0.9em; }
 
-        /* Estilos Extrato (Cupom) */
         .extrato-container { background: #fff; border: 1px dashed var(--border); border-radius: 12px; padding: 15px; font-family: 'Courier New', Courier, monospace; font-size: 0.85em; color: #333; }
         .extrato-linha { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dotted #eee; }
-        .cor-entrada { color: #444; }
         .cor-saida { color: var(--success); font-weight: bold; }
-
-        .item-hist { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f9f9f9; font-size: 0.9em; }
-        .item-pago { opacity: 0.6; color: var(--success) !important; font-style: italic; background: #f0fff4; padding: 5px; border-radius: 5px; margin-bottom: 2px; }
-        .section-title { font-size: 11px; font-weight: 800; color: #999; text-transform: uppercase; margin: 15px 0 5px 0; display: block; }
 
         #containerSoma { background: var(--bg); padding: 12px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--border); display: none; }
 
@@ -139,7 +129,6 @@
     <div class="modal-content">
         <h3 id="nomeClienteResumo"></h3>
         <div class="extrato-container" id="corpoExtrato"></div>
-        
         <button onclick="window.print()" class="btn-action no-print" style="margin-top: 15px; background: #f8f9fa;">
             <i class="fa-solid fa-file-pdf" style="color: #e74c3c;"></i> SALVAR EXTRATO (PDF)
         </button>
@@ -152,7 +141,6 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViZmt3dXNsbW5lc3d2b3Z5Z3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzU3NzUsImV4cCI6MjA5MDc1MTc3NX0.ElCyWYPr330VLsY6LZIa41Fg9QR_VaHeBj36jQ8oVt0'; 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let CONFIG_PIX = { chave: '', nome_pix: '', cidade_pix: '' };
     let dbClientes = [], dbProdutos = [];
 
     async function checkUser() {
@@ -161,14 +149,21 @@
             document.getElementById('authContainer').style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
             carregarDados();
+            configurarRealtime(); // Ativa o "escutador" de mudanças
         }
+    }
+
+    // FUNÇÃO REALTIME: Sincroniza PC e Celular sem F5
+    function configurarRealtime() {
+        _supabase.channel('custom-all-channel')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, () => carregarDados())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => carregarDados())
+        .subscribe();
     }
 
     async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
 
     async function carregarDados() {
-        const { data: cfg } = await _supabase.from('configuracoes').select('*').single();
-        if(cfg) CONFIG_PIX = { chave: cfg.chave_pix, nome_pix: cfg.nome_pix, cidade_pix: cfg.cidade_pix };
         const { data: p } = await _supabase.from('produtos').select('*').order('nome');
         dbProdutos = p || [];
         const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
@@ -213,44 +208,33 @@
         document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
     }
 
-    // NOVA FUNÇÃO: RESUMO DA CONTA (Cupom Fiscal)
+    // CORREÇÃO: RESUMO DA CONTA (Apenas pagos com sufixo)
     window.abrirResumoConta = (id) => {
-    const c = dbClientes.find(x => x.id === id);
-    const corpo = document.getElementById('corpoExtrato');
-    document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
-    
-    let html = "";
-    
-    // Pega apenas os registros de pagamento (valores negativos)
-    const apenasPagamentos = c.compras
-        .filter(m => m.valor_total < 0)
-        .sort((a, b) => new Date(a.data) - new Date(b.data));
+        const c = dbClientes.find(x => x.id === id);
+        const corpo = document.getElementById('corpoExtrato');
+        document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
+        
+        const apenasPagamentos = c.compras
+            .filter(m => m.valor_total < 0)
+            .sort((a, b) => new Date(a.data) - new Date(b.data));
 
-    if (apenasPagamentos.length === 0) {
-        html = "<div style='text-align:center; padding: 20px;'>Nenhum pagamento registrado.</div>";
-    } else {
-        apenasPagamentos.forEach(m => {
-            const dataF = new Date(m.data).toLocaleDateString('pt-BR').substring(0, 5);
-            
-            // Aqui garantimos que o texto termine com (PAGO)
-            // Removemos marcações antigas para não repetir
-            let descricaoLimpa = m.descricao.replace(' - PAGO', '').replace(' PAGO', '').replace('PAGAMENTO RECEBIDO', 'VALOR');
-            
-            html += `
-                <div class="extrato-linha">
-                    <span class="cor-saida">
-                        ${dataF} ${descricaoLimpa} (PAGO)
-                    </span>
-                    <span class="cor-saida">
-                        R$ ${Math.abs(m.valor_total).toFixed(2)}
-                    </span>
-                </div>`;
-        });
-    }
-    
-    corpo.innerHTML = html;
-    document.getElementById('modalResumo').style.display = 'block';
-};
+        if (apenasPagamentos.length === 0) {
+            corpo.innerHTML = "<div style='text-align:center; padding: 20px;'>Nenhum pagamento registrado.</div>";
+        } else {
+            let html = "";
+            apenasPagamentos.forEach(m => {
+                const dataF = new Date(m.data).toLocaleDateString('pt-BR').substring(0, 5);
+                let desc = m.descricao.replace('PAGAMENTO RECEBIDO', 'VALOR').replace(' - PAGO', '').replace(' (PAGO)', '');
+                html += `
+                    <div class="extrato-linha">
+                        <span class="cor-saida">${dataF} ${desc} (PAGO)</span>
+                        <span class="cor-saida">R$ ${Math.abs(m.valor_total).toFixed(2)}</span>
+                    </div>`;
+            });
+            corpo.innerHTML = html;
+        }
+        document.getElementById('modalResumo').style.display = 'block';
+    };
 
     window.salvarVenda = async (id) => {
         const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
@@ -258,34 +242,25 @@
         const vl = parseFloat(document.getElementById(`vl-${id}`).value);
         if(!vl) return alert("Insira o valor!");
         await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }]);
-        carregarDados();
+        // carregarDados() será chamado pelo Realtime automaticamente
     };
 
     window.abrirHistorico = (id) => {
-    const c = dbClientes.find(x => x.id === id);
-    const saldoFinal = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
-    
-    // Lógica para calcular o que falta pagar (seus itens pendentes)
-    let totalPagosExistentes = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
-    const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
-    
-    let itensPendentes = [];
-    comprasApenas.forEach(item => {
-        if (totalPagosExistentes >= item.valor_total) {
-            totalPagosExistentes -= item.valor_total;
-        } else {
-            itensPendentes.push({...item, valor_exibir: item.valor_total - totalPagosExistentes});
-            totalPagosExistentes = 0;
-        }
-    });
+        const c = dbClientes.find(x => x.id === id);
+        const saldoFinal = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
+        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
+        const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
+        
+        let itensPendentes = [];
+        comprasApenas.forEach(item => {
+            if (totalPagos >= item.valor_total) { totalPagos -= item.valor_total; } 
+            else { itensPendentes.push({...item, valor_exibir: item.valor_total - totalPagos}); totalPagos = 0; }
+        });
 
-    document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
-    const listAbertos = document.getElementById('listaItensModal');
-    listAbertos.innerHTML = '';
+        document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
+        const listAbertos = document.getElementById('listaItensModal');
+        listAbertos.innerHTML = itensPendentes.length === 0 ? '<div style="text-align:center; color:var(--success); padding:20px;">TUDO PAGO! ✅</div>' : '';
 
-    if(itensPendentes.length === 0) {
-        listAbertos.innerHTML = '<div style="text-align:center; color:var(--success); padding:20px; font-weight:bold;">TUDO PAGO! ✅</div>';
-    } else {
         itensPendentes.forEach(i => {
             const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
             listAbertos.innerHTML += `
@@ -297,32 +272,18 @@
                     </div>
                 </label>`;
         });
-    }
 
-    // --- CORREÇÃO DO WHATSAPP AQUI ---
-    document.getElementById('btnZapRapido').onclick = () => {
-        if(saldoFinal <= 0) return alert("Não há saldo devedor!");
-        
-        let listaMsg = "";
-        itensPendentes.forEach(i => {
-            listaMsg += `• ${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}%0A`;
-        });
+        // WHATSAPP REVISADO
+        document.getElementById('btnZapRapido').onclick = () => {
+            if(saldoFinal <= 0) return alert("Saldo zerado!");
+            let listaMsg = itensPendentes.map(i => `• ${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+            const texto = `*BRASIL DOCES*%0A%0AOlá, *${c.nome.toUpperCase()}*!%0A%0ASeu consumo pendente:%0A%0A${listaMsg}%0A💰 *TOTAL: R$ ${saldoFinal.toFixed(2)}*`;
+            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
+        };
 
-        const texto = `*BRASIL DOCES*%0A%0AOlá, *${c.nome.toUpperCase()}*!%0A%0ASeu resumo de consumo pendente:%0A%0A${listaMsg}%0A💰 *TOTAL A PAGAR: R$ ${saldoFinal.toFixed(2)}*`;
-        
-        window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
+        document.getElementById('btnPagarSelecionados').onclick = () => processarPagamento(id);
+        document.getElementById('modalHistorico').style.display='block';
     };
-
-    document.getElementById('btnPixZap').onclick = () => {
-        if(saldoFinal <= 0) return alert("Saldo zerado.");
-        const pixCod = gerarPixCopiaECola(saldoFinal);
-        const msgPix = `*PAGAMENTO PIX - BRASIL DOCES*%0A%0AValor: *R$ ${saldoFinal.toFixed(2)}*%0A%0ACopie o código abaixo:%0A%0A\`${pixCod}\``;
-        window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${msgPix}`, '_blank');
-    };
-
-    document.getElementById('btnPagarSelecionados').onclick = () => processarPagamento(id);
-    document.getElementById('modalHistorico').style.display='block';
-};
 
     window.atualizarSoma = () => {
         const checkboxes = document.querySelectorAll('.chk-item:checked');
@@ -335,15 +296,28 @@
     window.processarPagamento = async (clienteId) => {
         const checkboxes = document.querySelectorAll('.chk-item:checked');
         let somaTotal = 0;
-        checkboxes.forEach(cb => somaTotal += parseFloat(cb.getAttribute('data-valor')));
+        let itensPagos = [];
+        checkboxes.forEach(cb => {
+            somaTotal += parseFloat(cb.getAttribute('data-valor'));
+            itensPagos.push(cb.getAttribute('data-desc'));
+        });
         if(confirm(`Confirmar pagamento de R$ ${somaTotal.toFixed(2)}?`)) {
-            await _supabase.from('compras').insert([{ cliente_id: clienteId, descricao: "PAGAMENTO RECEBIDO", valor_total: -somaTotal }]);
+            const descFinal = itensPagos.length === 1 ? itensPagos[0] : "DIVERSOS ITENS";
+            await _supabase.from('compras').insert([{ cliente_id: clienteId, descricao: descFinal, valor_total: -somaTotal }]);
             document.getElementById('modalHistorico').style.display = 'none';
-            carregarDados();
         }
     };
 
-    window.excluir = async (id) => { if(confirm("Excluir cliente?")) { await _supabase.from('clientes').delete().eq('id', id); carregarDados(); } };
+    document.getElementById('btnCadastrar').onclick = async () => {
+        const nome = document.getElementById('novoNome').value;
+        const tel = document.getElementById('novoTel').value;
+        const lim = document.getElementById('novoLimite').value;
+        if(!nome || !tel) return alert("Preencha tudo!");
+        await _supabase.from('clientes').insert([{ nome, tel, limite: parseFloat(lim) }]);
+        document.getElementById('novoNome').value = ''; document.getElementById('novoTel').value = '';
+    };
+
+    window.excluir = async (id) => { if(confirm("Excluir cliente?")) await _supabase.from('clientes').delete().eq('id', id); };
     window.atualizarPreco = (input, cId) => {
         const p = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
         if(p) document.getElementById(`vl-${cId}`).value = p.preco;
