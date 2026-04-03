@@ -220,20 +220,26 @@
     document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
     
     let html = "";
-    // Filtra APENAS os pagamentos (valores menores que zero)
-    const apenasPagos = c.compras
+    
+    // Pega apenas os registros de pagamento (valores negativos)
+    const apenasPagamentos = c.compras
         .filter(m => m.valor_total < 0)
-        .sort((a, b) => new Date(b.data) - new Date(a.data)); // Mais recentes primeiro
+        .sort((a, b) => new Date(a.data) - new Date(b.data));
 
-    if (apenasPagos.length === 0) {
-        html = "<div style='text-align:center; padding: 20px;'>Nenhum pagamento registrado ainda.</div>";
+    if (apenasPagamentos.length === 0) {
+        html = "<div style='text-align:center; padding: 20px;'>Nenhum pagamento registrado.</div>";
     } else {
-        apenasPagos.forEach(m => {
+        apenasPagamentos.forEach(m => {
             const dataF = new Date(m.data).toLocaleDateString('pt-BR').substring(0, 5);
+            
+            // Aqui garantimos que o texto termine com (PAGO)
+            // Removemos marcações antigas para não repetir
+            let descricaoLimpa = m.descricao.replace(' - PAGO', '').replace(' PAGO', '').replace('PAGAMENTO RECEBIDO', 'VALOR');
+            
             html += `
                 <div class="extrato-linha">
                     <span class="cor-saida">
-                        ${dataF} ✅ RECEBIDO: ${m.descricao}
+                        ${dataF} ${descricaoLimpa} (PAGO)
                     </span>
                     <span class="cor-saida">
                         R$ ${Math.abs(m.valor_total).toFixed(2)}
@@ -241,6 +247,7 @@
                 </div>`;
         });
     }
+    
     corpo.innerHTML = html;
     document.getElementById('modalResumo').style.display = 'block';
 };
