@@ -358,11 +358,15 @@
         });
         
         document.getElementById('btnZapRapido').onclick = () => {
-            if(saldoFinal <= 0) return alert("Saldo zerado!");
-            let listaMsg = itensPendentes.map(i => `• ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-            const texto = `*BRASIL DOCES*%0A%0AOlá, *${c.nome.toUpperCase()}*!%0A%0ASeu consumo pendente:%0A%0A${listaMsg}%0A💰 *TOTAL: R$ ${saldoFinal.toFixed(2)}*`;
-            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
-        };
+    if(saldoFinal <= 0) return alert("Saldo zerado!");
+    
+    // Lista com o marcador de estrela/brilho para combinar com o início da msg
+    let listaMsg = itensPendentes.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+    
+    const texto = `Oi! ✨ Passando para te deixar ciente das suas últimas *escolhas* aqui na Brasil Doces:%0A%0A${listaMsg}%0A%0A💰 *Total acumulado: R$ ${saldoFinal.toFixed(2)}*%0A%0AÉ só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. 🍫`;
+    
+    window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
+};
 
         document.getElementById('btnFechamentoMensal').onclick = () => {
             const mes = new Date().toLocaleDateString('pt-BR', { month: 'long' });
