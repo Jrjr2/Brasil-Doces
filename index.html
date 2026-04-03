@@ -25,44 +25,27 @@
         }
 
         /* Variáveis Modo Escuro Ajustadas */
-body.dark-mode {
-    --bg: #121212;           /* Fundo quase preto */
-    --card: #1e1e1e;         /* Cards cinza chumbo */
-    --text: #e0e0e0;         /* Texto branco acinzentado (menos agressivo) */
-    --border: #333333;       /* Bordas sutis */
-    --primary: #ffb1c1;      /* Rosa claro pastel (substitui o rosa forte) */
-    --accent: #ff85a2;       /* Rosa principal mais brilhante para botões */
-    --brown: #ffdadf;        /* Em vez de marrom, um rosa bem clarinho para títulos */
-    --success: #4cd137;      /* Verde mais vivo para brilhar no escuro */
-}
+        body.dark-mode {
+            --bg: #121212;
+            --card: #1e1e1e;
+            --text: #e0e0e0;
+            --border: #333333;
+            --primary: #ffb1c1;
+            --accent: #ff85a2;
+            --brown: #ffdadf;
+            --success: #4cd137;
+        }
 
-/* Ajustes específicos para o Modo Escuro */
-body.dark-mode .zn-brand-text {
-    color: var(--primary);   /* Logo fica em rosa pastel */
-}
+        /* Ajustes específicos para o Modo Escuro */
+        body.dark-mode .zn-brand-text { color: var(--primary); }
+        body.dark-mode .zn-icon-badge { background: var(--primary); }
+        body.dark-mode .price-tag { color: var(--primary); }
+        body.dark-mode .dash-val { color: var(--primary); }
+        body.dark-mode input { background: #252525; border-color: #444; }
+        body.dark-mode .btn-action { background: #2a2a2a; color: var(--primary); border-color: var(--border); }
 
-body.dark-mode .zn-icon-badge {
-    background: var(--primary);
-}
-
-body.dark-mode .price-tag {
-    color: var(--primary);   /* Preço em destaque rosa */
-}
-
-body.dark-mode .dash-val {
-    color: var(--primary);
-}
-
-body.dark-mode input {
-    background: #252525;
-    border-color: #444;
-}
-
-body.dark-mode .btn-action {
-    background: #2a2a2a;
-    color: var(--primary);
-    border-color: var(--border);
-}
+        /* NOVO: Ajuste do Slogan para Modo Escuro */
+        body.dark-mode .zn-slogan { color: #b5a1a1; }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; transition: background 0.3s, color 0.3s; }
         
@@ -70,10 +53,14 @@ body.dark-mode .btn-action {
         .login-logo { width: 220px; height: auto; display: block; margin: 0 auto -25px auto; mix-blend-mode: multiply; position: relative; z-index: 10; }
         .login-card { background: var(--card); padding: 30px; border-radius: 24px; width: 100%; max-width: 320px; box-shadow: 0 10px 30px rgba(214, 51, 132, 0.1); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
 
+        /* AJUSTES DO CABEÇALHO E LOGO */
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .zn-brand-container { display: flex; align-items: center; gap: 12px; }
         .zn-icon-badge { width: 45px; height: 45px; background: var(--brown); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .zn-brand-text { font-family: 'Pacifico', cursive; font-size: 1.8em; color: var(--brown); margin: 0; }
+        
+        .zn-column-titles { display: flex; flex-direction: column; justify-content: center; }
+        .zn-brand-text { font-family: 'Pacifico', cursive; font-size: 1.6em; color: var(--brown); margin: 0; line-height: 1.1; }
+        .zn-slogan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #8e736b; margin-top: -2px; }
         
         .header-actions { display: flex; gap: 8px; align-items: center; }
         .btn-logout { background: white; border: 1px solid var(--danger); color: var(--danger); padding: 8px 15px; border-radius: 10px; font-size: 12px; width: auto; margin: 0; font-weight: 700; }
@@ -110,10 +97,8 @@ body.dark-mode .btn-action {
         
         #nomeClienteModal, #nomeClienteResumo { color: var(--text) !important; text-align: center; font-weight: 800 !important; font-size: 1.5em !important; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: block; }
 
-        /* AJUSTE TÍTULO PENDENTES */
         .modal-section-title { font-weight: 800; font-size: 11px; color: #999; text-transform: uppercase; margin: 15px 0 10px 5px; display: block; letter-spacing: 0.5px; }
 
-        /* AJUSTE DOS ITENS SELECIONÁVEIS */
         .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 10px; transition: background 0.2s; }
         .item-selecionavel:hover { background: rgba(0,0,0,0.03); }
         body.dark-mode .item-selecionavel:hover { background: rgba(255,255,255,0.05); }
@@ -151,7 +136,10 @@ body.dark-mode .btn-action {
     <div class="header-top">
         <div class="zn-brand-container">
             <div class="zn-icon-badge"><i class="fa-solid fa-cookie-bite" style="color:white;"></i></div>
-            <h1 class="zn-brand-text">Brasil Doces</h1>
+            <div class="zn-column-titles">
+                <h1 class="zn-brand-text">Brasil Doces</h1>
+                <span class="zn-slogan">Feito com amor ♡</span>
+            </div>
         </div>
         <div class="header-actions">
             <button class="btn-theme" onclick="toggleTheme()" id="themeBtn" title="Alternar Tema">
@@ -261,23 +249,15 @@ body.dark-mode .btn-action {
     }
 
     function configurarRealtime() {
-    const canal = _supabase.channel('db_changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, (payload) => {
-            console.log('Mudança em compras:', payload);
-            carregarDados();
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, (payload) => {
-            console.log('Mudança em clientes:', payload);
-            carregarDados();
-        })
-        .subscribe((status) => {
-            console.log("Status do Realtime:", status);
-            if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-                // Tenta reconectar após 5 segundos se cair
-                setTimeout(configurarRealtime, 5000);
-            }
-        });
-}
+        const canal = _supabase.channel('db_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, (payload) => {
+                carregarDados();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, (payload) => {
+                carregarDados();
+            })
+            .subscribe();
+    }
 
     async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
 
