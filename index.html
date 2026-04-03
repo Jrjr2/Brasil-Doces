@@ -70,13 +70,6 @@
         .btn-delete { color: #ddd; background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
         .btn-edit { color: var(--info); background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
 
-        .niver-semana { color: #ff4757; animation: pulse-niver 1.5s infinite; margin-left: 5px; cursor: help; }
-        @keyframes pulse-niver {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); }
         .modal-content { background: var(--card); border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; color: var(--text); border: 1px solid var(--border); }
         
@@ -188,24 +181,24 @@
                 <span style="font-size: 12px; font-weight: bold; color: var(--brown);">TOTAL SELECIONADO:</span>
                 <span id="txtSoma" style="font-size: 18px; font-weight: 800; color: var(--accent);">R$ 0,00</span>
             </div>
-            <button id="btnPagarSelecionados" class="btn-main" style="margin-top: 10px; background: var(--success);">
+            <button id="btnPagarSelecionados" class="btn-main" style="margin-top: 10px; background: var(--success);" onclick="processarPagamento(clienteAbertoId)">
                 <i class="fa-solid fa-check-double"></i> PAGAR SELECIONADOS
             </button>
         </div>
         <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
-    <button id="btnZapRapido" class="btn-zap"><i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO</button>
-    
-    <button id="btnFechamentoMensal" class="btn-action" style="background:var(--bg); border:1px solid var(--primary);">
-        <i class="fa-solid fa-calendar-check"></i> 1. ENVIAR RESUMO MENSAL
-    </button>
-    
-    <button id="btnEnviarPixApenas" class="btn-zap" style="background:#00b894;">
-        <i class="fa-solid fa-copy"></i> 2. ENVIAR APENAS CHAVE PIX
-    </button>
-    
-    <button id="btnMensagemCarinho" class="btn-action" style="background:#e8f8f5; border:1px solid var(--success); color:#1a1a1a"><i class="fa-solid fa-heart" style="color:var(--success);"></i> AGRADECER PAGAMENTO</button>
-    <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
-</div>
+            <button id="btnZapRapido" class="btn-zap"><i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO</button>
+            
+            <button id="btnFechamentoMensal" class="btn-action" style="background:var(--bg); border:1px solid var(--primary);">
+                <i class="fa-solid fa-calendar-check"></i> 1. ENVIAR RESUMO MENSAL
+            </button>
+            
+            <button id="btnEnviarPixApenas" class="btn-zap" style="background:#00b894;">
+                <i class="fa-solid fa-copy"></i> 2. ENVIAR APENAS CHAVE PIX
+            </button>
+            
+            <button id="btnMensagemCarinho" class="btn-action" style="background:#e8f8f5; border:1px solid var(--success); color:#1a1a1a"><i class="fa-solid fa-heart" style="color:var(--success);"></i> AGRADECER PAGAMENTO</button>
+            <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
+        </div>
     </div>
 </div>
 
@@ -227,54 +220,51 @@
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let dbClientes = [], dbProdutos = [], clienteEmEdicao = null;
-    let pixConfig = {}; 
-    let clienteAbertoId = null; // Variável global para saber qual cliente está no modal
-    let itensPendentesGlobal = []; // Essa "gaveta" vai guardar os itens do cliente aberto
+    let pixConfig = { chave_pix: '', nome_pix: '', cidade_pix: '' }; 
+    let clienteAbertoId = null; 
+    let itensPendentesGlobal = []; 
 
+    // FUNÇÃO PIX COM LIMPEZA AUTOMÁTICA (TRIM)
     function gerarPixCopiaCola(chave, nome, valor, cidade) {
-    // Função auxiliar para formatar cada campo: ID + TAMANHO + VALOR
-    const f = (id, val) => {
-        const t = val.toString();
-        return id + t.length.toString().padStart(2, '0') + t;
-    };
+        const f = (id, val) => {
+            const t = val.toString();
+            return id + t.length.toString().padStart(2, '0') + t;
+        };
 
-    // Limpeza rigorosa: remove acentos e deixa apenas letras e números
-    const limpar = (t) => t.normalize("NFD")
-                          .replace(/[\u0300-\u036f]/g, "")
-                          .replace(/[^A-Z0-9]/gi, " ") // Troca símbolos por espaço
-                          .trim()
-                          .toUpperCase();
+        const limpar = (t) => t.toString().normalize("NFD")
+                              .replace(/[\u0300-\u036f]/g, "")
+                              .replace(/[^A-Z0-9]/gi, " ") 
+                              .trim()
+                              .toUpperCase();
 
-    const nomeL = limpar(nome).substring(0, 25);
-    const cidadeL = limpar(cidade).substring(0, 15);
-    const valorL = valor.toFixed(2); // Garante 2 casas decimais com PONTO
-    const chaveL = chave.trim();
+        const nomeL = limpar(nome || "Brasil Doces").substring(0, 25);
+        const cidadeL = limpar(cidade || "Maringa").substring(0, 15);
+        const valorL = parseFloat(valor).toFixed(2); 
+        const chaveL = chave.toString().trim();
 
-    // Montagem da String Mestra
-    let pix = "000201"; 
-    pix += f("26", "0014BR.GOV.BCB.PIX" + f("01", chaveL));
-    pix += "52040000";
-    pix += "5303986";
-    pix += f("54", valorL);
-    pix += "5802BR";
-    pix += f("59", nomeL);
-    pix += f("60", cidadeL);
-    pix += f("62", f("05", "BRDOCES")); // TXID fixo e curto para evitar erro de tamanho
+        let pix = "000201"; 
+        pix += f("26", "0014BR.GOV.BCB.PIX" + f("01", chaveL));
+        pix += "52040000";
+        pix += "5303986";
+        pix += f("54", valorL);
+        pix += "5802BR";
+        pix += f("59", nomeL);
+        pix += f("60", cidadeL);
+        pix += f("62", f("05", "BRDOCES")); 
 
-    pix += "6304"; // Início do CRC
+        pix += "6304"; 
 
-    // Cálculo do CRC16 CCITT
-    let crc = 0xFFFF;
-    for (let i = 0; i < pix.length; i++) {
-        crc ^= (pix.charCodeAt(i) << 8);
-        for (let j = 0; j < 8; j++) {
-            if ((crc & 0x8000) !== 0) crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
-            else crc = (crc << 1) & 0xFFFF;
+        let crc = 0xFFFF;
+        for (let i = 0; i < pix.length; i++) {
+            crc ^= (pix.charCodeAt(i) << 8);
+            for (let j = 0; j < 8; j++) {
+                if ((crc & 0x8000) !== 0) crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+                else crc = (crc << 1) & 0xFFFF;
+            }
         }
+        return pix + crc.toString(16).toUpperCase().padStart(4, '0');
     }
-    
-    return pix + crc.toString(16).toUpperCase().padStart(4, '0');
-}
+
     async function checkUser() {
         carregarTema();
         const { data: { session } } = await _supabase.auth.getSession();
@@ -291,8 +281,16 @@
         dbProdutos = p || [];
         const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
         dbClientes = c || [];
-        const { data: config } = await _supabase.from('configuracoes').select('*').limit(1).single();
-        if (config) pixConfig = config;
+        
+        // CARREGAMENTO SEGURO DAS CONFIGURAÇÕES
+        const { data: config, error } = await _supabase.from('configuracoes').select('*').maybeSingle();
+        if (error) console.error("Erro Supabase Config:", error.message);
+        if (config) {
+            pixConfig = config;
+            console.log("Configurações PIX Carregadas:", pixConfig);
+        } else {
+            console.warn("Tabela de configurações está vazia!");
+        }
         render();
     }
 
@@ -304,7 +302,18 @@
 
     function carregarTema() { if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-mode'); }
     function mascaraData(input) { let v = input.value.replace(/\D/g, ""); if (v.length > 2) v = v.substring(0, 2) + "/" + v.substring(2, 4); input.value = v; }
-    function configurarRealtime() { _supabase.channel('db_changes').on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, () => carregarDados()).on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => carregarDados()).subscribe(); }
+    
+    function configurarRealtime() { 
+        _supabase.channel('db_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, () => carregarDados())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => carregarDados())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'configuracoes' }, (payload) => {
+                pixConfig = payload.new;
+                console.log("PIX atualizado em Realtime:", pixConfig);
+            })
+            .subscribe(); 
+    }
+
     async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
 
     function render() {
@@ -368,9 +377,9 @@
         });
 
         document.getElementById('modalHistorico').style.display='block';
+        document.getElementById('containerSoma').style.display='none';
     };
 
-    // BOTÃO 1: RESUMO MENSAL
     document.getElementById('btnFechamentoMensal').onclick = () => {
         const c = dbClientes.find(x => x.id === clienteAbertoId);
         if(!itensPendentesGlobal.length) return alert("Nada pendente!");
@@ -382,26 +391,23 @@
     };
 
     document.getElementById('btnEnviarPixApenas').onclick = () => {
-    const c = dbClientes.find(x => x.id === clienteAbertoId);
-    if (!c) return alert("Selecione um cliente primeiro!");
+        const c = dbClientes.find(x => x.id === clienteAbertoId);
+        if (!pixConfig.chave_pix) return alert("Configure sua Chave PIX no banco primeiro!");
 
-    if (!itensPendentesGlobal || itensPendentesGlobal.length === 0) {
-        return alert("Não há itens pendentes para gerar o PIX.");
-    }
+        const totalPendente = itensPendentesGlobal.reduce((acc, i) => acc + i.valor_exibir, 0);
+        if (totalPendente <= 0) return alert("Não há saldo devedor para este cliente.");
 
-    const totalPendente = itensPendentesGlobal.reduce((acc, i) => acc + i.valor_exibir, 0);
+        const pixValido = gerarPixCopiaCola(
+            pixConfig.chave_pix, 
+            pixConfig.nome_pix, 
+            totalPendente, 
+            pixConfig.cidade_pix
+        );
+        
+        const texto = `Segue o código Copia e Cola para pagamento:%0A%0A\`${pixValido}\`%0A%0A*Valor: R$ ${totalPendente.toFixed(2)}*`;
+        window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
+    };
 
-    // Chama a função com os dados configurados no seu banco
-    const pixValido = gerarPixCopiaCola(
-        pixConfig.chave_pix, 
-        pixConfig.nome_pix, 
-        totalPendente, 
-        pixConfig.cidade_pix
-    );
-    
-    window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${pixValido}`, '_blank');
-};
-    // BOTÃO INFORMAR CONSUMO (ZAP RÁPIDO)
     document.getElementById('btnZapRapido').onclick = () => {
         const c = dbClientes.find(x => x.id === clienteAbertoId);
         let listaMsg = itensPendentesGlobal.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
@@ -409,7 +415,6 @@
         window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
     };
 
-    // BOTÃO RESUMO DA CONTA (PDF)
     window.abrirResumoConta = (id) => {
         const c = dbClientes.find(x => x.id === id);
         document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
