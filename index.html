@@ -17,24 +17,32 @@
         }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; }
         
-        /* LOGIN */
-.login-logo {
-    width: 250px; /* Aumentei um pouco para ficar proporcional */
-    height: auto;
-    margin-bottom: 10px; /* Aproxima um pouco mais do card */
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    /* Removido o border-radius para tirar o círculo branco */
-}
-
+       /* LOGIN ESTILIZADO */
 #authContainer {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Centraliza verticalmente na tela do celular */
-    margin-top: 0 !important;
+    min-height: 100vh;
+    background-color: var(--bg); /* Garante que o fundo seja o rosa claro */
+}
+
+.login-logo {
+    width: 220px; /* Tamanho proporcional */
+    height: auto;
+    margin-bottom: -15px; /* Puxa o card para mais perto do logo */
+    mix-blend-mode: multiply; /* MÁGICA: Remove o fundo branco da imagem */
+    display: block;
+}
+
+.login-card {
+    background: var(--card);
+    padding: 30px;
+    border-radius: 24px;
+    width: 90%;
+    max-width: 320px;
+    box-shadow: 0 10px 30px rgba(214, 51, 132, 0.1);
+    border: 1px solid var(--border);
 }
 
         /* HEADER */
@@ -73,9 +81,10 @@
 </head>
 <body>
 
-<div id="authContainer" style="text-align:center; margin-top:50px;">
+<div id="authContainer">
     <img src="logo.jpg" alt="Brasil Doces" class="login-logo">
-    <div style="background:var(--card); padding:30px; border-radius:24px; max-width:320px; margin:auto; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid var(--border);">
+    
+    <div class="login-card">
         <input type="email" id="loginEmail" placeholder="E-mail">
         <input type="password" id="loginPassword" placeholder="Senha">
         <button id="btnLogin" class="btn-main">ACESSAR SISTEMA</button>
