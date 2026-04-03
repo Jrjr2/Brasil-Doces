@@ -232,46 +232,48 @@
     let itensPendentesGlobal = []; // Essa "gaveta" vai guardar os itens do cliente aberto
 
     function gerarPixCopiaCola(chave, nome, valor, cidade) {
+    // Função auxiliar para formatar cada campo: ID + TAMANHO + VALOR
     const f = (id, val) => {
-        const len = val.length.toString().padStart(2, '0');
-        return id + len + val;
+        const t = val.toString();
+        return id + t.length.toString().padStart(2, '0') + t;
     };
 
-    const limpar = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z0-9 ]/gi, "").toUpperCase();
+    // Limpeza rigorosa: remove acentos e deixa apenas letras e números
+    const limpar = (t) => t.normalize("NFD")
+                          .replace(/[\u0300-\u036f]/g, "")
+                          .replace(/[^A-Z0-9]/gi, " ") // Troca símbolos por espaço
+                          .trim()
+                          .toUpperCase();
 
     const nomeL = limpar(nome).substring(0, 25);
     const cidadeL = limpar(cidade).substring(0, 15);
-    const valorL = valor.toFixed(2);
+    const valorL = valor.toFixed(2); // Garante 2 casas decimais com PONTO
     const chaveL = chave.trim();
 
-    // Montagem estruturada
-    let payload = "000201";
-    payload += f("26", "0014BR.GOV.BCB.PIX" + f("01", chaveL));
-    payload += "52040000";
-    payload += "5303986";
-    payload += f("54", valorL);
-    payload += "5802BR";
-    payload += f("59", nomeL);
-    payload += f("60", cidadeL);
-    
-    // TXID dinâmico (O f() calcula o 62 baseado no conteúdo do 05 automaticamente)
-    const txidConteudo = "BRDOCES" + Date.now().toString().slice(-10);
-    payload += f("62", f("05", txidConteudo));
+    // Montagem da String Mestra
+    let pix = "000201"; 
+    pix += f("26", "0014BR.GOV.BCB.PIX" + f("01", chaveL));
+    pix += "52040000";
+    pix += "5303986";
+    pix += f("54", valorL);
+    pix += "5802BR";
+    pix += f("59", nomeL);
+    pix += f("60", cidadeL);
+    pix += f("62", f("05", "BRDOCES")); // TXID fixo e curto para evitar erro de tamanho
 
-    payload += "6304";
+    pix += "6304"; // Início do CRC
 
-    // Cálculo do CRC16 (Não altere nada aqui)
+    // Cálculo do CRC16 CCITT
     let crc = 0xFFFF;
-    for (let i = 0; i < payload.length; i++) {
-        crc ^= (payload.charCodeAt(i) << 8);
+    for (let i = 0; i < pix.length; i++) {
+        crc ^= (pix.charCodeAt(i) << 8);
         for (let j = 0; j < 8; j++) {
             if ((crc & 0x8000) !== 0) crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
             else crc = (crc << 1) & 0xFFFF;
         }
     }
-    const crcFinal = crc.toString(16).toUpperCase().padStart(4, '0');
     
-    return payload + crcFinal;
+    return pix + crc.toString(16).toUpperCase().padStart(4, '0');
 }
     async function checkUser() {
         carregarTema();
