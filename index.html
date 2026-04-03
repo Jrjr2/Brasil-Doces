@@ -59,7 +59,6 @@
         
         #nomeClienteModal, #nomeClienteResumo { color: #2d3436 !important; text-align: center; font-weight: 800 !important; font-size: 1.5em !important; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 10px; display: block; }
         
-        /* CORREÇÃO DO ALINHAMENTO AQUI */
         .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 10px; border-bottom: 1px solid #f2f2f2; cursor: pointer; border-radius: 10px; }
         .item-selecionavel input[type="checkbox"] { width: 20px; height: 20px; margin: 0; flex-shrink: 0; cursor: pointer; }
         .item-detalhe { flex: 1; display: flex; justify-content: space-between; align-items: center; font-size: 0.95em; }
@@ -276,7 +275,8 @@
             apenasPagamentos.forEach(m => {
                 const dataF = new Date(m.data).toLocaleDateString('pt-BR').substring(0, 5);
                 let desc = m.descricao.replace('PAGAMENTO RECEBIDO', 'VALOR').replace(' - PAGO', '').replace(' (PAGO)', '');
-                html += `<div class="extrato-linha"><span class="cor-saida">${dataF} ${desc} (PAGO)</span><span class="cor-saida">R$ ${Math.abs(m.valor_total).toFixed(2)}</span></div>`;
+                const qtdTexto = m.qtd > 1 ? `${m.qtd}x ` : "";
+                html += `<div class="extrato-linha"><span class="cor-saida">${dataF} ${qtdTexto}${desc} (PAGO)</span><span class="cor-saida">R$ ${Math.abs(m.valor_total).toFixed(2)}</span></div>`;
             });
             corpo.innerHTML = html;
         }
@@ -304,20 +304,26 @@
         document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
         const listAbertos = document.getElementById('listaItensModal');
         listAbertos.innerHTML = itensPendentes.length === 0 ? '<div style="text-align:center; color:var(--success); padding:20px;">TUDO PAGO! ✅</div>' : '';
+        
         itensPendentes.forEach(i => {
             const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
+            const qtdTexto = i.qtd > 1 ? `${i.qtd}x ` : "";
             listAbertos.innerHTML += `
                 <label class="item-selecionavel">
-                    <input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" onchange="atualizarSoma()">
+                    <input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${qtdTexto}${i.descricao}" onchange="atualizarSoma()">
                     <div class="item-detalhe">
-                        <span><small style="color:#999; display:block; font-size:10px;">${dataF}</small> ${i.descricao}</span>
+                        <span><small style="color:#999; display:block; font-size:10px;">${dataF}</small> ${qtdTexto}${i.descricao}</span>
                         <b>R$ ${i.valor_exibir.toFixed(2)}</b>
                     </div>
                 </label>`;
         });
+        
         document.getElementById('btnZapRapido').onclick = () => {
             if(saldoFinal <= 0) return alert("Saldo zerado!");
-            let listaMsg = itensPendentes.map(i => `• ${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+            let listaMsg = itensPendentes.map(i => {
+                const qT = i.qtd > 1 ? `${i.qtd}x ` : "";
+                return `• ${qT}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`;
+            }).join('%0A');
             const texto = `*BRASIL DOCES*%0A%0AOlá, *${c.nome.toUpperCase()}*!%0A%0ASeu consumo pendente:%0A%0A${listaMsg}%0A💰 *TOTAL: R$ ${saldoFinal.toFixed(2)}*`;
             window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
         };
