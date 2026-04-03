@@ -294,19 +294,38 @@
     };
 
     window.processarPagamento = async (clienteId) => {
-        const checkboxes = document.querySelectorAll('.chk-item:checked');
-        let somaTotal = 0;
-        let itensPagos = [];
-        checkboxes.forEach(cb => {
-            somaTotal += parseFloat(cb.getAttribute('data-valor'));
-            itensPagos.push(cb.getAttribute('data-desc'));
-        });
-        if(confirm(`Confirmar pagamento de R$ ${somaTotal.toFixed(2)}?`)) {
-            const descFinal = itensPagos.length === 1 ? itensPagos[0] : "DIVERSOS ITENS";
-            await _supabase.from('compras').insert([{ cliente_id: clienteId, descricao: descFinal, valor_total: -somaTotal }]);
-            document.getElementById('modalHistorico').style.display = 'none';
+    const checkboxes = document.querySelectorAll('.chk-item:checked');
+    let somaTotal = 0;
+    let itensPagos = [];
+
+    checkboxes.forEach(cb => {
+        somaTotal += parseFloat(cb.getAttribute('data-valor'));
+        itensPagos.push(cb.getAttribute('data-desc'));
+    });
+
+    if (somaTotal <= 0) return alert("Selecione ao menos um item!");
+
+    if (confirm(`Confirmar pagamento de R$ ${somaTotal.toFixed(2)}?`)) {
+        // Define a descrição (se for um item só, usa o nome dele; se forem vários, usa "DIVERSOS")
+        const descFinal = itensPagos.length === 1 ? itensPagos[0] : "DIVERSOS ITENS";
+
+        const { error } = await _supabase.from('compras').insert([{ 
+            cliente_id: clienteId, 
+            descricao: descFinal, 
+            valor_total: -somaTotal 
+        }]);
+
+        if (error) {
+            alert("Erro ao processar: " + error.message);
+        } else {
+            // --- A CORREÇÃO ESTÁ AQUI ---
+            document.getElementById('modalHistorico').style.display = 'none'; // Fecha o modal
+            document.getElementById('containerSoma').style.display = 'none'; // Esconde a barra de soma
+            // Não precisa de carregarDados() manual se o Realtime estiver ativo, 
+            // mas por segurança, o Realtime cuidará disso.
         }
-    };
+    }
+};
 
     document.getElementById('btnCadastrar').onclick = async () => {
         const nome = document.getElementById('novoNome').value;
