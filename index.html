@@ -232,26 +232,28 @@
     let itensPendentesGlobal = []; // Variável global para armazenar os itens do cliente atual
 
     function gerarPixCopiaCola(chave, nome, valor, cidade) {
+    // 1. Limpa os dados
     const limpaChave = chave.replace(/\D/g, '');
-    // Remove acentos e garante que o nome tenha o tamanho correto no cabeçalho
     const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
     const cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
     const valorTxt = valor.toFixed(2);
 
+    // Função para formatar os blocos (ID + Tamanho + Conteúdo)
     const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
 
+    // 2. Monta o corpo do PIX (Payload)
     let payload = "000201";
     payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
     payload += "52040000";
     payload += "5303986";
     payload += f("54", valorTxt);
     payload += "5802BR";
-    payload += f("59", nomeLimpo); // Aqui ele vai calcular o tamanho real (Ex: 27 para BRASIL)
+    payload += f("59", nomeLimpo); // Aqui ele vai colocar 27 e o nome completo
     payload += f("60", cidadeLimpa); 
     payload += "62070503***";
-    payload += "6304"; 
+    payload += "6304"; // Início do selo de segurança
 
-    // Cálculo do CRC16 exato
+    // 3. O "Cálculo Matemático" que os bancos exigem (CRC16)
     let crc = 0xFFFF;
     for (let i = 0; i < payload.length; i++) {
         crc ^= (payload.charCodeAt(i) << 8);
@@ -261,6 +263,7 @@
         }
     }
     const crcFinal = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+    
     return payload + crcFinal;
 }
 
@@ -372,11 +375,21 @@
 
     // BOTÃO 2: CHAVE PIX
     document.getElementById('btnEnviarPixApenas').onclick = () => {
-        const c = dbClientes.find(x => x.id === clienteAbertoId);
-        const total = itensPendentesGlobal.reduce((acc, i) => acc + i.valor_exibir, 0);
-        const pix = gerarPixCopiaCola(pixConfig.chave_pix, pixConfig.nome_pix, total, pixConfig.cidade_pix);
-        window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${pix}`, '_blank');
-    };
+    const c = dbClientes.find(x => x.id === clienteAbertoId);
+    
+    // Puxa o valor real da dívida do cliente agora
+    const totalPendente = itensPendentesGlobal.reduce((acc, i) => acc + i.valor_exibir, 0);
+
+    // GERA O CÓDIGO NOVO (Com o valor certo e o nome completo)
+    const pixValido = gerarPixCopiaCola(
+        pixConfig.chave_pix, 
+        pixConfig.nome_pix, 
+        totalPendente, 
+        pixConfig.cidade_pix
+    );
+    
+    window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${pixValido}`, '_blank');
+};
 
     // BOTÃO INFORMAR CONSUMO (ZAP RÁPIDO)
     document.getElementById('btnZapRapido').onclick = () => {
