@@ -232,29 +232,40 @@
     let itensPendentesGlobal = []; // Variável global para armazenar os itens do cliente atual
 
     function gerarPixCopiaCola(chave, nome, valor, cidade) {
-        const limpaChave = chave.replace(/\D/g, '');
-        const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
-        const cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
-        const valorTxt = valor.toFixed(2);
-        const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
+    const limpaChave = chave.replace(/\D/g, '');
+    const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
+    const cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
+    const valorTxt = valor.toFixed(2);
 
-        let payload = "000201";
-        payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
-        payload += "52040000"; payload += "5303986";
-        payload += f("54", valorTxt); payload += "5802BR";
-        payload += f("59", nomeLimpo); payload += f("60", cidadeLimpa); 
-        payload += "62070503***"; payload += "6304";
+    const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
 
-        let crc = 0xFFFF;
-        for (let i = 0; i < payload.length; i++) {
-            crc ^= (payload.charCodeAt(i) << 8);
-            for (let j = 0; j < 8; j++) {
-                if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
-                else crc <<= 1;
+    // Montagem do Payload conforme padrão BRCode
+    let payload = "000201";
+    payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
+    payload += "52040000";
+    payload += "5303986";
+    payload += f("54", valorTxt);
+    payload += "5802BR";
+    payload += f("59", nomeLimpo);
+    payload += f("60", cidadeLimpa); 
+    payload += "62070503***";
+    payload += "6304"; // Início do CRC16
+
+    // Cálculo do CRC16 CCITT (O "segredo" para o banco aceitar)
+    let crc = 0xFFFF;
+    for (let i = 0; i < payload.length; i++) {
+        crc ^= (payload.charCodeAt(i) << 8);
+        for (let j = 0; j < 8; j++) {
+            if ((crc & 0x8000) !== 0) {
+                crc = (crc << 1) ^ 0x1021;
+            } else {
+                crc <<= 1;
             }
         }
-        return payload + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
     }
+    const crcFinal = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+    return payload + crcFinal;
+}
 
     async function checkUser() {
         carregarTema();
