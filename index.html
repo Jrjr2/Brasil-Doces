@@ -213,7 +213,6 @@
         
         await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }]);
         
-        // Limpar campos
         document.getElementById(`it-${id}`).value = '';
         document.getElementById(`vl-${id}`).value = '';
         document.getElementById(`qt-${id}`).value = '1';
@@ -266,7 +265,6 @@
             listAbertos.innerHTML += `<div class="item-hist"><span><small>${dataF}</small> ${i.qtd > 1 ? '('+i.qtd+'x) ' : ''}${i.descricao}</span><b>R$ ${i.valor_exibir.toFixed(2)}</b></div>`;
         });
 
-        // Histórico de pagamentos
         c.compras.filter(i => i.valor_total < 0).forEach(i => {
             const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
             listPagos.innerHTML += `
@@ -309,15 +307,14 @@
         const saldoAtual = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
         if(saldoAtual <= 0) return alert("Cliente não possui débitos!");
 
-        // 1. Pergunta o que está sendo pago
-        const desc = prompt("O que está sendo pago? (Ex: PIX, DINHEIRO, BOLO, GERAL)", "PAGAMENTO ✅");
-        if (!desc) return; // Cancela se fechar o prompt
+        // 1. Pergunta o que está sendo pago (Ex: Ninho c/ uva - PJ - PAGO)
+        const desc = prompt("Descreva o pagamento:", "Ninho c/ uva - PJ - PAGO");
+        if (!desc) return; 
 
         // 2. Pergunta o valor
         const v = parseFloat(prompt(`Valor a pagar (Saldo: R$ ${saldoAtual.toFixed(2)}):`, saldoAtual.toFixed(2)));
         
         if(v) { 
-            // Salva com a descrição personalizada que você digitou
             await _supabase.from('compras').insert([{ 
                 cliente_id: id, 
                 descricao: desc.toUpperCase(), 
