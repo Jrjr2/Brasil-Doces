@@ -266,9 +266,14 @@
             listAbertos.innerHTML += `<div class="item-hist"><span><small>${dataF}</small> ${i.qtd > 1 ? '('+i.qtd+'x) ' : ''}${i.descricao}</span><b>R$ ${i.valor_exibir.toFixed(2)}</b></div>`;
         });
 
+        // Histórico de pagamentos
         c.compras.filter(i => i.valor_total < 0).forEach(i => {
             const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
-            listPagos.innerHTML += `<div class="item-hist item-pago"><span><small>${dataF}</small> PAGAMENTO RECEBIDO</span><b>R$ ${Math.abs(i.valor_total).toFixed(2)}</b></div>`;
+            listPagos.innerHTML += `
+                <div class="item-hist item-pago">
+                    <span><small>${dataF}</small> ${i.descricao}</span>
+                    <b>R$ ${Math.abs(i.valor_total).toFixed(2)}</b>
+                </div>`;
         });
 
         if(saldoFinal <= 0) listAbertos.innerHTML = '<div style="text-align:center; color:var(--success); padding:20px; font-weight:bold;">TUDO PAGO! ✅</div>';
@@ -303,9 +308,21 @@
         const c = dbClientes.find(x => x.id === id);
         const saldoAtual = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
         if(saldoAtual <= 0) return alert("Cliente não possui débitos!");
+
+        // 1. Pergunta o que está sendo pago
+        const desc = prompt("O que está sendo pago? (Ex: PIX, DINHEIRO, BOLO, GERAL)", "PAGAMENTO ✅");
+        if (!desc) return; // Cancela se fechar o prompt
+
+        // 2. Pergunta o valor
         const v = parseFloat(prompt(`Valor a pagar (Saldo: R$ ${saldoAtual.toFixed(2)}):`, saldoAtual.toFixed(2)));
+        
         if(v) { 
-            await _supabase.from('compras').insert([{ cliente_id: id, descricao: "PAGAMENTO ✅", valor_total: -v }]); 
+            // Salva com a descrição personalizada que você digitou
+            await _supabase.from('compras').insert([{ 
+                cliente_id: id, 
+                descricao: desc.toUpperCase(), 
+                valor_total: -v 
+            }]); 
             carregarDados(); 
         }
     };
