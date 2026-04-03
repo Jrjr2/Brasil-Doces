@@ -85,7 +85,6 @@
 
         .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 10px; transition: background 0.2s; }
         .item-detalhe { flex: 1; display: flex; justify-content: space-between; align-items: center; font-size: 0.95em; }
-        .item-info-text { display: flex; flex-direction: column; }
         .chk-item { width: 18px; height: 18px; flex-shrink: 0; margin: 0; cursor: pointer; }
 
         .extrato-container { 
@@ -128,13 +127,8 @@
         @media print {
             body * { visibility: hidden; }
             #modalResumo, #modalResumo * { visibility: visible; }
-            #modalResumo { 
-                position: absolute; left: 0; top: 0; width: 100%; height: auto; background: white;
-            }
-            .modal-content { 
-                max-height: none !important; overflow: visible !important; border: none !important;
-                width: 100% !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important;
-            }
+            #modalResumo { position: absolute; left: 0; top: 0; width: 100%; height: auto; background: white; }
+            .modal-content { max-height: none !important; overflow: visible !important; border: none !important; width: 100% !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
             .no-print { display: none !important; }
         }
     </style>
@@ -226,38 +220,39 @@
 
     let dbClientes = [], dbProdutos = [], clienteEmEdicao = null;
     let pixConfig = {}; 
-    
+
+    // FUNÇÃO GERADORA DE PIX COPIA E COLA
     function gerarPixCopiaCola(chave, nome, valor) {
-    const limpaChave = chave.replace(/\D/g, '');
-    const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
-    const valorTxt = valor.toFixed(2);
+        const limpaChave = chave.replace(/\D/g, '');
+        // O nome precisa ser sem acentos para o padrão do banco
+        const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
+        const valorTxt = valor.toFixed(2);
 
-    const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
+        const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
 
-    // Montagem do Payload
-    let payload = "000201";
-    payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
-    payload += "52040000";
-    payload += "5303986";
-    payload += f("54", valorTxt);
-    payload += "5802BR";
-    payload += f("59", nomeLimpo);
-    payload += f("60", "CURITIBA"); // Cidade padrão
-    payload += "62070503***";
-    payload += "6304";
+        let payload = "000201";
+        payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
+        payload += "52040000";
+        payload += "5303986";
+        payload += f("54", valorTxt);
+        payload += "5802BR";
+        payload += f("59", nomeLimpo);
+        payload += f("60", "SAO PAULO"); // Cidade padrão exigida
+        payload += "62070503***";
+        payload += "6304";
 
-    // Cálculo do CRC16 (Obrigatório para o banco aceitar o código)
-    let crc = 0xFFFF;
-    for (let i = 0; i < payload.length; i++) {
-        crc ^= (payload.charCodeAt(i) << 8);
-        for (let j = 0; j < 8; j++) {
-            if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
-            else crc <<= 1;
+        // Cálculo CRC16 para validar o código no banco
+        let crc = 0xFFFF;
+        for (let i = 0; i < payload.length; i++) {
+            crc ^= (payload.charCodeAt(i) << 8);
+            for (let j = 0; j < 8; j++) {
+                if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
+                else crc <<= 1;
+            }
         }
+        const crcFinal = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+        return payload + crcFinal;
     }
-    const crcFinal = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-    return payload + crcFinal;
-}
 
     async function checkUser() {
         carregarTema();
@@ -354,23 +349,6 @@
         document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
     }
 
-    window.abrirResumoConta = (id) => {
-        const c = dbClientes.find(x => x.id === id);
-        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
-        const compras = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
-        let itensPagos = [];
-        compras.forEach(item => { if (totalPagos >= item.valor_total) { itensPagos.push(item); totalPagos -= item.valor_total; } });
-        document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
-        const corpo = document.getElementById('corpoExtrato');
-        if (itensPagos.length === 0) { corpo.innerHTML = "<div style='text-align:center; padding: 20px;'>Nenhum item quitado ainda.</div>"; } 
-        else {
-            let html = `<div class="extrato-header"><span>DATA</span><span>QTD</span><span>PRODUTO</span><span style="text-align:right">VALOR</span></div>`;
-            itensPagos.forEach(m => { html += `<div class="extrato-item"><span>${new Date(m.data).toLocaleDateString('pt-BR').substring(0, 5)}</span><span class="qtd">${m.qtd}x</span><span>${m.descricao}</span><span class="valor">R$ ${m.valor_total.toFixed(2)}</span></div>`; });
-            corpo.innerHTML = html;
-        }
-        document.getElementById('modalResumo').style.display = 'block';
-    };
-
     window.abrirHistorico = (id) => {
         const c = dbClientes.find(x => x.id === id);
         let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
@@ -395,31 +373,28 @@
         };
 
         document.getElementById('btnFechamentoMensal').onclick = () => {
-    if(itensPendentes.length === 0) return alert("Nada pendente!");
-    
-    const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
-    const totalPendente = itensPendentes.reduce((acc, i) => acc + i.valor_exibir, 0);
-    const valorFormatado = totalPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    
-    let listaItens = itensPendentes.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-    
-    const chave = pixConfig.chave_pix || "44999022979"; // Sua chave
-    const nomeLoja = "Brasil Doces"; // Nome que aparece no banco
+            if(itensPendentes.length === 0) return alert("Nada pendente!");
+            const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
+            const totalPendente = itensPendentes.reduce((acc, i) => acc + i.valor_exibir, 0);
+            const valorFormatado = totalPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            let listaItens = itensPendentes.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+            
+            const chave = pixConfig.chave_pix || "44999022979";
+            const nomeFavorecido = "Fernanda Mara Santos Brasil";
+            const codigoPix = gerarPixCopiaCola(chave, nomeFavorecido, totalPendente);
 
-    // GERA O CÓDIGO COPIA E COLA
-    const codigoPix = gerarPixCopiaCola(chave, nomeLoja, totalPendente);
+            const texto = `Olá! ✨ Fechamento de *${mesAtual}*:%0A%0A` +
+                `${listaItens}%0A%0A` +
+                `*VALOR TOTAL: ${valorFormatado}*%0A%0A` +
+                `----------------------------%0A` +
+                `*PAGAMENTO VIA PIX*%0A%0A` +
+                `Para pagar, copie o código abaixo e utilize a opção "PIX Copia e Cola" no seu banco:%0A%0A` +
+                `\`${codigoPix}\` %0A%0A` +
+                `*Favorecido:* ${nomeFavorecido}%0A` +
+                `Muito obrigada! 🍫❤️`;
 
-    const texto = `Olá! ✨ Fechamento de *${mesAtual}*:%0A%0A` +
-        `${listaItens}%0A%0A` +
-        `*VALOR TOTAL: ${valorFormatado}*%0A%0A` +
-        `----------------------------%0A` +
-        `*PAGAMENTO VIA PIX (Copia e Cola)*%0A%0A` +
-        `Toque no código abaixo para copiar, depois abra o seu banco e escolha a opção "Pix Copia e Cola":%0A%0A` +
-        `\`${codigoPix}\` %0A%0A` + // O uso de crase aqui faz o código ficar fácil de copiar no celular
-        `Muito obrigada! 🍫❤️`;
-
-    window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
-};
+            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
+        };
 
         document.getElementById('btnMensagemCarinho').onclick = () => {
             const texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! ❤️`;
@@ -440,8 +415,8 @@
 
     window.processarPagamento = async (clienteId) => {
         const checkboxes = document.querySelectorAll('.chk-item:checked');
-        let somaTotal = 0, itensPagos = [];
-        checkboxes.forEach(cb => { somaTotal += parseFloat(cb.getAttribute('data-valor')); itensPagos.push(cb.getAttribute('data-desc')); });
+        let somaTotal = 0;
+        checkboxes.forEach(cb => somaTotal += parseFloat(cb.getAttribute('data-valor')));
         if (somaTotal <= 0) return alert("Selecione algo!");
         if (confirm(`Confirmar pagamento de R$ ${somaTotal.toFixed(2)}?`)) {
             await _supabase.from('compras').insert([{ cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -somaTotal }]);
