@@ -373,30 +373,35 @@
         };
 
         document.getElementById('btnFechamentoMensal').onclick = () => {
-            if(itensPendentes.length === 0) return alert("Nada pendente!");
-            const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
-            const totalPendente = itensPendentes.reduce((acc, i) => acc + i.valor_exibir, 0);
-            const valorFormatado = totalPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            let listaItens = itensPendentes.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-            
-            const chave = pixConfig.chave_pix || "44999022979";
-            const nomeFavorecido = "Fernanda Mara Santos Brasil";
-            const codigoPix = gerarPixCopiaCola(chave, nomeFavorecido, totalPendente);
+    if(itensPendentes.length === 0) return alert("Nada pendente!");
+    
+    const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
+    const totalPendente = itensPendentes.reduce((acc, i) => acc + i.valor_exibir, 0);
+    const valorFormatado = totalPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    
+    // Monta a lista de itens: ▫️ PRODUTO: R$ 0.00
+    let listaItens = itensPendentes.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+    
+    // 1. MENSAGEM DO RESUMO (CONFORME SEU MODELO)
+    const textoResumo = `Olá! Tudo bem? ✨%0A%0A` +
+        `Estou passando para fecharmos o seu resumo de *${mesAtual}* aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:%0A%0A` +
+        `${listaItens}%0A%0A` +
+        `*TOTAL: ${valorFormatado}*%0A%0A` +
+        `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍫❤️`;
 
-            // Mensagem formatada para facilitar a cópia manual ou automática no WhatsApp
-            const texto = `Olá! ✨ Fechamento de *${mesAtual}*:%0A%0A` +
-                `${listaItens}%0A%0A` +
-                `*VALOR TOTAL: ${valorFormatado}*%0A%0A` +
-                `----------------------------%0A` +
-                `*PIX COPIA E COLA*%0A` +
-                `_(Toque e segure no código abaixo para copiar)_%0A%0A` +
-                `${codigoPix}%0A%0A` + // Linha isolada e limpa
-                `----------------------------%0A` +
-                `*Favorecido:* ${nomeFavorecido}%0A` +
-                `Muito obrigada! 🍫❤️`;
+    // 2. A CHAVE PIX EXATA QUE VOCÊ ENVIOU
+    const chavePixFixo = "00020126330014br.gov.bcb.pix0111449990229795204000053039865406144.005802BR5925FERNANDA MARA SANTOS BRAS6009SAO PAULO62070503***6304C03A";
 
-            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
-        };
+    // ETAPA 1: Abre o WhatsApp com o Resumo
+    window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${textoResumo}`, '_blank');
+
+    // ETAPA 2: Pergunta se quer enviar a chave agora (isso garante que o código vá separado)
+    setTimeout(() => {
+        if(confirm("Resumo enviado com sucesso! Clique em OK para enviar agora a CHAVE PIX isolada para o cliente copiar.")) {
+            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${chavePixFixo}`, '_blank');
+        }
+    }, 1200);
+};
 
         document.getElementById('btnMensagemCarinho').onclick = () => {
             const texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! ❤️`;
