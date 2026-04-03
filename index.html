@@ -232,25 +232,18 @@
     let itensPendentesGlobal = []; // Essa "gaveta" vai guardar os itens do cliente aberto
 
     function gerarPixCopiaCola(chave, nome, valor, cidade) {
-
     const chavePix = chave.trim();
+    
+    // Remove acentos e caracteres especiais do nome e cidade
+    const limparTexto = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z0-9 ]/gi, "").toUpperCase();
 
-    const nomeLimpo = nome.normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toUpperCase()
-        .substring(0, 25);
-
-    const cidadeLimpa = cidade.normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toUpperCase()
-        .substring(0, 15);
-
+    const nomeLimpo = limparTexto(nome).substring(0, 25);
+    const cidadeLimpa = limparTexto(cidade).substring(0, 15);
     const valorTxt = valor.toFixed(2);
 
     const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
 
     let payload = "000201";
-
     payload += f("26", "0014BR.GOV.BCB.PIX" + f("01", chavePix));
     payload += "52040000";
     payload += "5303986";
@@ -259,13 +252,15 @@
     payload += f("59", nomeLimpo);
     payload += f("60", cidadeLimpa);
 
-    const txid = "TX" + Date.now().toString().slice(-10);
-    payload += f("62", f("05", txid));
+    // Correção do Campo 62 (TXID)
+    const txid = "BRDOCES" + Date.now().toString().slice(-10);
+    const campoTXID = f("05", txid); 
+    payload += f("62", campoTXID);
 
     payload += "6304";
 
+    // Cálculo do CRC16
     let crc = 0xFFFF;
-
     for (let i = 0; i < payload.length; i++) {
         crc ^= (payload.charCodeAt(i) << 8);
         for (let j = 0; j < 8; j++) {
@@ -276,12 +271,9 @@
             }
         }
     }
-
     const crcFinal = crc.toString(16).toUpperCase().padStart(4, '0');
-
     return payload + crcFinal;
 }
-
     async function checkUser() {
         carregarTema();
         const { data: { session } } = await _supabase.auth.getSession();
@@ -389,46 +381,25 @@
     };
 
     document.getElementById('btnEnviarPixApenas').onclick = () => {
-    // 1. Verifica se temos um cliente selecionado
     const c = dbClientes.find(x => x.id === clienteAbertoId);
     if (!c) return alert("Selecione um cliente primeiro!");
 
-    // 2. Verifica se a lista de itens está vazia
     if (!itensPendentesGlobal || itensPendentesGlobal.length === 0) {
         return alert("Não há itens pendentes para gerar o PIX.");
     }
 
-    // 3. Soma o valor exato dos itens que estão na tela
     const totalPendente = itensPendentesGlobal.reduce((acc, i) => acc + i.valor_exibir, 0);
 
-    // 4. Gera o PIX usando os dados das suas Configurações do Supabase
-    // Nomes exatos da sua tabela: chave_pix, nome_pix, cidade_pix
+    // Chama a função com os dados configurados no seu banco
     const pixValido = gerarPixCopiaCola(
         pixConfig.chave_pix, 
         pixConfig.nome_pix, 
         totalPendente, 
         pixConfig.cidade_pix
-        // Dentro da função gerarPixCopiaCola:
-
-// 1. Garanta que o valor tenha o ponto decimal, mas o tamanho conte ele
-const valorTxt = valor.toFixed(2); 
-
-// 2. Limpe o nome de qualquer coisa que não seja letra ou número (opcional, mas seguro)
-const nomeLimpo = nome.normalize("NFD")
-    .replace(/[^A-Z0-9 ]/gi, "") // Remove tudo que não é letra, número ou espaço
-    .toUpperCase()
-    .substring(0, 25);
-
-// 3. CORREÇÃO DO TXID (O erro fatal do seu código atual)
-const txid = "BRDOCES" + Date.now().toString().slice(-10); // Use um prefixo fixo se quiser
-const campoTXID = f("05", txid); 
-payload += f("62", campoTXID); // O f() vai calcular o tamanho correto do campo 62 baseado no subcampo 05
     );
     
-    // 5. Envia para o WhatsApp
     window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${pixValido}`, '_blank');
 };
-
     // BOTÃO INFORMAR CONSUMO (ZAP RÁPIDO)
     document.getElementById('btnZapRapido').onclick = () => {
         const c = dbClientes.find(x => x.id === clienteAbertoId);
