@@ -230,37 +230,37 @@
     let pixConfig = {}; 
 
     // FUNÇÃO GERADORA DE PIX COPIA E COLA
-    function gerarPixCopiaCola(chave, nome, valor) {
-        const limpaChave = chave.replace(/\D/g, '');
-        // O nome precisa ser sem acentos para o padrão do banco
-        const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
-        const valorTxt = valor.toFixed(2);
+    function gerarPixCopiaCola(chave, nome, valor, cidade) {
+    const limpaChave = chave.replace(/\D/g, '');
+    const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
+    const cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
+    const valorTxt = valor.toFixed(2);
 
-        const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
+    const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
 
-        let payload = "000201";
-        payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
-        payload += "52040000";
-        payload += "5303986";
-        payload += f("54", valorTxt);
-        payload += "5802BR";
-        payload += f("59", nomeLimpo);
-        payload += f("60", "SAO PAULO"); // Cidade padrão exigida
-        payload += "62070503***";
-        payload += "6304";
+    let payload = "000201";
+    payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
+    payload += "52040000";
+    payload += "5303986";
+    payload += f("54", valorTxt);
+    payload += "5802BR";
+    payload += f("59", nomeLimpo);
+    payload += f("60", cidadeLimpa); 
+    payload += "62070503***";
+    payload += "6304";
 
-        // Cálculo CRC16 para validar o código no banco
-        let crc = 0xFFFF;
-        for (let i = 0; i < payload.length; i++) {
-            crc ^= (payload.charCodeAt(i) << 8);
-            for (let j = 0; j < 8; j++) {
-                if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
-                else crc <<= 1;
-            }
+    // Cálculo do CRC16 (Dígito de segurança)
+    let crc = 0xFFFF;
+    for (let i = 0; i < payload.length; i++) {
+        crc ^= (payload.charCodeAt(i) << 8);
+        for (let j = 0; j < 8; j++) {
+            if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
+            else crc <<= 1;
         }
-        const crcFinal = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-        return payload + crcFinal;
     }
+    const crcFinal = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+    return payload + crcFinal;
+}
 
     async function checkUser() {
         carregarTema();
@@ -397,10 +397,21 @@ document.getElementById('btnFechamentoMensal').onclick = () => {
     window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${textoResumo}`, '_blank');
 };
 
-// Ação do Botão 2: Chave PIX Isolada
 document.getElementById('btnEnviarPixApenas').onclick = () => {
-    const chavePixFixo = "00020126330014br.gov.bcb.pix0111449990229795204000053039865406144.005802BR5925FERNANDA MARA SANTOS BRAS6009SAO PAULO62070503***6304C03A";
-    window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${chavePixFixo}`, '_blank');
+    // 1. Localiza o cliente e os dados do banco
+    const c = dbClientes.find(x => x.id === clienteAbertoId);
+    const totalPendente = itensPendentes.reduce((acc, i) => acc + i.valor_exibir, 0);
+
+    // 2. Puxa seus dados reais do Supabase (JSON que você me mandou)
+    const chave = pixConfig.chave_pix;   // Vai puxar "44999022979"
+    const nome = pixConfig.nome_pix;     // Vai puxar "FERNANDA MARA SANTOS BRASIL"
+    const cidade = pixConfig.cidade_pix; // Vai puxar "MARINGA"
+
+    // 3. Gera o código com o valor CERTINHO da conta atual
+    const pixDinamico = gerarPixCopiaCola(chave, nome, totalPendente, cidade);
+    
+    // 4. Abre o Zap
+    window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${pixDinamico}`, '_blank');
 };
 
         document.getElementById('btnMensagemCarinho').onclick = () => {
