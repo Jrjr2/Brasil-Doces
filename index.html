@@ -233,68 +233,53 @@
 
     function gerarPixCopiaCola(chave, nome, valor, cidade) {
 
-    const limpaChave = chave.replace(/\D/g, '');
+    const chavePix = chave.trim();
 
-    // Limpa acentos e garante que o nome não ultrapasse 25 caracteres
+    const nomeLimpo = nome.normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .substring(0, 25);
 
-    const nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
-
-    const cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
+    const cidadeLimpa = cidade.normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .substring(0, 15);
 
     const valorTxt = valor.toFixed(2);
 
-
-
-    // Função f: Garante o ID + Tamanho com 2 dígitos + Valor
-
     const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
-
-
 
     let payload = "000201";
 
-    payload += f("26", "0014br.gov.bcb.pix" + f("01", limpaChave));
-
+    payload += f("26", "0014BR.GOV.BCB.PIX" + f("01", chavePix));
     payload += "52040000";
-
     payload += "5303986";
-
     payload += f("54", valorTxt);
-
     payload += "5802BR";
+    payload += f("59", nomeLimpo);
+    payload += f("60", cidadeLimpa);
 
-    payload += f("59", nomeLimpo); // Aqui o sistema lerá "FERNANDA BRASIL" e colocará o tamanho 15
+    const txid = "TX" + Date.now().toString().slice(-10);
+    payload += f("62", f("05", txid));
 
-    payload += f("60", cidadeLimpa); 
-
-    payload += "62070503***";
-
-    payload += "6304"; 
-
-
-
-    // Cálculo do CRC16 CCITT (Obrigatório para o banco aceitar)
+    payload += "6304";
 
     let crc = 0xFFFF;
 
     for (let i = 0; i < payload.length; i++) {
-
         crc ^= (payload.charCodeAt(i) << 8);
-
         for (let j = 0; j < 8; j++) {
-
-            if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
-
-            else crc <<= 1;
-
+            if ((crc & 0x8000) !== 0) {
+                crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+            } else {
+                crc = (crc << 1) & 0xFFFF;
+            }
         }
-
     }
 
-    const crcFinal = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+    const crcFinal = crc.toString(16).toUpperCase().padStart(4, '0');
 
     return payload + crcFinal;
-
 }
 
     async function checkUser() {
