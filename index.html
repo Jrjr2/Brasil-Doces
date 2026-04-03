@@ -126,9 +126,35 @@
         #containerSoma { background: var(--bg); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border); display: none; }
 
         @media print {
+            /* Esconde tudo o que não é o modal de resumo */
             body * { visibility: hidden; }
             #modalResumo, #modalResumo * { visibility: visible; }
-            #modalResumo { position: absolute; left: 0; top: 0; width: 100%; border:none; box-shadow: none; }
+            
+            /* Ajusta o modal para ocupar a folha inteira e remover o scroll */
+            #modalResumo { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
+                height: auto;
+                background: white;
+            }
+
+            .modal-content { 
+                max-height: none !important; 
+                overflow: visible !important; 
+                border: none !important;
+                width: 100% !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .extrato-container {
+                border: 1px solid #eee !important;
+            }
+
+            /* Esconde os botões de fechar e imprimir no PDF */
             .no-print { display: none !important; }
         }
     </style>
