@@ -408,6 +408,21 @@
         pixConfig.nome_pix, 
         totalPendente, 
         pixConfig.cidade_pix
+        // Dentro da função gerarPixCopiaCola:
+
+// 1. Garanta que o valor tenha o ponto decimal, mas o tamanho conte ele
+const valorTxt = valor.toFixed(2); 
+
+// 2. Limpe o nome de qualquer coisa que não seja letra ou número (opcional, mas seguro)
+const nomeLimpo = nome.normalize("NFD")
+    .replace(/[^A-Z0-9 ]/gi, "") // Remove tudo que não é letra, número ou espaço
+    .toUpperCase()
+    .substring(0, 25);
+
+// 3. CORREÇÃO DO TXID (O erro fatal do seu código atual)
+const txid = "BRDOCES" + Date.now().toString().slice(-10); // Use um prefixo fixo se quiser
+const campoTXID = f("05", txid); 
+payload += f("62", campoTXID); // O f() vai calcular o tamanho correto do campo 62 baseado no subcampo 05
     );
     
     // 5. Envia para o WhatsApp
