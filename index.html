@@ -46,22 +46,34 @@
         .btn-pix { background: #00b0ff; color: white; }
         .btn-delete { color: #ddd; background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
 
-        /* Estilos Novos para a Seleção */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); }
         .modal-content { background: white; border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; }
         
-        #nomeClienteModal { color: #2d3436 !important; text-align: center; font-family: 'Inter', sans-serif !important; font-weight: 800 !important; font-size: 1.5em !important; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 10px; display: block; }
+        #nomeClienteModal, #nomeClienteResumo { color: #2d3436 !important; text-align: center; font-family: 'Inter', sans-serif !important; font-weight: 800 !important; font-size: 1.5em !important; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 10px; display: block; }
         
         .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 10px; border-bottom: 1px solid #f9f9f9; cursor: pointer; border-radius: 10px; transition: 0.2s; }
         .item-selecionavel:active { background: #fff0f3; }
         .item-selecionavel input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
         .item-detalhe { flex: 1; display: flex; justify-content: space-between; font-size: 0.9em; }
 
+        /* Estilos Extrato (Cupom) */
+        .extrato-container { background: #fff; border: 1px dashed var(--border); border-radius: 12px; padding: 15px; font-family: 'Courier New', Courier, monospace; font-size: 0.85em; color: #333; }
+        .extrato-linha { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dotted #eee; }
+        .cor-entrada { color: #444; }
+        .cor-saida { color: var(--success); font-weight: bold; }
+
         .item-hist { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f9f9f9; font-size: 0.9em; }
         .item-pago { opacity: 0.6; color: var(--success) !important; font-style: italic; background: #f0fff4; padding: 5px; border-radius: 5px; margin-bottom: 2px; }
         .section-title { font-size: 11px; font-weight: 800; color: #999; text-transform: uppercase; margin: 15px 0 5px 0; display: block; }
 
         #containerSoma { background: var(--bg); padding: 12px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--border); display: none; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #modalResumo, #modalResumo * { visibility: visible; }
+            #modalResumo { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -104,10 +116,8 @@
 <div id="modalHistorico" class="modal">
     <div class="modal-content">
         <h3 id="nomeClienteModal"></h3>
-        
-        <span class="section-title">O que está devendo? (Selecione para pagar)</span>
+        <span class="section-title">Itens Pendentes</span>
         <div id="listaItensModal"></div>
-
         <div id="containerSoma">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-size: 12px; font-weight: bold; color: var(--brown);">TOTAL SELECIONADO:</span>
@@ -117,19 +127,23 @@
                 <i class="fa-solid fa-check-double"></i> PAGAR SELECIONADOS
             </button>
         </div>
-        
-        <div id="areaPagos" style="display:none; margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px;">
-            <span class="section-title">Histórico de Pagamentos</span>
-            <div id="listaItensPagos"></div>
-        </div>
-
-        <button id="btnTogglePagos" onclick="togglePagos()" class="btn-action" style="font-size: 11px; margin-top: 10px; padding: 5px;">VER PAGAMENTOS ANTERIORES</button>
-
         <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
             <button id="btnZapRapido" class="btn-zap"><i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO</button>
             <button id="btnPixZap" class="btn-pix"><i class="fa-solid fa-copy"></i> ENVIAR PIX COM VALOR</button>
             <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
         </div>
+    </div>
+</div>
+
+<div id="modalResumo" class="modal">
+    <div class="modal-content">
+        <h3 id="nomeClienteResumo"></h3>
+        <div class="extrato-container" id="corpoExtrato"></div>
+        
+        <button onclick="window.print()" class="btn-action no-print" style="margin-top: 15px; background: #f8f9fa;">
+            <i class="fa-solid fa-file-pdf" style="color: #e74c3c;"></i> SALVAR EXTRATO (PDF)
+        </button>
+        <button onclick="document.getElementById('modalResumo').style.display='none'" class="btn-main no-print" style="margin-top:10px;">FECHAR</button>
     </div>
 </div>
 
@@ -162,23 +176,6 @@
         render();
     }
 
-    function gerarPixCopiaECola(valor) {
-        const f = (id, val) => id + val.length.toString().padStart(2, '0') + val;
-        const v = Math.abs(valor).toFixed(2);
-        let p = "000201" + f('26', f('00', 'br.gov.bcb.pix') + f('01', CONFIG_PIX.chave)) + "520400005303986" + f('54', v) + "5802BR" + f('59', CONFIG_PIX.nome_pix) + f('60', CONFIG_PIX.cidade_pix) + "620405006304";
-        function crc16(data) {
-            let res = 0xFFFF;
-            for (let i = 0; i < data.length; i++) {
-                res ^= data.charCodeAt(i) << 8;
-                for (let j = 0; j < 8; j++) {
-                    if ((res & 0x8000) !== 0) res = (res << 1) ^ 0x1021; else res <<= 1;
-                }
-            }
-            return (res & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-        }
-        return p + crc16(p);
-    }
-
     function render() {
         const busca = document.getElementById('buscaCliente').value.toLowerCase();
         const listaDiv = document.getElementById('lista');
@@ -192,20 +189,14 @@
             totalG += saldo;
             c.compras.forEach(cp => { if(new Date(cp.data).toLocaleDateString('pt-BR').substring(0,5) === hoje && cp.valor_total > 0) totalH += cp.valor_total; });
 
-            const limite = c.limite || 1000;
-            const perc = Math.min((saldo / limite) * 100, 100);
-            let corBarra = saldo > 0 ? (perc > 85 ? 'var(--danger)' : 'var(--primary)') : '#ddd';
-
             const card = document.createElement('div');
             card.className = 'card';
-            card.style.borderLeftColor = corBarra;
             card.innerHTML = `
                 <div class="card-header">
                     <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
                     <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
                 <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
-                <div class="limit-container"><div class="limit-bar" style="width:${perc}%; background:${corBarra}"></div></div>
                 <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
                     <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
                     <input type="number" id="qt-${c.id}" value="1">
@@ -214,7 +205,7 @@
                 <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                     <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
-                    <button class="btn-action" onclick="pagarAvulso(${c.id})">VALOR AVULSO</button>
+                    <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO DA CONTA</button>
                 </div>`;
             listaDiv.appendChild(card);
         });
@@ -222,29 +213,48 @@
         document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
     }
 
+    // NOVA FUNÇÃO: RESUMO DA CONTA (Cupom Fiscal)
+    window.abrirResumoConta = (id) => {
+        const c = dbClientes.find(x => x.id === id);
+        const corpo = document.getElementById('corpoExtrato');
+        document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
+        
+        let html = "";
+        const todosMovimentos = c.compras.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+        if (todosMovimentos.length === 0) {
+            html = "<div style='text-align:center'>Nenhuma movimentação.</div>";
+        } else {
+            todosMovimentos.forEach(m => {
+                const dataF = new Date(m.data).toLocaleDateString('pt-BR').substring(0, 5);
+                const ehPagamento = m.valor_total < 0;
+                html += `
+                    <div class="extrato-linha">
+                        <span class="${ehPagamento ? 'cor-saida' : 'cor-entrada'}">
+                            ${dataF} ${ehPagamento ? '✅ PAGO:' : m.qtd + 'x'} ${m.descricao}
+                        </span>
+                        <span class="${ehPagamento ? 'cor-saida' : ''}">
+                            ${ehPagamento ? '-' : ''} R$ ${Math.abs(m.valor_total).toFixed(2)}
+                        </span>
+                    </div>`;
+            });
+        }
+        corpo.innerHTML = html;
+        document.getElementById('modalResumo').style.display = 'block';
+    };
+
     window.salvarVenda = async (id) => {
-        const nomeInput = document.getElementById(`it-${id}`).value.toUpperCase();
-        const it = nomeInput || "DOCES";
+        const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
         const qt = parseInt(document.getElementById(`qt-${id}`).value) || 1;
         const vl = parseFloat(document.getElementById(`vl-${id}`).value);
         if(!vl) return alert("Insira o valor!");
-        
         await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }]);
         carregarDados();
     };
 
-    window.togglePagos = () => {
-        const area = document.getElementById('areaPagos');
-        const btn = document.getElementById('btnTogglePagos');
-        area.style.display = area.style.display === 'none' ? 'block' : 'none';
-        btn.innerText = area.style.display === 'none' ? 'VER PAGAMENTOS ANTERIORES' : 'ESCONDER PAGAMENTOS';
-    };
-
-    // FUNÇÃO PRINCIPAL DE COBRANÇA COM SELEÇÃO
     window.abrirHistorico = (id) => {
         const c = dbClientes.find(x => x.id === id);
         const saldoFinal = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
-        
         let totalPagosExistentes = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
         const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
         
@@ -253,20 +263,15 @@
             if (totalPagosExistentes >= item.valor_total) {
                 totalPagosExistentes -= item.valor_total;
             } else {
-                let valorRestante = item.valor_total - totalPagosExistentes;
-                itensPendentes.push({...item, valor_exibir: valorRestante});
+                itensPendentes.push({...item, valor_exibir: item.valor_total - totalPagosExistentes});
                 totalPagosExistentes = 0;
             }
         });
 
         document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
         const listAbertos = document.getElementById('listaItensModal');
-        const listPagos = document.getElementById('listaItensPagos');
-        
         listAbertos.innerHTML = '';
-        listPagos.innerHTML = '';
         document.getElementById('containerSoma').style.display = 'none';
-        document.getElementById('txtSoma').innerText = "R$ 0,00";
 
         if(itensPendentes.length === 0) {
             listAbertos.innerHTML = '<div style="text-align:center; color:var(--success); padding:20px; font-weight:bold;">TUDO PAGO! ✅</div>';
@@ -277,38 +282,13 @@
                     <label class="item-selecionavel">
                         <input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" onchange="atualizarSoma()">
                         <div class="item-detalhe">
-                            <span><small>${dataF}</small> ${i.qtd > 1 ? '('+i.qtd+'x) ' : ''}${i.descricao}</span>
+                            <span><small>${dataF}</small> ${i.descricao}</span>
                             <b>R$ ${i.valor_exibir.toFixed(2)}</b>
                         </div>
                     </label>`;
             });
         }
-
-        c.compras.filter(i => i.valor_total < 0).forEach(i => {
-            const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
-            listPagos.innerHTML += `
-                <div class="item-hist item-pago">
-                    <span><small>${dataF}</small> ${i.descricao}</span>
-                    <b>R$ ${Math.abs(i.valor_total).toFixed(2)}</b>
-                </div>`;
-        });
-
         document.getElementById('btnPagarSelecionados').onclick = () => processarPagamento(id);
-
-        // Funções de Zap/Pix
-        document.getElementById('btnZapRapido').onclick = () => {
-            if(saldoFinal <= 0) return alert("Não há saldo!");
-            let d = "";
-            itensPendentes.forEach(i => d += `🍩 ${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}%0A`);
-            const msg = `*Brasil Doces*%0A%0AOlá, *${c.nome.toUpperCase()}*!%0A%0AConfere o seu consumo:%0A${d}%0A💰 *TOTAL: R$ ${saldoFinal.toFixed(2)}*`;
-            window.open(`https://wa.me/55${c.tel}?text=${msg}`, '_blank');
-        };
-
-        document.getElementById('btnPixZap').onclick = () => {
-            if(saldoFinal <= 0) return alert("Saldo zerado.");
-            window.open(`https://wa.me/55${c.tel}?text=${gerarPixCopiaECola(saldoFinal)}`, '_blank');
-        };
-
         document.getElementById('modalHistorico').style.display='block';
     };
 
@@ -316,7 +296,6 @@
         const checkboxes = document.querySelectorAll('.chk-item:checked');
         let soma = 0;
         checkboxes.forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
-        
         document.getElementById('txtSoma').innerText = `R$ ${soma.toFixed(2)}`;
         document.getElementById('containerSoma').style.display = soma > 0 ? 'block' : 'none';
     };
@@ -324,59 +303,24 @@
     window.processarPagamento = async (clienteId) => {
         const checkboxes = document.querySelectorAll('.chk-item:checked');
         let somaTotal = 0;
-        let descricoes = [];
-        
-        checkboxes.forEach(cb => {
-            somaTotal += parseFloat(cb.getAttribute('data-valor'));
-            descricoes.push(cb.getAttribute('data-desc'));
-        });
-
-        const confirmacao = confirm(`Confirmar pagamento de R$ ${somaTotal.toFixed(2)}?`);
-        if(confirmacao) {
-            const descFinal = descricoes.length > 1 ? `${descricoes[0]} e outros... PAGO` : `${descricoes[0]} - PAGO`;
-            await _supabase.from('compras').insert([{ 
-                cliente_id: clienteId, 
-                descricao: descFinal.toUpperCase(), 
-                valor_total: -somaTotal 
-            }]);
+        checkboxes.forEach(cb => somaTotal += parseFloat(cb.getAttribute('data-valor')));
+        if(confirm(`Confirmar pagamento de R$ ${somaTotal.toFixed(2)}?`)) {
+            await _supabase.from('compras').insert([{ cliente_id: clienteId, descricao: "PAGAMENTO RECEBIDO", valor_total: -somaTotal }]);
             document.getElementById('modalHistorico').style.display = 'none';
             carregarDados();
         }
     };
 
-    // Caso queira pagar um valor que não bate com os itens (ex: cliente deu 10 reais só)
-    window.pagarAvulso = async (id) => {
-        const val = parseFloat(prompt("Valor recebido avulso:"));
-        if(val) {
-            await _supabase.from('compras').insert([{ 
-                cliente_id: id, 
-                descricao: "PAGAMENTO PARCIAL", 
-                valor_total: -val 
-            }]);
-            carregarDados();
-        }
-    };
-
+    window.excluir = async (id) => { if(confirm("Excluir cliente?")) { await _supabase.from('clientes').delete().eq('id', id); carregarDados(); } };
     window.atualizarPreco = (input, cId) => {
         const p = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
         if(p) document.getElementById(`vl-${cId}`).value = p.preco;
     };
-
-    document.getElementById('btnCadastrar').onclick = async () => {
-        const n = document.getElementById('novoNome').value;
-        const t = document.getElementById('novoTel').value.replace(/\D/g,'');
-        if(n && t) { await _supabase.from('clientes').insert([{ nome: n, tel: t, limite: parseFloat(document.getElementById('novoLimite').value) || 1000 }]); carregarDados(); }
-    };
-
-    window.excluir = async (id) => { if(confirm("Excluir cliente?")) { await _supabase.from('clientes').delete().eq('id', id); carregarDados(); } };
-
     document.getElementById('btnLogin').onclick = async () => {
         await _supabase.auth.signInWithPassword({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value });
         checkUser();
     };
-
     window.onload = checkUser;
 </script>
-
 </body>
 </html>
