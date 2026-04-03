@@ -267,16 +267,21 @@
         input.value = v;
     }
 
-    async function checkUser() {
-        carregarTema();
-        const { data: { session } } = await _supabase.auth.getSession();
-        if (session) {
-            document.getElementById('authContainer').style.display = 'none';
-            document.getElementById('mainContainer').style.display = 'block';
-            carregarDados();
-            configurarRealtime();
-        }
-    }
+    async function carregarDados() {
+    // Busca os produtos
+    const { data: p } = await _supabase.from('produtos').select('*').order('nome');
+    dbProdutos = p || [];
+    
+    // Busca os clientes
+    const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
+    dbClientes = c || [];
+
+    // BUSCA A CONFIGURAÇÃO DO PIX NA SUA TABELA
+    const { data: config } = await _supabase.from('configuracoes').select('*').single();
+    if (config) pixConfig = config;
+
+    render();
+}
 
     function configurarRealtime() {
         _supabase.channel('db_changes')
@@ -419,17 +424,28 @@
         };
 
         document.getElementById('btnFechamentoMensal').onclick = () => {
-            if(itensPendentes.length === 0) return alert("Nada pendente!");
-            const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
-            let listaItens = itensPendentes.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-            const texto = `Olá! Tudo bem? ✨%0A%0AEstou passando para fecharmos o seu resumo de *${mesAtual}* aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:%0A%0A${listaItens}%0A%0AQuando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍫❤️`;
-            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
-        };
+    if(itensPendentes.length === 0) return alert("Nada pendente!");
+    
+    const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
+    const totalPendente = itensPendentes.reduce((acc, i) => acc + i.valor_exibir, 0);
+    let listaItens = itensPendentes.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+    
+    // Dados vindos do seu INSERT no Supabase
+    const chave = pixConfig.chave_pix || "44999022979";
+    const nomeTitular = pixConfig.nome_pix || "Fernanda Brasil";
 
-        document.getElementById('btnMensagemCarinho').onclick = () => {
-            const texto = `Oi! Passando para confirmar o recebimento e te agradecer muito pelo pagamento. ✨%0A%0AÉ um prazer ter você como cliente e parceira da Brasil Doces. Muito obrigada pela confiança de sempre! ❤️`;
-            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
-        };
+    const texto = `Olá! Tudo bem? ✨%0A%0A` +
+        `Estou passando para fecharmos o seu resumo de *${mesAtual}* na Brasil Doces. Segue o detalhamento:%0A%0A` +
+        `${listaItens}%0A%0A` +
+        `*TOTAL: R$ ${totalPendente.toFixed(2)}*%0A%0A` +
+        `----------------------------%0A` +
+        `*PAGAMENTO VIA PIX*%0A%0A` +
+        `*Chave (Copie abaixo):*%0A${chave}%0A%0A` +
+        `*Favorecido:* ${nomeTitular}%0A%0A` +
+        `Muito obrigada pela parceria de sempre! 🍫❤️`;
+
+    window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
+};
 
         document.getElementById('btnPagarSelecionados').onclick = () => processarPagamento(id);
         document.getElementById('modalHistorico').style.display='block';
