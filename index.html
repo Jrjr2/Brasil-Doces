@@ -54,6 +54,14 @@
         .btn-delete { color: #ddd; background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
         .btn-edit { color: var(--info); background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
 
+        /* Animação do Presente de Aniversário */
+        .niver-semana { color: #ff4757; animation: pulse-niver 1.5s infinite; margin-left: 5px; cursor: help; }
+        @keyframes pulse-niver {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); }
         .modal-content { background: white; border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; }
         
@@ -107,6 +115,10 @@
         <div id="tituloFormCliente" style="font-weight: 800; margin-bottom: 10px; color: var(--brown);">CADASTRAR NOVO CLIENTE</div>
         <input type="text" id="novoNome" placeholder="Nome Completo">
         <input type="tel" id="novoTel" placeholder="WhatsApp">
+        <div style="display: flex; align-items: center; gap: 10px; margin: 6px 0;">
+            <span style="font-size: 12px; font-weight: bold; color: var(--brown); white-space: nowrap;">ANIVERSÁRIO:</span>
+            <input type="date" id="novoNiver" style="margin: 0;">
+        </div>
         <input type="number" id="novoLimite" placeholder="Limite de Crédito" value="1000">
         <button id="btnCadastrar" class="btn-main">ADICIONAR CLIENTE</button>
     </div>
@@ -131,6 +143,8 @@
         </div>
         <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
             <button id="btnZapRapido" class="btn-zap"><i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO</button>
+            <button id="btnFechamentoMensal" class="btn-action" style="background:#fff0f3; border:1px solid var(--primary);"><i class="fa-solid fa-calendar-check"></i> FECHAMENTO MENSAL</button>
+            <button id="btnMensagemCarinho" class="btn-action" style="background:#e8f8f5; border:1px solid var(--success);"><i class="fa-solid fa-heart" style="color:var(--success);"></i> MENSAGEM DE CARINHO</button>
             <button id="btnPixZap" class="btn-pix"><i class="fa-solid fa-copy"></i> ENVIAR PIX COM VALOR</button>
             <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
         </div>
@@ -188,18 +202,35 @@
         listaDiv.innerHTML = '<datalist id="lista-prod">' + dbProdutos.map(p => `<option value="${p.nome}">`).join('') + '</datalist>';
         
         let totalH = 0, totalG = 0;
-        const hoje = new Date().toLocaleDateString('pt-BR').substring(0,5);
+        const hoje = new Date();
+        const hojeString = hoje.toLocaleDateString('pt-BR').substring(0,5);
 
         dbClientes.filter(c => c.nome.toLowerCase().includes(busca)).forEach(c => {
             const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
             totalG += saldo;
-            c.compras.forEach(cp => { if(new Date(cp.data).toLocaleDateString('pt-BR').substring(0,5) === hoje && cp.valor_total > 0) totalH += cp.valor_total; });
+            c.compras.forEach(cp => { if(new Date(cp.data).toLocaleDateString('pt-BR').substring(0,5) === hojeString && cp.valor_total > 0) totalH += cp.valor_total; });
+
+            // Lógica do Presente (Semana do Niver)
+            let iconeMimo = "";
+            if (c.aniversario) {
+                const [dia, mes] = c.aniversario.split('/');
+                const dataNiver = new Date(hoje.getFullYear(), mes - 1, dia);
+                const diffDays = Math.ceil((dataNiver - hoje) / (1000 * 60 * 60 * 24));
+                if (diffDays >= 0 && diffDays <= 7) {
+                    iconeMimo = `<i class="fa-solid fa-gift niver-semana" title="Aniversário chegando!"></i>`;
+                }
+            }
 
             const card = document.createElement('div');
             card.className = 'card';
+            const niverTag = c.aniversario ? `<small style="display:block; color:var(--accent); font-weight:600;"><i class="fa-solid fa-cake-candles"></i> ${c.aniversario}</small>` : '';
+
             card.innerHTML = `
                 <div class="card-header">
-                    <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
+                    <div>
+                        <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span> ${iconeMimo}
+                        ${niverTag}
+                    </div>
                     <div style="display:flex; gap:10px;">
                         <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
@@ -228,20 +259,22 @@
         document.getElementById('novoNome').value = c.nome;
         document.getElementById('novoTel').value = c.tel;
         document.getElementById('novoLimite').value = c.limite;
-        
+        if(c.aniversario) {
+            const [dia, mes] = c.aniversario.split('/');
+            document.getElementById('novoNiver').value = `${new Date().getFullYear()}-${mes}-${dia}`;
+        }
         const btn = document.getElementById('btnCadastrar');
         btn.innerText = "SALVAR ALTERAÇÕES";
         btn.style.background = "#f39c12"; 
         document.getElementById('tituloFormCliente').innerText = "EDITANDO CADASTRO";
-        
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        document.getElementById('novoNome').focus();
     };
 
     function resetarForm() {
         clienteEmEdicao = null;
         document.getElementById('novoNome').value = '';
         document.getElementById('novoTel').value = '';
+        document.getElementById('novoNiver').value = '';
         document.getElementById('novoLimite').value = '1000';
         document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE";
         document.getElementById('btnCadastrar').style.background = "var(--accent)";
@@ -251,13 +284,19 @@
     document.getElementById('btnCadastrar').onclick = async () => {
         const nome = document.getElementById('novoNome').value;
         const tel = document.getElementById('novoTel').value;
+        const niverRaw = document.getElementById('novoNiver').value;
         const lim = document.getElementById('novoLimite').value;
+        let niverSalvar = null;
+        if(niverRaw) {
+            const [y, m, d] = niverRaw.split('-');
+            niverSalvar = `${d}/${m}`;
+        }
         if(!nome || !tel) return alert("Preencha tudo!");
-
+        const payload = { nome, tel, aniversario: niverSalvar, limite: parseFloat(lim) };
         if(clienteEmEdicao) {
-            await _supabase.from('clientes').update({ nome, tel, limite: parseFloat(lim) }).eq('id', clienteEmEdicao);
+            await _supabase.from('clientes').update(payload).eq('id', clienteEmEdicao);
         } else {
-            await _supabase.from('clientes').insert([{ nome, tel, limite: parseFloat(lim) }]);
+            await _supabase.from('clientes').insert([payload]);
         }
         resetarForm();
     };
@@ -266,17 +305,14 @@
         const c = dbClientes.find(x => x.id === id);
         const corpo = document.getElementById('corpoExtrato');
         document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
-        const apenasPagamentos = c.compras.filter(m => m.valor_total < 0).sort((a, b) => new Date(a.data) - new Date(b.data));
-
-        if (apenasPagamentos.length === 0) {
+        const pagtos = c.compras.filter(m => m.valor_total < 0).sort((a, b) => new Date(a.data) - new Date(b.data));
+        if (pagtos.length === 0) {
             corpo.innerHTML = "<div style='text-align:center; padding: 20px;'>Nenhum pagamento registrado.</div>";
         } else {
             let html = "";
-            apenasPagamentos.forEach(m => {
+            pagtos.forEach(m => {
                 const dataF = new Date(m.data).toLocaleDateString('pt-BR').substring(0, 5);
-                let desc = m.descricao.replace('PAGAMENTO RECEBIDO', 'VALOR').replace(' - PAGO', '').replace(' (PAGO)', '');
-                const qtdTexto = m.qtd > 1 ? `${m.qtd}x ` : "";
-                html += `<div class="extrato-linha"><span class="cor-saida">${dataF} ${qtdTexto}${desc} (PAGO)</span><span class="cor-saida">R$ ${Math.abs(m.valor_total).toFixed(2)}</span></div>`;
+                html += `<div class="extrato-linha"><span class="cor-saida">${dataF} ${m.descricao} (PAGO)</span><span class="cor-saida">R$ ${Math.abs(m.valor_total).toFixed(2)}</span></div>`;
             });
             corpo.innerHTML = html;
         }
@@ -289,6 +325,8 @@
         const vl = parseFloat(document.getElementById(`vl-${id}`).value);
         if(!vl) return alert("Insira o valor!");
         await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }]);
+        document.getElementById(`it-${id}`).value = '';
+        document.getElementById(`vl-${id}`).value = '';
     };
 
     window.abrirHistorico = (id) => {
@@ -307,12 +345,12 @@
         
         itensPendentes.forEach(i => {
             const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
-            const qtdTexto = i.qtd > 1 ? `${i.qtd}x ` : "";
+            const qT = i.qtd > 1 ? `${i.qtd}x ` : "";
             listAbertos.innerHTML += `
                 <label class="item-selecionavel">
-                    <input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${qtdTexto}${i.descricao}" onchange="atualizarSoma()">
+                    <input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${qT}${i.descricao}" onchange="atualizarSoma()">
                     <div class="item-detalhe">
-                        <span><small style="color:#999; display:block; font-size:10px;">${dataF}</small> ${qtdTexto}${i.descricao}</span>
+                        <span><small style="color:#999; display:block; font-size:10px;">${dataF}</small> ${qT}${i.descricao}</span>
                         <b>R$ ${i.valor_exibir.toFixed(2)}</b>
                     </div>
                 </label>`;
@@ -320,13 +358,22 @@
         
         document.getElementById('btnZapRapido').onclick = () => {
             if(saldoFinal <= 0) return alert("Saldo zerado!");
-            let listaMsg = itensPendentes.map(i => {
-                const qT = i.qtd > 1 ? `${i.qtd}x ` : "";
-                return `• ${qT}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`;
-            }).join('%0A');
+            let listaMsg = itensPendentes.map(i => `• ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
             const texto = `*BRASIL DOCES*%0A%0AOlá, *${c.nome.toUpperCase()}*!%0A%0ASeu consumo pendente:%0A%0A${listaMsg}%0A💰 *TOTAL: R$ ${saldoFinal.toFixed(2)}*`;
             window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
         };
+
+        document.getElementById('btnFechamentoMensal').onclick = () => {
+            const mes = new Date().toLocaleDateString('pt-BR', { month: 'long' });
+            const texto = `Bom dia! Tudo bem? É a Fer, da Brasil Doces. Passando para agradecer nossa parceria e me colocar à disposição para organizarmos o seu fechamento mensal de ${mes}. Quando puder, vamos deixar tudo em dia? ✨`;
+            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${encodeURIComponent(texto)}`, '_blank');
+        };
+
+        document.getElementById('btnMensagemCarinho').onclick = () => {
+            const texto = `Bom dia! Tudo bem? Passando para te desejar um dia maravilhoso e agradecer pelo carinho de sempre. Ter você como cliente é um presente para a Brasil Doces. Muito obrigada pela sua fidelidade! ✨`;
+            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${encodeURIComponent(texto)}`, '_blank');
+        };
+
         document.getElementById('btnPagarSelecionados').onclick = () => processarPagamento(id);
         document.getElementById('modalHistorico').style.display='block';
     };
