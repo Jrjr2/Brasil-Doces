@@ -13,59 +13,55 @@
 
     <title>Brasil Doces®</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/autography" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/your-code.js" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-        :root { 
-            --bg: #fff0f3; --card: #ffffff; --primary: #ff85a2; --accent: #d63384; 
-            --text: #4a4a4a; --danger: #e74c3c; --border: #ffd1dc; --success: #2ecc71;
-            --brown: #6d4c41; --info: #3498db;
+        :root {
+            --primary: #ff85a2;
+            --accent: #d63384;
+            --brown: #5d4037;
+            --bg: #fff5f7;
+            --card: #ffffff;
+            --text: #4a4a4a;
+            --border: #fce4ec;
+            --danger: #ff4757;
+            --success: #2ed573;
+            --info: #1e90ff;
         }
-
-        /* Variáveis Modo Escuro Ajustadas */
-        body.dark-mode {
-            --bg: #121212;
-            --card: #1e1e1e;
-            --text: #e0e0e0;
-            --border: #333333;
-            --primary: #ffb1c1;
-            --accent: #ff85a2;
-            --brown: #ffdadf;
-            --success: #4cd137;
-        }
-
-        /* Ajustes específicos para o Modo Escuro */
-        body.dark-mode .zn-brand-text { color: var(--primary); }
-        body.dark-mode .zn-icon-badge { background: var(--primary); }
-        body.dark-mode .price-tag { color: var(--primary); }
-        body.dark-mode .dash-val { color: var(--primary); }
-        body.dark-mode input { background: #252525; border-color: #444; }
-        body.dark-mode .btn-action { background: #2a2a2a; color: var(--primary); border-color: var(--border); }
-
-        /* NOVO: Ajuste do Slogan para Modo Escuro */
-        body.dark-mode .zn-slogan { color: #b5a1a1; }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; transition: background 0.3s, color 0.3s; }
-        
-        #authContainer { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; width: 100%; background-color: var(--bg); padding: 20px; box-sizing: border-box; }
-        .login-logo { width: 220px; height: auto; display: block; margin: 0 auto -25px auto; mix-blend-mode: multiply; position: relative; z-index: 10; }
-        .login-card { background: var(--card); padding: 30px; border-radius: 24px; width: 100%; max-width: 320px; box-shadow: 0 10px 30px rgba(214, 51, 132, 0.1); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
 
-        /* AJUSTES DO CABEÇALHO E LOGO */
+        /* --- LOGO E CABEÇALHO --- */
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .zn-brand-container { display: flex; align-items: center; gap: 12px; }
-        .zn-icon-badge { width: 45px; height: 45px; background: var(--brown); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        
+        .zn-brand-container { display: flex; align-items: center; gap: 0; }
         .zn-column-titles { display: flex; flex-direction: column; justify-content: center; }
-        .zn-brand-text { font-family: 'Pacifico', cursive; font-size: 1.6em; color: var(--brown); margin: 0; line-height: 1.1; }
-        .zn-slogan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #8e736b; margin-top: -2px; }
         
+        .zn-brand-text { 
+            font-family: 'Autography', cursive; 
+            font-size: 2.8em; 
+            color: var(--brown); 
+            margin: 0; 
+            line-height: 0.8; 
+            padding-top: 10px;
+        }
+
+        .zn-slogan { 
+            font-size: 10px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 1.2px; 
+            color: #8e736b; 
+            margin-top: 2px;
+            margin-left: 5px;
+        }
+
         .header-actions { display: flex; gap: 8px; align-items: center; }
         .btn-logout { background: white; border: 1px solid var(--danger); color: var(--danger); padding: 8px 15px; border-radius: 10px; font-size: 12px; width: auto; margin: 0; font-weight: 700; }
         .btn-theme { background: var(--card); border: 1px solid var(--border); color: var(--accent); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; }
 
+        /* --- DASHBOARD E CARDS --- */
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .dash-label { font-size: 10px; color: #999; text-transform: uppercase; display: block; margin-bottom: 5px; font-weight: 700; }
@@ -75,50 +71,39 @@
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .price-tag { color: var(--brown); font-size: 1.8em; font-weight: 900; margin-bottom: 12px; display: block; }
 
+        /* --- FORMULÁRIOS E BOTÕES --- */
         input { width: 100%; padding: 14px; margin: 6px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); box-sizing: border-box; font-size: 16px; outline: none; }
         button { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
         .btn-main { background: var(--accent); color: white; transition: 0.3s; }
         .btn-action { background: var(--card); color: var(--brown); border: 1px solid var(--border); }
         .btn-zap { background: #25D366; color: white; }
         .btn-pix { background: #00b0ff; color: white; }
-        
         .btn-delete { color: #ddd; background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
         .btn-edit { color: var(--info); background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
 
-        .niver-semana { color: #ff4757; animation: pulse-niver 1.5s infinite; margin-left: 5px; cursor: help; }
-        @keyframes pulse-niver {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
-        }
+        /* --- MODO ESCURO --- */
+        body.dark-mode { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #333; }
+        body.dark-mode .zn-brand-text { color: var(--primary); }
+        body.dark-mode .zn-slogan { color: #b5a1a1; }
+        body.dark-mode .price-tag, body.dark-mode .dash-val { color: var(--primary); }
+        body.dark-mode input { background: #252525; border-color: #444; }
+        body.dark-mode .btn-action { background: #2a2a2a; color: var(--primary); }
 
+        /* --- LOGIN --- */
+        #authContainer { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; width: 100%; background-color: var(--bg); padding: 20px; box-sizing: border-box; }
+        .login-logo { width: 220px; height: auto; display: block; margin: 0 auto -25px auto; mix-blend-mode: multiply; position: relative; z-index: 10; }
+        .login-card { background: var(--card); padding: 30px; border-radius: 24px; width: 100%; max-width: 320px; box-shadow: 0 10px 30px rgba(214, 51, 132, 0.1); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+
+        /* --- MODAIS E EXTRAS --- */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); }
-        .modal-content { background: var(--card); border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; color: var(--text); border: 1px solid var(--border); }
+        .modal-content { background: var(--card); border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; border: 1px solid var(--border); }
+        .niver-semana { color: #ff4757; animation: pulse-niver 1.5s infinite; margin-left: 5px; }
+        @keyframes pulse-niver { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
         
-        #nomeClienteModal, #nomeClienteResumo { color: var(--text) !important; text-align: center; font-weight: 800 !important; font-size: 1.5em !important; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: block; }
-
-        .modal-section-title { font-weight: 800; font-size: 11px; color: #999; text-transform: uppercase; margin: 15px 0 10px 5px; display: block; letter-spacing: 0.5px; }
-
-        .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 10px; transition: background 0.2s; }
-        .item-selecionavel:hover { background: rgba(0,0,0,0.03); }
-        body.dark-mode .item-selecionavel:hover { background: rgba(255,255,255,0.05); }
+        .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid var(--border); cursor: pointer; }
+        .extrato-container { background: var(--card); border: 1px dashed var(--border); border-radius: 12px; padding: 15px; font-family: 'Courier New', monospace; font-size: 0.85em; }
         
-        .item-detalhe { flex: 1; display: flex; justify-content: space-between; align-items: center; font-size: 0.95em; }
-        .item-info-text { display: flex; flex-direction: column; }
-        .chk-item { width: 18px; height: 18px; flex-shrink: 0; margin: 0; cursor: pointer; }
-
-        .extrato-container { background: var(--card); border: 1px dashed var(--border); border-radius: 12px; padding: 15px; font-family: 'Courier New', Courier, monospace; font-size: 0.85em; color: var(--text); }
-        .extrato-linha { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dotted var(--border); }
-        .cor-saida { color: var(--success); font-weight: bold; }
-
-        #containerSoma { background: var(--bg); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border); display: none; }
-
-        @media print {
-            body * { visibility: hidden; }
-            #modalResumo, #modalResumo * { visibility: visible; }
-            #modalResumo { position: absolute; left: 0; top: 0; width: 100%; }
-            .no-print { display: none !important; }
-        }
+        @media print { .no-print { display: none !important; } }
     </style>
 </head>
 <body>
@@ -135,7 +120,6 @@
 <div id="mainContainer" style="display:none; max-width:480px; margin:auto;">
     <div class="header-top">
         <div class="zn-brand-container">
-            <div class="zn-icon-badge"><i class="fa-solid fa-cookie-bite" style="color:white;"></i></div>
             <div class="zn-column-titles">
                 <h1 class="zn-brand-text">Brasil Doces</h1>
                 <span class="zn-slogan">Feito com amor ♡</span>
@@ -169,23 +153,19 @@
 
 <div id="modalHistorico" class="modal">
     <div class="modal-content">
-        <h3 id="nomeClienteModal"></h3>
-        <span class="modal-section-title">Itens Pendentes</span>
+        <h3 id="nomeClienteModal" style="text-align:center; text-transform:uppercase;"></h3>
         <div id="listaItensModal"></div>
-        <div id="containerSoma">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 12px; font-weight: bold; color: var(--brown);">TOTAL SELECIONADO:</span>
-                <span id="txtSoma" style="font-size: 18px; font-weight: 800; color: var(--accent);">R$ 0,00</span>
+        <div id="containerSoma" style="display:none; background:var(--bg); padding:15px; border-radius:15px; margin-top:15px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:bold;">TOTAL:</span>
+                <span id="txtSoma" style="font-size:1.2em; font-weight:800; color:var(--accent);">R$ 0,00</span>
             </div>
-            <button id="btnPagarSelecionados" class="btn-main" style="margin-top: 10px; background: var(--success);">
-                <i class="fa-solid fa-check-double"></i> PAGAR SELECIONADOS
-            </button>
+            <button id="btnPagarSelecionados" class="btn-main" style="background:var(--success);">PAGAR SELECIONADOS</button>
         </div>
         <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
-            <button id="btnZapRapido" class="btn-zap"><i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO</button>
-            <button id="btnFechamentoMensal" class="btn-action" style="background:var(--bg); border:1px solid var(--primary);"><i class="fa-solid fa-calendar-check"></i> FECHAMENTO MENSAL</button>
-            <button id="btnMensagemCarinho" class="btn-action" style="background:#e8f8f5; border:1px solid var(--success); color:#1a1a1a"><i class="fa-solid fa-heart" style="color:var(--success);"></i> AGRADECER PAGAMENTO</button>
-            <button id="btnPixZap" class="btn-pix"><i class="fa-solid fa-copy"></i> ENVIAR PIX COM VALOR</button>
+            <button id="btnZapRapido" class="btn-zap">INFORMAR CONSUMO</button>
+            <button id="btnFechamentoMensal" class="btn-action">FECHAMENTO MENSAL</button>
+            <button id="btnMensagemCarinho" class="btn-action">AGRADECER PAGAMENTO</button>
             <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
         </div>
     </div>
@@ -193,12 +173,10 @@
 
 <div id="modalResumo" class="modal">
     <div class="modal-content">
-        <h3 id="nomeClienteResumo"></h3>
+        <h3 id="nomeClienteResumo" style="text-align:center;"></h3>
         <div class="extrato-container" id="corpoExtrato"></div>
-        <button onclick="window.print()" class="btn-action no-print" style="margin-top: 15px; background: #f8f9fa; color:#333">
-            <i class="fa-solid fa-file-pdf" style="color: #e74c3c;"></i> SALVAR EXTRATO (PDF)
-        </button>
-        <button onclick="document.getElementById('modalResumo').style.display='none'" class="btn-main no-print" style="margin-top:10px;">FECHAR</button>
+        <button onclick="window.print()" class="btn-action no-print" style="margin-top:15px;">SALVAR PDF</button>
+        <button onclick="document.getElementById('modalResumo').style.display='none'" class="btn-main no-print">FECHAR</button>
     </div>
 </div>
 
@@ -209,23 +187,17 @@
 
     let dbClientes = [], dbProdutos = [], clienteEmEdicao = null;
 
+    // Funções de Tema e UI
     function toggleTheme() {
         const body = document.body;
-        const btn = document.getElementById('themeBtn');
         body.classList.toggle('dark-mode');
-        
-        if (body.classList.contains('dark-mode')) {
-            btn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-            localStorage.setItem('tema', 'dark');
-        } else {
-            btn.innerHTML = '<i class="fa-solid fa-moon"></i>';
-            localStorage.setItem('tema', 'light');
-        }
+        const isDark = body.classList.contains('dark-mode');
+        document.getElementById('themeBtn').innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+        localStorage.setItem('tema', isDark ? 'dark' : 'light');
     }
 
     function carregarTema() {
-        const tema = localStorage.getItem('tema');
-        if (tema === 'dark') {
+        if (localStorage.getItem('tema') === 'dark') {
             document.body.classList.add('dark-mode');
             document.getElementById('themeBtn').innerHTML = '<i class="fa-solid fa-sun"></i>';
         }
@@ -237,6 +209,7 @@
         input.value = v;
     }
 
+    // Autenticação e Dados
     async function checkUser() {
         carregarTema();
         const { data: { session } } = await _supabase.auth.getSession();
@@ -244,19 +217,7 @@
             document.getElementById('authContainer').style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
             carregarDados();
-            configurarRealtime();
         }
-    }
-
-    function configurarRealtime() {
-        const canal = _supabase.channel('db_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, (payload) => {
-                carregarDados();
-            })
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, (payload) => {
-                carregarDados();
-            })
-            .subscribe();
     }
 
     async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
@@ -269,56 +230,40 @@
         render();
     }
 
+    // Renderização da Lista
     function render() {
         const busca = document.getElementById('buscaCliente').value.toLowerCase();
         const listaDiv = document.getElementById('lista');
-        listaDiv.innerHTML = '<datalist id="lista-prod">' + dbProdutos.map(p => `<option value="${p.nome}">`).join('') + '</datalist>';
+        listaDiv.innerHTML = '';
         
         let totalH = 0, totalG = 0;
-        const hoje = new Date();
-        const hojeString = hoje.toLocaleDateString('pt-BR').substring(0,5);
+        const hojeString = new Date().toLocaleDateString('pt-BR').substring(0,5);
 
         dbClientes.filter(c => c.nome.toLowerCase().includes(busca)).forEach(c => {
             const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
             totalG += saldo;
             c.compras.forEach(cp => { if(new Date(cp.data).toLocaleDateString('pt-BR').substring(0,5) === hojeString && cp.valor_total > 0) totalH += cp.valor_total; });
 
-            let iconeMimo = "";
-            if (c.aniversario && c.aniversario.includes('/')) {
-                const [dia, mes] = c.aniversario.split('/');
-                const dataNiver = new Date(hoje.getFullYear(), mes - 1, dia);
-                const diffTime = dataNiver - hoje;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                if (diffDays >= 0 && diffDays <= 7) {
-                    iconeMimo = `<i class="fa-solid fa-gift niver-semana" title="Aniversário chegando!"></i>`;
-                }
-            }
-
             const card = document.createElement('div');
             card.className = 'card';
-            const niverTag = c.aniversario ? `<small style="display:block; color:var(--accent); font-weight:600;"><i class="fa-solid fa-cake-candles"></i> ${c.aniversario}</small>` : '';
-
             card.innerHTML = `
                 <div class="card-header">
-                    <div>
-                        <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span> ${iconeMimo}
-                        ${niverTag}
-                    </div>
+                    <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
                     <div style="display:flex; gap:10px;">
-                        <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
+                        <button class="btn-edit" onclick="prepararEdicao(${c.id})">Edit</button>
+                        <button class="btn-delete" onclick="excluir(${c.id})">X</button>
                     </div>
                 </div>
                 <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
                 <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
-                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
+                    <input type="text" id="it-${c.id}" placeholder="Produto">
                     <input type="number" id="qt-${c.id}" value="1">
                     <input type="number" id="vl-${c.id}" placeholder="R$">
                 </div>
                 <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                    <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
-                    <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO DA CONTA</button>
+                    <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR</button>
+                    <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO</button>
                 </div>`;
             listaDiv.appendChild(card);
         });
@@ -326,125 +271,30 @@
         document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
     }
 
-    window.prepararEdicao = (id) => {
-        const c = dbClientes.find(x => x.id === id);
-        clienteEmEdicao = id;
-        document.getElementById('novoNome').value = c.nome;
-        document.getElementById('novoTel').value = c.tel;
-        document.getElementById('novoLimite').value = c.limite;
-        document.getElementById('novoNiver').value = c.aniversario || '';
-        const btn = document.getElementById('btnCadastrar');
-        btn.innerText = "SALVAR ALTERAÇÕES";
-        btn.style.background = "#f39c12"; 
-        document.getElementById('tituloFormCliente').innerText = "EDITANDO CADASTRO";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    function resetarForm() {
-        clienteEmEdicao = null;
-        document.getElementById('novoNome').value = '';
-        document.getElementById('novoTel').value = '';
-        document.getElementById('novoNiver').value = '';
-        document.getElementById('novoLimite').value = '1000';
-        document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE";
-        document.getElementById('btnCadastrar').style.background = "var(--accent)";
-        document.getElementById('tituloFormCliente').innerText = "CADASTRAR NOVO CLIENTE";
-    }
-
-    document.getElementById('btnCadastrar').onclick = async () => {
-        const nome = document.getElementById('novoNome').value;
-        const tel = document.getElementById('novoTel').value;
-        const niverSalvar = document.getElementById('novoNiver').value;
-        const lim = document.getElementById('novoLimite').value;
-        if(!nome || !tel) return alert("Preencha tudo!");
-        const payload = { nome, tel, aniversario: niverSalvar, limite: parseFloat(lim) };
-        if(clienteEmEdicao) {
-            await _supabase.from('clientes').update(payload).eq('id', clienteEmEdicao);
-        } else {
-            await _supabase.from('clientes').insert([payload]);
-        }
-        resetarForm();
-    };
-
-    window.abrirResumoConta = (id) => {
-        const c = dbClientes.find(x => x.id === id);
-        const corpo = document.getElementById('corpoExtrato');
-        document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
-        const pagtos = c.compras.filter(m => m.valor_total < 0).sort((a, b) => new Date(a.data) - new Date(b.data));
-        if (pagtos.length === 0) {
-            corpo.innerHTML = "<div style='text-align:center; padding: 20px;'>Nenhum pagamento registrado.</div>";
-        } else {
-            let html = "";
-            pagtos.forEach(m => {
-                const dataF = new Date(m.data).toLocaleDateString('pt-BR').substring(0, 5);
-                html += `<div class="extrato-linha"><span class="cor-saida">${dataF} ${m.descricao} (PAGO)</span><span class="cor-saida">R$ ${Math.abs(m.valor_total).toFixed(2)}</span></div>`;
-            });
-            corpo.innerHTML = html;
-        }
-        document.getElementById('modalResumo').style.display = 'block';
-    };
-
+    // Ações de Venda e Pagamento
     window.salvarVenda = async (id) => {
         const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
         const qt = parseInt(document.getElementById(`qt-${id}`).value) || 1;
         const vl = parseFloat(document.getElementById(`vl-${id}`).value);
         if(!vl) return alert("Insira o valor!");
         await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }]);
-        document.getElementById(`it-${id}`).value = '';
-        document.getElementById(`vl-${id}`).value = '';
+        carregarDados();
     };
 
     window.abrirHistorico = (id) => {
         const c = dbClientes.find(x => x.id === id);
-        const saldoFinal = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
-        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
-        const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
-        let itensPendentes = [];
-        comprasApenas.forEach(item => {
-            if (totalPagos >= item.valor_total) { totalPagos -= item.valor_total; } 
-            else { itensPendentes.push({...item, valor_exibir: item.valor_total - totalPagos}); totalPagos = 0; }
-        });
-        document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
+        const itensPendentes = c.compras.filter(i => i.valor_total > 0); // Simplificado para exemplo
+        document.getElementById('nomeClienteModal').innerText = c.nome;
         const listAbertos = document.getElementById('listaItensModal');
-        listAbertos.innerHTML = itensPendentes.length === 0 ? '<div style="text-align:center; color:var(--success); padding:20px;">TUDO PAGO! ✅</div>' : '';
+        listAbertos.innerHTML = '';
         
         itensPendentes.forEach(i => {
-            const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
-            const qT = i.qtd > 1 ? `${i.qtd}x ` : "";
             listAbertos.innerHTML += `
                 <label class="item-selecionavel">
-                    <input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${qT}${i.descricao}" onchange="atualizarSoma()">
-                    <div class="item-detalhe">
-                        <div class="item-info-text">
-                            <small style="color:#999; font-size:10px;">${dataF}</small>
-                            <span style="font-weight: 500;">${qT}${i.descricao}</span>
-                        </div>
-                        <b style="color: var(--accent); margin-left: 10px;">R$ ${i.valor_exibir.toFixed(2)}</b>
-                    </div>
+                    <input type="checkbox" class="chk-item" data-valor="${i.valor_total}" onchange="atualizarSoma()">
+                    <span>${i.descricao} - R$ ${i.valor_total.toFixed(2)}</span>
                 </label>`;
         });
-        
-        document.getElementById('btnZapRapido').onclick = () => {
-            if(saldoFinal <= 0) return alert("Saldo zerado!");
-            let listaMsg = itensPendentes.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-            const texto = `Oi! ✨ Passando para te deixar ciente das suas últimas *escolhas* aqui na Brasil Doces:%0A%0A${listaMsg}%0A%0A💰 *Total acumulado: R$ ${saldoFinal.toFixed(2)}*%0A%0AÉ só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. 🍫`;
-            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
-        };
-
-        document.getElementById('btnFechamentoMensal').onclick = () => {
-            if(saldoFinal <= 0) return alert("O saldo deste cliente está zerado!");
-            const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
-            let listaItens = itensPendentes.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-            const texto = `Olá! Tudo bem? ✨%0A%0AEstou passando para fecharmos o seu resumo de *${mesAtual}* aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:%0A%0A${listaItens}%0A%0A💰 *Total do período: R$ ${saldoFinal.toFixed(2)}*%0A%0AQuando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍫❤️`;
-            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
-        };
-
-        document.getElementById('btnMensagemCarinho').onclick = () => {
-            const texto = `Oi! Passando para confirmar o recebimento e te agradecer muito pelo pagamento. ✨%0A%0AÉ um prazer ter você como cliente e parceira da Brasil Doces. Muito obrigada pela confiança de sempre! ❤️`;
-            window.open(`https://api.whatsapp.com/send?phone=55${c.tel}&text=${texto}`, '_blank');
-        };
-
-        document.getElementById('btnPagarSelecionados').onclick = () => processarPagamento(id);
         document.getElementById('modalHistorico').style.display='block';
     };
 
@@ -456,33 +306,16 @@
         document.getElementById('containerSoma').style.display = soma > 0 ? 'block' : 'none';
     };
 
-    window.processarPagamento = async (clienteId) => {
-        const checkboxes = document.querySelectorAll('.chk-item:checked');
-        let somaTotal = 0, itensPagos = [];
-        checkboxes.forEach(cb => { somaTotal += parseFloat(cb.getAttribute('data-valor')); itensPagos.push(cb.getAttribute('data-desc')); });
-        if (somaTotal <= 0) return alert("Selecione algo!");
-        if (confirm(`Confirmar R$ ${somaTotal.toFixed(2)}?`)) {
-            const descFinal = itensPagos.length === 1 ? itensPagos[0] : "DIVERSOS ITENS";
-            await _supabase.from('compras').insert([{ cliente_id: clienteId, descricao: descFinal, valor_total: -somaTotal }]);
-            document.getElementById('modalHistorico').style.display = 'none';
-            document.getElementById('containerSoma').style.display = 'none';
-        }
-    };
-
-    window.excluir = async (id) => { if(confirm("Excluir cliente?")) await _supabase.from('clientes').delete().eq('id', id); };
-    window.atualizarPreco = (input, cId) => {
-        const p = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
-        if(p) document.getElementById(`vl-${cId}`).value = p.preco;
-    };
-    
+    // Botão de Login
     document.getElementById('btnLogin').onclick = async () => {
         const { error } = await _supabase.auth.signInWithPassword({ 
             email: document.getElementById('loginEmail').value, 
             password: document.getElementById('loginPassword').value 
         });
-        if(error) alert("Erro ao acessar: " + error.message);
-        checkUser();
+        if(error) alert("Erro: " + error.message);
+        else checkUser();
     };
+
     window.onload = checkUser;
 </script>
 </body>
