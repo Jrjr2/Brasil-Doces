@@ -254,7 +254,21 @@
         listAbertos.innerHTML = '';
         listPagos.innerHTML = '';
         document.getElementById('areaPagos').style.display = 'none';
-        document.getElementById('btnTogglePagos').innerText = 'VER PAGAMENTOS ANTERIORES';
+        document.getElementById('btnZapRapido').onclick = () => {
+            let d = "";
+            // Filtramos apenas itens com valor positivo (consumo)
+            const consumoEmAberto = itens.filter(i => i.valor_total > 0);
+            
+            consumoEmAberto.forEach(i => {
+                d += `🍩 ${i.dataF} - ${i.qtd > 1 ? '('+i.qtd+'x) ' : ''}${i.descricao}: R$ ${i.valor_total.toFixed(2)}%0A`;
+            });
+
+            // Calculamos o saldo apenas dos itens positivos para evitar o erro de mostrar R$ 0.00
+            const saldoAberto = consumoEmAberto.reduce((acc, i) => acc + i.valor_total, 0);
+
+            const msg = `*Brasil Doces* 🍩%0A%0AOlá, *${c.nome.toUpperCase()}*!%0A%0AConfere o seu consumo em aberto:%0A%0A${d}%0A💰 *TOTAL EM ABERTO: R$ ${saldoAberto.toFixed(2)}*%0A%0AQualquer dúvida estou à disposição! ✨`;
+            window.open(`https://wa.me/55${c.tel}?text=${msg}`, '_blank');
+        };
 
         itens.forEach(i => {
             if(i.valor_total < 0) {
