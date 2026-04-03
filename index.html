@@ -17,56 +17,21 @@
         }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; }
         
-       /* CENTRALIZAÇÃO TOTAL DO LOGIN */
-        #authContainer {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center; 
-            min-height: 100vh;
-            width: 100%;
-            background-color: var(--bg);
-            padding: 20px;
-            box-sizing: border-box;
-        }
+        #authContainer { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; width: 100%; background-color: var(--bg); padding: 20px; box-sizing: border-box; }
+        .login-logo { width: 220px; height: auto; display: block; margin: 0 auto -25px auto; mix-blend-mode: multiply; position: relative; z-index: 10; }
+        .login-card { background: var(--card); padding: 30px; border-radius: 24px; width: 100%; max-width: 320px; box-shadow: 0 10px 30px rgba(214, 51, 132, 0.1); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
 
-        .login-logo {
-            width: 220px; 
-            height: auto;
-            display: block;
-            margin: 0 auto -25px auto;
-            mix-blend-mode: multiply;
-            position: relative;
-            z-index: 10;
-        }
-
-        .login-card {
-            background: var(--card);
-            padding: 30px;
-            border-radius: 24px;
-            width: 100%;
-            max-width: 320px;
-            box-shadow: 0 10px 30px rgba(214, 51, 132, 0.1);
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        /* HEADER */
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .zn-brand-container { display: flex; align-items: center; gap: 12px; }
         .zn-icon-badge { width: 45px; height: 45px; background: var(--brown); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .zn-brand-text { font-family: 'Pacifico', cursive; font-size: 1.8em; color: var(--brown); margin: 0; }
         .btn-logout { background: white; border: 1px solid var(--danger); color: var(--danger); padding: 8px 15px; border-radius: 10px; font-size: 12px; width: auto; margin: 0; }
 
-        /* DASHBOARD */
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .dash-label { font-size: 10px; color: #999; text-transform: uppercase; display: block; margin-bottom: 5px; font-weight: 700; }
         .dash-val { font-size: 1.2em; font-weight: 800; color: var(--accent); }
 
-        /* CARDS */
         .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 18px; border: 1px solid var(--border); border-left: 5px solid var(--primary); position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .price-tag { color: var(--brown); font-size: 1.8em; font-weight: 900; margin-bottom: 12px; display: block; }
@@ -81,36 +46,25 @@
         .btn-pix { background: #00b0ff; color: white; }
         .btn-delete { color: #ddd; background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
 
-        /* MODAL */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); }
         .modal-content { background: white; border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; }
         
-        /* ESTILO NOVO PARA O NOME NO MODAL */
-        #nomeClienteModal { 
-            color: #2d3436 !important; 
-            text-align: center; 
-            font-family: 'Inter', sans-serif !important; 
-            font-weight: 800 !important; 
-            font-size: 1.5em !important; 
-            margin-bottom: 15px; 
-            text-transform: uppercase; 
-            border-bottom: 2px solid #eee; 
-            padding-bottom: 10px;
-            display: block;
-        }
-
+        #nomeClienteModal { color: #2d3436 !important; text-align: center; font-family: 'Inter', sans-serif !important; font-weight: 800 !important; font-size: 1.5em !important; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 10px; display: block; }
         .item-hist { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f9f9f9; font-size: 0.9em; }
+        
+        /* NOVO: Estilo para itens já pagos */
+        .item-pago { opacity: 0.6; color: var(--success) !important; font-style: italic; background: #f0fff4; padding: 5px; border-radius: 5px; margin-bottom: 2px; }
+        .section-title { font-size: 11px; font-weight: 800; color: #999; text-transform: uppercase; margin: 15px 0 5px 0; display: block; }
     </style>
 </head>
 <body>
 
 <div id="authContainer">
     <img src="logo.png" alt="Brasil Doces" class="login-logo">
-    
     <div class="login-card">
-        <input type="email" id="loginEmail" placeholder="E-mail" style="margin:0;">
-        <input type="password" id="loginPassword" placeholder="Senha" style="margin:0;">
-        <button id="btnLogin" class="btn-main" style="margin-top:10px;">ACESSAR SISTEMA</button>
+        <input type="email" id="loginEmail" placeholder="E-mail">
+        <input type="password" id="loginPassword" placeholder="Senha">
+        <button id="btnLogin" class="btn-main">ACESSAR SISTEMA</button>
     </div>
 </div>
 
@@ -144,20 +98,25 @@
     <div class="modal-content">
         <h3 id="nomeClienteModal"></h3>
         
-        <div style="text-align: center; margin-bottom: 20px;">
-            <button id="btnZapRapido" class="btn-zap" style="border-radius: 30px; font-size: 13px; width: auto; display: inline-flex; padding: 10px 20px;">
-                <i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO
-            </button>
-        </div>
+        <span class="section-title">Consumo em Aberto</span>
         <div id="listaItensModal"></div>
-        <button id="btnPixZap" class="btn-pix" style="margin-top:20px;"><i class="fa-solid fa-copy"></i> ENVIAR PIX COM VALOR</button>
-        <button id="btnEnviarExtrato" class="btn-zap"><i class="fa-brands fa-whatsapp"></i> EXTRATO FECHAMENTO MENSAL</button>
-        <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
+        
+        <div id="areaPagos" style="display:none; margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px;">
+            <span class="section-title">Histórico de Pagamentos</span>
+            <div id="listaItensPagos"></div>
+        </div>
+
+        <button id="btnTogglePagos" onclick="togglePagos()" class="btn-action" style="font-size: 11px; margin-top: 10px; padding: 5px;">VER PAGAMENTOS ANTERIORES</button>
+
+        <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+            <button id="btnZapRapido" class="btn-zap"><i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO</button>
+            <button id="btnPixZap" class="btn-pix"><i class="fa-solid fa-copy"></i> ENVIAR PIX COM VALOR</button>
+            <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // CREDENCIAIS SUPABASE
     const SUPABASE_URL = 'https://ebfkwuslmneswvovygwh.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViZmt3dXNsbW5lc3d2b3Z5Z3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzU3NzUsImV4cCI6MjA5MDc1MTc3NX0.ElCyWYPr330VLsY6LZIa41Fg9QR_VaHeBj36jQ8oVt0'; 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -271,26 +230,52 @@
         carregarDados();
     };
 
+    window.togglePagos = () => {
+        const area = document.getElementById('areaPagos');
+        const btn = document.getElementById('btnTogglePagos');
+        if(area.style.display === 'none') {
+            area.style.display = 'block';
+            btn.innerText = 'ESCONDER PAGAMENTOS';
+        } else {
+            area.style.display = 'none';
+            btn.innerText = 'VER PAGAMENTOS ANTERIORES';
+        }
+    };
+
     window.abrirHistorico = (id) => {
         const c = dbClientes.find(x => x.id === id);
         const itens = agruparItens(c.compras);
         const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
+        
         document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
-        const list = document.getElementById('listaItensModal');
-        list.innerHTML = '';
+        const listAbertos = document.getElementById('listaItensModal');
+        const listPagos = document.getElementById('listaItensPagos');
+        
+        listAbertos.innerHTML = '';
+        listPagos.innerHTML = '';
+        document.getElementById('areaPagos').style.display = 'none';
+        document.getElementById('btnTogglePagos').innerText = 'VER PAGAMENTOS ANTERIORES';
+
         itens.forEach(i => {
-            const cor = i.valor_total < 0 ? 'var(--success)' : 'var(--text)';
-            list.innerHTML += `<div class="item-hist" style="color:${cor}"><span><small>${i.dataF}</small> ${i.qtd > 1 ? '('+i.qtd+'x) ' : ''}${i.descricao}</span><b>R$ ${i.valor_total.toFixed(2)}</b></div>`;
+            if(i.valor_total < 0) {
+                // É pagamento, vai para a seção de pagos
+                listPagos.innerHTML += `<div class="item-hist item-pago"><span><small>${i.dataF}</small> PAGAMENTO RECEBIDO</span><b>R$ ${Math.abs(i.valor_total).toFixed(2)}</b></div>`;
+            } else {
+                // É consumo, vai para a seção principal
+                listAbertos.innerHTML += `<div class="item-hist"><span><small>${i.dataF}</small> ${i.qtd > 1 ? '('+i.qtd+'x) ' : ''}${i.descricao}</span><b>R$ ${i.valor_total.toFixed(2)}</b></div>`;
+            }
         });
+
+        if(listAbertos.innerHTML === '') listAbertos.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">Tudo pago! ✅</div>';
+        if(listPagos.innerHTML === '') document.getElementById('btnTogglePagos').style.display = 'none';
+        else document.getElementById('btnTogglePagos').style.display = 'block';
         
         document.getElementById('btnZapRapido').onclick = () => {
             let d = "";
-            itens.forEach(i => {
-                const s = i.valor_total < 0 ? '✅' : '🍩';
-                const q = (i.valor_total > 0 && i.qtd > 1) ? `(${i.qtd}x) ` : '';
-                d += `${s} ${i.dataF} - ${q}${i.descricao}: R$ ${Math.abs(i.valor_total).toFixed(2)}%0A`;
+            itens.filter(i => i.valor_total > 0).forEach(i => {
+                d += `🍩 ${i.dataF} - ${i.qtd > 1 ? '('+i.qtd+'x) ' : ''}${i.descricao}: R$ ${i.valor_total.toFixed(2)}%0A`;
             });
-            const msg = `*Brasil Doces* 🍩%0A%0AOlá, *${c.nome.toUpperCase()}*! Tudo bem?%0A%0APassando para te enviar o resumo atual do seu consumo aqui com a gente:%0A%0A${d}%0A💰 *SALDO RESTANTE: R$ ${saldo.toFixed(2)}*%0A%0AQualquer dúvida é só chamar! Valeu pela parceria! 🧁✨`;
+            const msg = `*Brasil Doces* 🍩%0A%0AOlá, *${c.nome.toUpperCase()}*!%0A%0AConfere o seu consumo em aberto:%0A%0A${d}%0A💰 *TOTAL: R$ ${saldo.toFixed(2)}*%0A%0AQualquer dúvida estou à disposição! ✨`;
             window.open(`https://wa.me/55${c.tel}?text=${msg}`, '_blank');
         };
 
@@ -298,16 +283,6 @@
             window.open(`https://wa.me/55${c.tel}?text=${gerarPixCopiaECola(saldo)}`, '_blank');
         };
 
-        document.getElementById('btnEnviarExtrato').onclick = () => {
-            let d = "";
-            itens.forEach(i => {
-                const s = i.valor_total < 0 ? '✅' : '🔸';
-                const q = (i.valor_total > 0 && i.qtd > 1) ? `(${i.qtd}x)` : '(1x)';
-                d += `${s} ${i.dataF} - ${i.descricao} ${q} - R$ ${Math.abs(i.valor_total).toFixed(2)}%0A`;
-            });
-            const msg = `*Brasil Doces* 🍩%0A%0AFala, *${c.nome.toUpperCase()}*! Beleza?%0APassando para organizar o fechamento do mês aqui na Brasil Doces. 📋%0A%0AConfere aí o que rolou na sua conta:%0A%0A${d}%0A💰 *TOTAL DO MÊS: R$ ${saldo.toFixed(2)}*%0A%0ADá uma conferida se está tudo certinho e me avisa para a gente zerar essa! Valeu pela parceria de sempre! 🧁✨`;
-            window.open(`https://wa.me/55${c.tel}?text=${msg}`, '_blank');
-        };
         document.getElementById('modalHistorico').style.display='block';
     };
 
@@ -315,20 +290,32 @@
         const p = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
         if(p) document.getElementById(`vl-${cId}`).value = p.preco;
     };
+
     window.pagar = async (id) => {
-        const v = parseFloat(prompt("Valor recebido:"));
-        if(v) { await _supabase.from('compras').insert([{ cliente_id: id, descricao: "PAGAMENTO ✅", valor_total: -v }]); carregarDados(); }
+        const c = dbClientes.find(x => x.id === id);
+        const saldoAtual = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
+        if(saldoAtual <= 0) return alert("Cliente não possui débitos!");
+
+        const v = parseFloat(prompt(`Valor a pagar (Saldo: R$ ${saldoAtual.toFixed(2)}):`, saldoAtual.toFixed(2)));
+        if(v) { 
+            await _supabase.from('compras').insert([{ cliente_id: id, descricao: "PAGAMENTO ✅", valor_total: -v }]); 
+            carregarDados(); 
+        }
     };
+
     document.getElementById('btnCadastrar').onclick = async () => {
         const n = document.getElementById('novoNome').value;
         const t = document.getElementById('novoTel').value.replace(/\D/g,'');
         if(n && t) { await _supabase.from('clientes').insert([{ nome: n, tel: t, limite: parseFloat(document.getElementById('novoLimite').value) || 1000 }]); carregarDados(); }
     };
+
     window.excluir = async (id) => { if(confirm("Excluir cliente?")) { await _supabase.from('clientes').delete().eq('id', id); carregarDados(); } };
+
     document.getElementById('btnLogin').onclick = async () => {
         await _supabase.auth.signInWithPassword({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value });
         checkUser();
     };
+
     window.onload = checkUser;
 </script>
 </body>
