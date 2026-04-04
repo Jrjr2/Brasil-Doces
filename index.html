@@ -365,11 +365,27 @@ async function enviarZapDoces(tipo) {
     else if (tipo === 'pix') {
         // Mensagem de Cobrança com PIX
         if (itensParaEnviar.length === 0) return alert("Não há itens pendentes para cobrar!");
-        let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
-        let listaMsg = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
         
-        texto = `Olá! ✨ Segue o resumo para fechamento:\n\n${listaMsg}\n\n💰 *TOTAL: R$ ${total.toFixed(2)}*\n🔑 *PIX:* ${pixConfig.chave_pix}`;
-    } 
+        let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
+        
+        // Pega o nome do mês atual em português
+        const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+        const mesAtual = meses[new Date().getMonth()];
+
+        // Monta a lista de produtos: ▫️ 10x FATIA DE BOLO: R$ 120.00
+        let listaMsg = itensParaEnviar.map(i => {
+            const qtdTexto = i.qtd > 1 ? `${i.qtd}x ` : "";
+            return `▫️ ${qtdTexto}${i.descricao.toUpperCase()}: R$ ${i.valor_exibir.toFixed(2)}`;
+        }).join('\n');
+        
+        texto = `Olá! Tudo bem? ✨\n\n` +
+                `Estou passando para fecharmos o seu resumo de ${mesAtual} aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:\n\n` +
+                `${listaMsg}\n\n` +
+                `*TOTAL: R$ ${total.toFixed(2)}*\n` +
+                `*PIX:* ${pixConfig.chave_pix}\n` +
+                `*NOME:* ${pixConfig.nome_pix}\n\n` +
+                `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍫❤️`;
+    }
     else {
         // Mensagem de Informar Consumo (Últimas Escolhas)
         if (itensParaEnviar.length === 0) return alert("Não há itens pendentes para informar!");
