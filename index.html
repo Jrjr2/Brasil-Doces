@@ -274,18 +274,26 @@
         }
     }
 
-    document.getElementById('btnSalvarConfig').onclick = async () => {
-        const chave = document.getElementById('cfgChavePix').value;
-        const nome = document.getElementById('cfgNomePix').value;
-        if (!chave) return alert("Digite ao menos a chave PIX!");
-
-        const { error } = await _supabase.from('configuracoes').upsert({ id: 1, chave_pix: chave, nome_pix: nome });
-        if (error) alert("Erro ao salvar: " + error.message);
-        else {
-            alert("Configurações de PIX salvas com sucesso! ✨");
-            carregarConfiguracoes();
-        }
-    };
+    // Crie uma função para configurar os eventos após o login
+function configurarEventosPainel() {
+    const btnSalvarConfig = document.getElementById('btnSalvarConfig');
+    if (btnSalvarConfig) {
+        btnSalvarConfig.onclick = async () => {
+            const chave = document.getElementById('cfgChavePix').value;
+            const nome = document.getElementById('cfgNomePix').value;
+            if (!chave) return alert("Digite ao menos a chave PIX!");
+            const { error } = await _supabase.from('configuracoes').upsert({ id: 1, chave_pix: chave, nome_pix: nome });
+            if (error) alert("Erro ao salvar: " + error.message);
+            else alert("Configurações de PIX salvas! ✨");
+        };
+    }
+    
+    // Faça o mesmo para o botão de cadastrar produto, se ele existir
+    const btnProd = document.getElementById('btnSalvarProduto');
+    if (btnProd) {
+        btnProd.onclick = async () => { /* lógica de salvar produto */ };
+    }
+}
 
     function toggleTheme() {
         const body = document.body;
