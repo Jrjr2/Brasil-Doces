@@ -234,8 +234,13 @@
     let clienteAbertoId = null; 
     let itensPendentesGlobal = []; 
 
-    // --- 1. AVISO DE ANIVERSÁRIO (1 DIA ANTES) ---
+    // --- 1. AVISO DE ANIVERSÁRIO (1 DIA ANTES - APARECE 1 VEZ POR SESSÃO) ---
     function verificarAniversarios() {
+        // Verifica se já mostramos o aviso nesta sessão de uso
+        if (sessionStorage.getItem('avisoAniversarioMostrado') === 'true') {
+            return; // Se já mostrou, sai da função e não faz nada
+        }
+
         const hoje = new Date();
         const amanha = new Date(hoje);
         amanha.setDate(hoje.getDate() + 1);
@@ -251,8 +256,13 @@
                 alerta.style = "position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--primary); color:white; padding:15px 25px; border-radius:50px; z-index:9999; box-shadow:0 10px 25px rgba(0,0,0,0.2); font-weight:800; animation: bounceIn 1s infinite alternate; border: 2px solid white;";
                 alerta.innerHTML = `🎉 AMANHÃ É ANIVERSÁRIO DE ${c.nome.toUpperCase()}! 🎂`;
                 document.body.appendChild(alerta);
+                
+                // Remove o alerta visual após 8 segundos
                 setTimeout(() => alerta.remove(), 8000);
             });
+
+            // Marca que o aviso já foi exibido nesta sessão
+            sessionStorage.setItem('avisoAniversarioMostrado', 'true');
         }
     }
 
