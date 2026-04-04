@@ -279,7 +279,22 @@
         }
     }
 
-    async function
+    async function carregarDados() {
+        const { data: p } = await _supabase.from('produtos').select('*').order('nome');
+        dbProdutos = p || [];
+        const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
+        dbClientes = c || [];
+        render();
+    }
+
+    async function carregarConfiguracoes() {
+        const { data } = await _supabase.from('configuracoes').select('*').maybeSingle();
+        if (data) {
+            pixConfig = data;
+            document.getElementById('cfgChavePix').value = data.chave_pix || '';
+            document.getElementById('cfgNomePix').value = data.nome_pix || '';
+        }
+    }
 
     // --- 2. RESUMO MENSAL AUTOMÁTICO ---
     window.abrirResumoConta = (id) => {
