@@ -82,20 +82,21 @@
         .item-detalhe { flex: 1; display: flex; justify-content: space-between; align-items: center; font-size: 0.95em; }
         .chk-item { width: 18px; height: 18px; flex-shrink: 0; margin: 0; cursor: pointer; }
 
-        /* CAIXA DE CONFIGURAÇÃO PIX DENTRO DO MODAL */
-        .box-pix-config { background: #111; padding: 18px; border-radius: 18px; margin-top: 15px; border: 1px solid #333; }
-        .label-pix-small { color: #f1c40f; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; display: block; letter-spacing: 1px; }
-        .input-pix-dark { background: #000 !important; border: 1px solid #333 !important; color: #fff !important; padding: 10px !important; border-radius: 10px !important; font-size: 14px !important; text-align: center; margin-bottom: 10px !important; }
+        /* AJUSTE CARD PIX BRASIL DOCES */
+        .box-pix-config { background: #fff5f7; padding: 18px; border-radius: 18px; margin-top: 15px; border: 2px solid var(--border); }
+        .label-pix-small { color: var(--accent); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; display: block; letter-spacing: 1px; }
+        .input-pix-dark { background: #fff !important; border: 1px solid var(--border) !important; color: var(--brown) !important; padding: 10px !important; border-radius: 10px !important; font-size: 14px !important; text-align: center; margin-bottom: 10px !important; }
 
         .extrato-container { background: var(--card); border: 1px dashed var(--border); border-radius: 12px; padding: 15px; font-size: 0.9em; color: var(--text); }
         .extrato-header { display: grid; grid-template-columns: 45px 35px 1fr 70px; gap: 5px; font-weight: 800; font-size: 10px; text-transform: uppercase; color: #999; border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-bottom: 10px; }
         .extrato-item { display: grid; grid-template-columns: 45px 35px 1fr 70px; gap: 5px; padding: 8px 0; border-bottom: 1px solid var(--border); align-items: center; }
         .extrato-item .qtd { font-weight: 700; color: var(--accent); text-align: center; }
         .extrato-item .valor { text-align: right; font-weight: 700; color: var(--success); }
+        
         @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         #containerSoma { background: var(--bg); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border); display: none; }
 
@@ -248,7 +249,6 @@
         }
     }
 
-    // Salva automaticamente as configurações PIX sempre que houver mudança nos inputs
     async function salvarPixAutomatico() {
         const chave = document.getElementById('cfgChavePix').value;
         const nome = document.getElementById('cfgNomePix').value;
@@ -281,7 +281,15 @@
         let totalH = 0, totalG = 0;
         const hoje = new Date().toLocaleDateString('pt-BR').substring(0,5);
 
-        dbClientes.filter(c => c.nome.toLowerCase().includes(busca)).forEach(c => {
+        // BUSCA MELHORADA: Procura por quem começa com a letra E depois por quem contém
+        const clientesFiltrados = dbClientes.filter(c => c.nome.toLowerCase().includes(busca))
+        .sort((a, b) => {
+            if (a.nome.toLowerCase().startsWith(busca) && !b.nome.toLowerCase().startsWith(busca)) return -1;
+            if (!a.nome.toLowerCase().startsWith(busca) && b.nome.toLowerCase().startsWith(busca)) return 1;
+            return a.nome.localeCompare(b.nome);
+        });
+
+        clientesFiltrados.forEach(c => {
             const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
             totalG += saldo;
             c.compras.forEach(cp => { if(new Date(cp.data).toLocaleDateString('pt-BR').substring(0,5) === hoje && cp.valor_total > 0) totalH += cp.valor_total; });
@@ -327,49 +335,19 @@
 
         document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
         const listAbertos = document.getElementById('listaItensModal');
-        // Substitua a lógica de "TUDO PAGO" por esta:
-if (itensPendentesGlobal.length === 0) {
-    listAbertos.innerHTML = `
-        <div style="
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            padding: 40px 20px; 
-            background: rgba(46, 204, 113, 0.1); 
-            border-radius: 20px; 
-            border: 1px dashed var(--success);
-            margin: 20px 0;
-            animation: fadeIn 0.5s ease-out;
-        ">
-            <div style="
-                width: 60px; 
-                height: 60px; 
-                background: var(--success); 
-                color: white; 
-                border-radius: 50%; 
-                display: flex; 
-                align-items: center; 
-                justify-content: center; 
-                font-size: 24px; 
-                margin-bottom: 15px;
-                box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);
-            ">
-                <i class="fa-solid fa-check"></i>
-            </div>
-            <span style="
-                font-weight: 800; 
-                color: var(--success); 
-                letter-spacing: 1px; 
-                font-size: 14px;
-                text-transform: uppercase;
-            ">Conta em Dia</span>
-            <small style="color: #888; margin-top: 5px; font-weight: 500;">Nenhuma pendência encontrada ✨</small>
-        </div>
-    `;
-} else {
-    listAbertos.innerHTML = '';
-}
+        
+        if (itensPendentesGlobal.length === 0) {
+            listAbertos.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; background: rgba(46, 204, 113, 0.1); border-radius: 20px; border: 1px dashed var(--success); margin: 20px 0; animation: fadeIn 0.5s ease-out;">
+                    <div style="width: 60px; height: 60px; background: var(--success); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <span style="font-weight: 800; color: var(--success); letter-spacing: 1px; font-size: 14px; text-transform: uppercase;">Conta em Dia</span>
+                    <small style="color: #888; margin-top: 5px; font-weight: 500;">Nenhuma pendência encontrada ✨</small>
+                </div>`;
+        } else {
+            listAbertos.innerHTML = '';
+        }
         
         itensPendentesGlobal.forEach(i => {
             const qT = i.qtd > 1 ? `${i.qtd}x ` : "";
@@ -382,7 +360,6 @@ if (itensPendentesGlobal.length === 0) {
     };
 
     async function enviarZapDoces(tipo) {
-        // Antes de enviar, salva o que estiver nos inputs do PIX
         await salvarPixAutomatico();
 
         const c = dbClientes.find(x => x.id === clienteAbertoId);
@@ -399,22 +376,21 @@ if (itensPendentesGlobal.length === 0) {
         let texto = "";
 
         if (tipo === 'pix') {
-            let listaMsg = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-            texto = `Olá! Tudo bem? ✨%0A%0A`;
-            texto += `Estou passando para fecharmos o seu resumo de *${mesAtual}* aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:%0A%0A`;
-            texto += `${listaMsg}%0A%0A`;
-            texto += `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍫❤️%0A%0A`;
-            texto += `💰 *TOTAL: R$ ${total.toFixed(2)}*%0A`;
-            texto += `🔑 *PIX:* ${pixConfig.chave_pix}`;
-            if(pixConfig.nome_pix) texto += ` (${pixConfig.nome_pix})`;
+            let listaMsg = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
+            texto = `Olá! Tudo bem? ✨\n\n` +
+                    `Estou passando para fecharmos o seu resumo de *${mesAtual}* aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:\n\n` +
+                    `${listaMsg}\n\n` +
+                    `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍫❤️\n\n` +
+                    `💰 *TOTAL: R$ ${total.toFixed(2)}*\n` +
+                    `🔑 *PIX:* ${pixConfig.chave_pix}` + (pixConfig.nome_pix ? ` (${pixConfig.nome_pix})` : "");
         } else {
-            let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-            texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:%0A%0A`;
-            texto += `${listaMsg}%0A%0A`;
-            texto += `É só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. 🍫`;
+            let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
+            texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:\n\n` +
+                    `${listaMsg}\n\n` +
+                    `É só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. 🍫`;
         }
 
-        window.open(`https://wa.me/55${c.tel}?text=${texto}`, '_blank');
+        window.open(`https://wa.me/55${c.tel}?text=${encodeURIComponent(texto)}`, '_blank');
     }
 
     document.getElementById('btnZapRapido').onclick = () => enviarZapDoces('informar');
@@ -433,7 +409,8 @@ if (itensPendentesGlobal.length === 0) {
 
     document.getElementById('btnMensagemCarinho').onclick = () => {
         const c = dbClientes.find(x => x.id === clienteAbertoId);
-        window.open(`https://wa.me/55${c.tel}?text=Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! ❤️`, '_blank');
+        const msg = "Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! ❤️";
+        window.open(`https://wa.me/55${c.tel}?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
     window.atualizarSoma = () => {
