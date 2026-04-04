@@ -182,6 +182,19 @@
         <input type="number" id="novoLimite" placeholder="Limite de Crédito" value="1000">
         <button id="btnCadastrar" class="btn-main">ADICIONAR CLIENTE</button>
     </div>
+    <div class="card" style="border-top: 3px solid var(--success); border-left: none; margin-bottom: 25px;">
+    <div style="font-weight: 800; margin-bottom: 10px; color: var(--brown);">
+        <i class="fa-solid fa-cookie-bite"></i> CADASTRAR NOVO PRODUTO
+    </div>
+        
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+        <input type="text" id="prodNome" placeholder="Nome do Doce (ex: Brigadeiro)">
+        <input type="number" id="prodPreco" placeholder="Preço R$" step="0.01">
+    </div>
+    <button id="btnSalvarProduto" class="btn-main" style="background: var(--success);">
+        <i class="fa-solid fa-plus"></i> SALVAR PRODUTO
+    </button>
+</div>
 
     <input type="text" id="buscaCliente" placeholder="🔍 Procurar por nome..." onkeyup="render()">
     <div id="lista"></div>
@@ -489,6 +502,32 @@
         const { error } = await _supabase.auth.signInWithPassword({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value });
         if(error) alert("Erro: " + error.message); else checkUser();
     };
+
+    document.getElementById('btnSalvarProduto').onclick = async () => {
+    const nome = document.getElementById('prodNome').value.trim().toUpperCase();
+    const preco = parseFloat(document.getElementById('prodPreco').value);
+
+    if (!nome || !preco) {
+        return alert("Preencha o nome e o preço do produto!");
+    }
+
+    const { error } = await _supabase
+        .from('produtos')
+        .insert([{ nome: nome, preco: preco }]);
+
+    if (error) {
+        if (error.code === '23505') {
+            alert("Este produto já está cadastrado!");
+        } else {
+            alert("Erro ao salvar produto: " + error.message);
+        }
+    } else {
+        alert("Produto cadastrado com sucesso! ✨");
+        document.getElementById('prodNome').value = '';
+        document.getElementById('prodPreco').value = '';
+        carregarDados(); // Recarrega a lista para o autocomplete funcionar
+    }
+};
 
     checkUser();
 </script>
