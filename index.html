@@ -58,6 +58,61 @@
         .dash-val { font-size: 1.2em; font-weight: 800; color: var(--accent); }
 
         .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 18px; border: 1px solid var(--border); border-left: 5px solid var(--primary); position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
+        
+        /* ESTILO BRASIL DOCES PARA O PIX (ADAPTADO DO ZONA NORTE) */
+        .card-brasildoce {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 25px rgba(255, 133, 162, 0.1);
+            border-top: 4px solid var(--primary);
+        }
+
+        .label-pix {
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .input-pix {
+            background: var(--bg) !important;
+            color: var(--text);
+            border: 1px solid var(--border) !important;
+            padding: 12px !important;
+            border-radius: 12px !important;
+            font-size: 15px !important;
+            margin-bottom: 12px !important;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .btn-pix-save {
+            background: var(--info);
+            color: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 13px;
+            border: none;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-pix-save:active { transform: scale(0.97); }
+
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .price-tag { color: var(--brown); font-size: 1.8em; font-weight: 900; margin-bottom: 12px; display: block; }
 
@@ -161,16 +216,19 @@
         <div class="dash-box"><span class="dash-label">SALDO CLIENTES</span><div class="dash-val" id="totalGeral">R$ 0,00</div></div>
     </div>
 
-    <div class="card" style="border-top: 3px solid var(--info); border-left: none; margin-bottom: 25px;">
-        <div style="font-weight: 800; margin-bottom: 10px; color: var(--brown); display: flex; align-items: center; gap: 8px;">
-            <i class="fa-solid fa-gear"></i> CONFIGURAR PIX
+    <div class="card-brasildoce">
+        <div class="label-pix">
+            <i class="fa-solid fa-star"></i> MINHA CHAVE PIX
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <input type="text" id="cfgChavePix" placeholder="Chave (Celular ou CPF)">
-            <input type="text" id="cfgNomePix" placeholder="Nome do Titular">
+        <input type="text" id="cfgChavePix" class="input-pix" placeholder="Chave (Celular ou CPF)">
+
+        <div class="label-pix">
+            <i class="fa-solid fa-user"></i> TITULAR DA CONTA
         </div>
-        <button id="btnSalvarConfig" class="btn-main" style="background: var(--info);">
-            <i class="fa-solid fa-floppy-disk"></i> SALVAR CHAVE PIX
+        <input type="text" id="cfgNomePix" class="input-pix" placeholder="Nome do Titular">
+
+        <button id="btnSalvarConfig" class="btn-pix-save">
+            <i class="fa-solid fa-floppy-disk"></i> SALVAR DADOS DE RECEBIMENTO
         </button>
     </div>
 
@@ -381,7 +439,6 @@
         let texto = "";
 
         if (tipo === 'pix') {
-            // MENSAGEM: COBRAR COM PIX (Resumo de Mês)
             let listaMsg = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
             
             texto = `Olá! Tudo bem? ✨%0A%0A`;
@@ -392,7 +449,6 @@
             texto += `🔑 *PIX:* ${pixConfig.chave_pix}`;
             if(pixConfig.nome_pix) texto += ` (${pixConfig.nome_pix})`;
         } else {
-            // MENSAGEM: INFORMAR CONSUMO (Escolhas Recentes)
             let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
             
             texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:%0A%0A`;
