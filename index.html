@@ -21,20 +21,13 @@
         :root { 
             --bg: #fff0f3; --card: #ffffff; --primary: #ff85a2; --accent: #d63384; 
             --text: #4a4a4a; --danger: #e74c3c; --border: #ffd1dc; --success: #2ecc71;
-            --brown: #6d4c41; --info: #3498db;
+            --brown: #6d4c41; --info: #3498db; --gold: #FFD700;
         }
 
         body.dark-mode {
             --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #333333;
             --primary: #ffb1c1; --accent: #ff85a2; --brown: #ffdadf; --success: #4cd137;
         }
-
-        body.dark-mode .zn-brand-text { color: var(--primary); }
-        body.dark-mode .price-tag { color: var(--primary); }
-        body.dark-mode .dash-val { color: var(--primary); }
-        body.dark-mode input { background: #252525; border-color: #444; }
-        body.dark-mode .btn-action { background: #2a2a2a; color: var(--primary); border-color: var(--border); }
-        body.dark-mode .zn-slogan { color: #b5a1a1; }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; transition: background 0.3s, color 0.3s; }
         
@@ -43,104 +36,42 @@
         .login-card { background: var(--card); padding: 30px; border-radius: 24px; width: 100%; max-width: 320px; box-shadow: 0 10px 30px rgba(214, 51, 132, 0.1); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
 
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .zn-brand-container { display: flex; align-items: center; gap: 12px; }
-        .zn-column-titles { display: flex; flex-direction: column; justify-content: center; }
         .zn-brand-text { font-family: 'Pacifico', cursive; font-size: 1.6em; color: var(--brown); margin: 0; line-height: 1.1; }
         .zn-slogan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #8e736b; margin-top: -2px; }
         
-        .header-actions { display: flex; gap: 8px; align-items: center; }
-        .btn-logout { background: white; border: 1px solid var(--danger); color: var(--danger); padding: 8px 15px; border-radius: 10px; font-size: 12px; width: auto; margin: 0; font-weight: 700; }
-        .btn-theme { background: var(--card); border: 1px solid var(--border); color: var(--accent); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; }
-
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        .dash-label { font-size: 10px; color: #999; text-transform: uppercase; display: block; margin-bottom: 5px; font-weight: 700; }
+        .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); }
         .dash-val { font-size: 1.2em; font-weight: 800; color: var(--accent); }
 
-        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 18px; border: 1px solid var(--border); border-left: 5px solid var(--primary); position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
+        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 18px; border: 1px solid var(--border); border-left: 5px solid var(--primary); position: relative; transition: transform 0.3s; }
         
+        /* DESTAQUE ANIVERSARIANTE */
+        .card-niver-destaque {
+            border: 3px solid var(--gold) !important;
+            background: linear-gradient(145deg, #ffffff, #fff9e6) !important;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3) !important;
+            transform: scale(1.02);
+            z-index: 5;
+        }
+        .label-niver-hoje { background: var(--gold); color: #000; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 800; margin-left: 5px; }
+
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .price-tag { color: var(--brown); font-size: 1.8em; font-weight: 900; margin-bottom: 12px; display: block; }
 
-        input { width: 100%; padding: 14px; margin: 6px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); box-sizing: border-box; font-size: 16px; outline: none; }
-        button { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
-        .btn-main { background: var(--accent); color: white; transition: 0.3s; }
-        .btn-action { background: var(--card); color: var(--brown); border: 1px solid var(--border); }
-        .btn-zap { background: #25D366; color: white; }
+        input { width: 100%; padding: 14px; margin: 6px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); box-sizing: border-box; font-size: 16px; }
+        button { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-main { background: var(--accent); color: white; margin-top: 8px; }
+        .btn-action { background: var(--card); color: var(--brown); border: 1px solid var(--border); margin-top: 8px; }
+        .btn-zap { background: #25D366; color: white; margin-top: 8px; }
         
-        .btn-delete { color: #ddd; background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
-        .btn-edit { color: var(--info); background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
-
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); }
-        .modal-content { background: var(--card); border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; color: var(--text); border: 1px solid var(--border); }
-        
-        #nomeClienteModal, #nomeClienteResumo { color: var(--text) !important; text-align: center; font-weight: 800 !important; font-size: 1.5em !important; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: block; }
-        .modal-section-title { font-weight: 800; font-size: 11px; color: #999; text-transform: uppercase; margin: 15px 0 10px 5px; display: block; letter-spacing: 0.5px; }
+        .modal-content { background: var(--card); border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; }
 
-        .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 10px; transition: background 0.2s; }
-        .item-detalhe { flex: 1; display: flex; justify-content: space-between; align-items: center; font-size: 0.95em; }
-        .chk-item { width: 18px; height: 18px; flex-shrink: 0; margin: 0; cursor: pointer; }
+        .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid var(--border); }
+        .chk-item { width: 20px; height: 20px; }
 
-        .box-pix-config { background: #fff5f7; padding: 18px; border-radius: 18px; margin-top: 15px; border: 2px solid var(--border); }
-        .label-pix-small { color: var(--accent); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; display: block; letter-spacing: 1px; }
-        .input-pix-dark { background: #fff !important; border: 1px solid var(--border) !important; color: var(--brown) !important; padding: 10px !important; border-radius: 10px !important; font-size: 14px !important; text-align: center; margin-bottom: 10px !important; }
-
-        .extrato-container { background: var(--card); border: 1px dashed var(--border); border-radius: 12px; padding: 15px; font-size: 0.9em; color: var(--text); }
-        .extrato-header { display: grid; grid-template-columns: 45px 35px 1fr 70px; gap: 5px; font-weight: 800; font-size: 10px; text-transform: uppercase; color: #999; border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-bottom: 10px; }
-        .extrato-item { display: grid; grid-template-columns: 45px 35px 1fr 70px; gap: 5px; padding: 8px 0; border-bottom: 1px solid var(--border); align-items: center; }
-        .extrato-item .qtd { font-weight: 700; color: var(--accent); text-align: center; }
-        .extrato-item .valor { text-align: right; font-weight: 700; color: var(--success); }
-        
-        #containerSoma { background: var(--bg); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border); display: none; }
-
-        .ico-niver { color: #ff85a2; margin-left: 8px; font-size: 1.2em; animation: niver-pulse 1.5s infinite; display: inline-block; }
-        @keyframes niver-pulse {
-            0% { transform: scale(1); filter: drop-shadow(0 0 0px #ff85a2); }
-            50% { transform: scale(1.2); filter: drop-shadow(0 0 5px #ff85a2); }
-            100% { transform: scale(1); filter: drop-shadow(0 0 0px #ff85a2); }
-        }
-
-        @media print {
-            body * { visibility: hidden; }
-            #modalResumo, #modalResumo * { visibility: visible; }
-            #modalResumo { position: absolute; left: 0; top: 0; width: 100%; height: auto; background: white; }
-            .modal-content { max-height: none !important; overflow: visible !important; border: none !important; width: 100% !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
-            .no-print { display: none !important; }
-        }
-        /* Card de destaque para o aniversariante */
-/* Card de destaque para o aniversariante */
-.card-niver-destaque {
-    border: 3px solid #FFD700 !important; /* Dourado */
-    background: linear-gradient(145deg, #ffffff, #fff9e6) !important;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4) !important;
-    transform: scale(1.02);
-    position: relative;
-}
-
-/* Pequena etiqueta escrita HOJE */
-.label-niver-hoje {
-    background: #FFD700;
-    color: #000;
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 800;
-    margin-left: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-/* Animação do presente para balançar */
-.ico-niver {
-    display: inline-block;
-    animation: balancar 1s infinite;
-}
-
-@keyframes balancar {
-    0% { transform: rotate(0deg); }
-    25% { transform: rotate(10deg); }
-    75% { transform: rotate(-10deg); }
-    100% { transform: rotate(0deg); }
-}
+        @keyframes balancar { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } }
+        .ico-niver { display: inline-block; animation: balancar 1s infinite; }
     </style>
 </head>
 <body>
@@ -150,41 +81,34 @@
     <div class="login-card">
         <input type="email" id="loginEmail" placeholder="E-mail">
         <input type="password" id="loginPassword" placeholder="Senha">
-        <button id="btnLogin" class="btn-main">ACESSAR SISTEMA</button>
+        <button id="btnLogin" class="btn-main" onclick="entrar()">ACESSAR SISTEMA</button>
     </div>
 </div>
 
 <div id="mainContainer" style="display:none; max-width:480px; margin:auto;">
     <div class="header-top">
-        <div class="zn-brand-container">
-            <div class="zn-column-titles">
-                <h1 class="zn-brand-text">Brasil Doces</h1>
-                <span class="zn-slogan">Feito com amor ♡</span>
-            </div>
+        <div>
+            <h1 class="zn-brand-text">Brasil Doces</h1>
+            <span class="zn-slogan">Feito com amor ♡</span>
         </div>
-        <div class="header-actions">
-            <button onclick="window.location.reload()" class="btn-theme" title="Atualizar">
-                <i class="fa-solid fa-rotate"></i>
-            </button>
-            <button class="btn-theme" onclick="toggleTheme()" id="themeBtn" title="Alternar Tema">
-                <i class="fa-solid fa-moon"></i>
-            </button>
-            <button onclick="sair()" class="btn-logout">SAIR</button>
+        <div style="display:flex; gap:8px;">
+            <button onclick="window.location.reload()" class="btn-action" style="width:40px; margin:0;"><i class="fa-solid fa-rotate"></i></button>
+            <button onclick="sair()" class="btn-action" style="width:auto; margin:0; color:var(--danger)">SAIR</button>
         </div>
     </div>
 
     <div class="dashboard-grid">
-        <div class="dash-box"><span class="dash-label">PEDIDOS HOJE</span><div class="dash-val" id="totalHoje">R$ 0,00</div></div>
-        <div class="dash-box"><span class="dash-label">SALDO CLIENTES</span><div class="dash-val" id="totalGeral">R$ 0,00</div></div>
+        <div class="dash-box"><span style="font-size:10px">PEDIDOS HOJE</span><div class="dash-val" id="totalHoje">R$ 0,00</div></div>
+        <div class="dash-box"><span style="font-size:10px">SALDO CLIENTES</span><div class="dash-val" id="totalGeral">R$ 0,00</div></div>
     </div>
 
     <div class="card" style="border-top: 3px solid var(--accent); border-left: none;">
-        <div id="tituloFormCliente" style="font-weight: 800; margin-bottom: 10px; color: var(--brown);">CADASTRAR NOVO CLIENTE</div>
+        <div id="tituloForm" style="font-weight: 800; margin-bottom: 10px;">CADASTRAR NOVO CLIENTE</div>
         <input type="text" id="novoNome" placeholder="Nome Completo">
         <input type="tel" id="novoTel" placeholder="WhatsApp">
-        <input type="text" id="novoNiver" placeholder="Aniversário (Ex: 15/04)" maxlength="5" oninput="mascaraData(this)">
-        <input type="number" id="novoLimite" placeholder="Limite de Crédito" value="1000">
-        <button id="btnCadastrar" class="btn-main">ADICIONAR CLIENTE</button>
+        <input type="text" id="novoNiver" placeholder="Aniversário (Ex: 15/04)" maxlength="5">
+        <input type="number" id="novoLimite" placeholder="Limite" value="1000">
+        <button id="btnCadastrar" class="btn-main" onclick="salvarCliente()">ADICIONAR CLIENTE</button>
     </div>
 
     <input type="text" id="buscaCliente" placeholder="🔍 Procurar por nome..." onkeyup="render()">
@@ -193,52 +117,21 @@
 
 <div id="modalHistorico" class="modal">
     <div class="modal-content">
-        <h3 id="nomeClienteModal"></h3>
-        <button id="btnZapRapido" class="btn-zap" style="margin-bottom: 20px;">
-            <i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO
-        </button>
+        <h3 id="nomeClienteModal" style="text-align:center"></h3>
+        <button class="btn-zap" onclick="enviarZapDoces('consumo')"><i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO</button>
 
-        <span class="modal-section-title">Itens Pendentes</span>
-        <div id="listaItensModal"></div>
+        <div id="listaItensModal" style="margin-top:20px"></div>
         
-        <div id="containerSoma">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 12px; font-weight: bold; color: var(--brown);">TOTAL SELECIONADO:</span>
-                <span id="txtSoma" style="font-size: 18px; font-weight: 800; color: var(--accent);">R$ 0,00</span>
+        <div id="containerSoma" style="display:none; background:#f9f9f9; padding:15px; border-radius:12px; margin-top:15px">
+            <div style="display:flex; justify-content:space-between">
+                <b>TOTAL:</b> <span id="txtSoma" style="color:var(--accent); font-weight:800">R$ 0,00</span>
             </div>
-            <button id="btnPagarSelecionados" class="btn-main" style="margin-top: 10px; background: var(--success);" onclick="processarPagamento(clienteAbertoId)">
-                <i class="fa-solid fa-check-double"></i> PAGAR SELECIONADOS
-            </button>
+            <button class="btn-main" style="background:var(--success)" onclick="processarPagamento()">PAGAR SELECIONADOS</button>
         </div>
 
-        <div class="box-pix-config">
-            <span class="label-pix-small">SUA CHAVE PIX:</span>
-            <input type="text" id="cfgChavePix" class="input-pix-dark" placeholder="Celular ou CPF">
-            <span class="label-pix-small">TITULAR DA CONTA:</span>
-            <input type="text" id="cfgNomePix" class="input-pix-dark" placeholder="Nome do Titular">
-            <button id="btnPixZap" class="btn-zap" style="background:#3498db; margin-top:5px;">
-                <i class="fa-solid fa-paper-plane"></i> COBRAR E ENVIAR CHAVE PIX
-            </button>
-        </div>
-
-        <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
-            <button id="btnMensagemCarinho" class="btn-action" style="background:#e8f8f5; border:1px solid var(--success); color:#1a1a1a">
-                <i class="fa-solid fa-heart" style="color:var(--success);"></i> AGRADECER PAGAMENTO
-            </button>
-            <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
-        </div>
-    </div>
-</div>
-
-<div id="modalResumo" class="modal">
-    <div class="modal-content">
-        <h3 id="nomeClienteResumo"></h3>
-        <p style="text-align:center; font-size:11px; color:#999; margin-bottom:15px; font-weight:700;">HISTÓRICO DE PRODUTOS QUITADOS</p>
-        <div class="extrato-container" id="corpoExtrato"></div>
-        <button onclick="window.print()" class="btn-action no-print" style="margin-top: 15px; background: #f8f9fa; color:#333">
-            <i class="fa-solid fa-file-pdf" style="color: #e74c3c;"></i> SALVAR EXTRATO (PDF)
-        </button>
-        <button onclick="document.getElementById('modalResumo').style.display='none'" class="btn-main no-print" style="margin-top:10px;">FECHAR</button>
+        <button class="btn-zap" style="background:var(--info)" onclick="enviarZapDoces('pix')">COBRAR COM PIX</button>
+        <button class="btn-zap" style="background:var(--success); opacity:0.8" onclick="enviarZapDoces('agradecer')">AGRADECER PAGAMENTO</button>
+        <button onclick="fecharModais()" class="btn-action">FECHAR</button>
     </div>
 </div>
 
@@ -247,52 +140,24 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViZmt3dXNsbW5lc3d2b3Z5Z3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzU3NzUsImV4cCI6MjA5MDc1MTc3NX0.ElCyWYPr330VLsY6LZIa41Fg9QR_VaHeBj36jQ8oVt0'; 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let dbClientes = [], dbProdutos = [], clienteEmEdicao = null;
-    let pixConfig = { chave_pix: '', nome_pix: '' }; 
-    let clienteAbertoId = null; 
-    let itensPendentesGlobal = []; 
+    let dbClientes = [], dbProdutos = [], clienteAbertoId = null, clienteEmEdicao = null;
 
-    function verificarAniversarios() {
-        if (sessionStorage.getItem('avisoAniversarioMostrado') === 'true') return;
-
-        const hoje = new Date();
-        const amanha = new Date(hoje);
-        amanha.setDate(hoje.getDate() + 1);
-        const d = String(amanha.getDate()).padStart(2, '0');
-        const m = String(amanha.getMonth() + 1).padStart(2, '0');
-        const dataBusca = `${d}/${m}`;
-
-        const aniversariantes = dbClientes.filter(c => c.aniversario === dataBusca);
-        if (aniversariantes.length > 0) {
-            aniversariantes.forEach(c => {
-                const alerta = document.createElement('div');
-                alerta.style = "position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--primary); color:white; padding:15px 25px; border-radius:50px; z-index:9999; box-shadow:0 10px 25px rgba(0,0,0,0.2); font-weight:800; animation: bounceIn 1s infinite alternate; border: 2px solid white;";
-                alerta.innerHTML = `🎉 AMANHÃ É ANIVERSÁRIO DE ${c.nome.toUpperCase()}! 🎂`;
-                document.body.appendChild(alerta);
-                setTimeout(() => alerta.remove(), 8000);
-            });
-            sessionStorage.setItem('avisoAniversarioMostrado', 'true');
-        }
+    async function entrar() {
+        const e = document.getElementById('loginEmail').value;
+        const s = document.getElementById('loginPassword').value;
+        const { error } = await _supabase.auth.signInWithPassword({ email: e, password: s });
+        if (error) alert("Erro ao acessar"); else location.reload();
     }
 
+    async function sair() { await _supabase.auth.signOut(); location.reload(); }
+
     async function checkUser() {
-        carregarTema();
         const { data: { session } } = await _supabase.auth.getSession();
-        
         if (session) {
             document.getElementById('authContainer').style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
-            
-            // Carrega os dados primeiro
-            await carregarDados(); 
-            
-            // Só depois de ter os dados, a gente liga o "escultador" (Realtime)
-            // e as outras configurações
-            setTimeout(() => {
-                carregarConfiguracoes();
-                configurarRealtime();
-                verificarAniversarios();
-            }, 500); // Meio segundo de folga para o sistema respirar
+            await carregarDados();
+            configurarRealtime();
         }
     }
 
@@ -302,305 +167,178 @@
         const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
         dbClientes = c || [];
         
-        // Atualiza Dashboard
-        const hojeStr = new Date().toISOString().split('T')[0];
-        let hojeTotal = 0, geralTotal = 0;
+        let hoje = new Date().toISOString().split('T')[0], tHoje = 0, tGeral = 0;
         dbClientes.forEach(cli => {
-            cli.compras.forEach(comp => {
-                geralTotal += comp.valor_total;
-                if(comp.data.startsWith(hojeStr) && comp.valor_total > 0) hojeTotal += comp.valor_total;
+            cli.compras.forEach(co => {
+                tGeral += co.valor_total;
+                if(co.data.startsWith(hoje) && co.valor_total > 0) tHoje += co.valor_total;
             });
         });
-        document.getElementById('totalHoje').innerText = `R$ ${hojeTotal.toFixed(2)}`;
-        document.getElementById('totalGeral').innerText = `R$ ${geralTotal.toFixed(2)}`;
-        
+        document.getElementById('totalHoje').innerText = `R$ ${tHoje.toFixed(2)}`;
+        document.getElementById('totalGeral').innerText = `R$ ${tGeral.toFixed(2)}`;
         render();
     }
 
-    async function carregarConfiguracoes() {
-        const { data } = await _supabase.from('configuracoes').select('*').maybeSingle();
-        if (data) {
-            pixConfig = data;
-            document.getElementById('cfgChavePix').value = data.chave_pix || '';
-            document.getElementById('cfgNomePix').value = data.nome_pix || '';
-        }
-    }
-
-    function configurarRealtime() { 
-        // 1. Limpa qualquer conexão anterior para não travar
-        _supabase.removeAllChannels();
-
-        // 2. Cria um novo canal monitorando TODAS as mudanças na tabela 'public'
-        const canal = _supabase.channel('db-geral')
-            .on(
-                'postgres_changes', 
-                { event: '*', schema: 'public' }, 
-                (payload) => {
-                    console.log('Mudança detectada no banco:', payload);
-                    carregarDados(); // Recarrega a lista e o dashboard
-                }
-            )
-            .subscribe((status) => {
-                console.log("Status da conexão Realtime:", status);
-            });
+    function configurarRealtime() {
+        _supabase.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public' }, () => carregarDados()).subscribe();
     }
 
     function render() {
-    // 1. Captura e limpa o texto da busca (remove espaços extras e ignora acentos/maiúsculas)
-    const buscaRaw = document.getElementById('buscaCliente').value || "";
-    const busca = buscaRaw.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    
-    const listaDiv = document.getElementById('lista');
-    
-    // 2. Limpa a lista antes de renderizar (Mantendo o datalist fixo)
-    listaDiv.innerHTML = ''; 
-    const dataList = document.createElement('datalist');
-    dataList.id = 'lista-prod';
-    dataList.innerHTML = dbProdutos.map(p => `<option value="${p.nome}">`).join('');
-    listaDiv.appendChild(dataList);
-    
-    // 3. Prepara as datas para verificar aniversários
-    const hojeObj = new Date();
-    const amanhaObj = new Date(hojeObj);
-    amanhaObj.setDate(hojeObj.getDate() + 1);
-    const dataHoje = `${String(hojeObj.getDate()).padStart(2, '0')}/${String(hojeObj.getMonth() + 1).padStart(2, '0')}`;
-    const dataAmanha = `${String(amanhaObj.getDate()).padStart(2, '0')}/${String(amanhaObj.getMonth() + 1).padStart(2, '0')}`;
+        const busca = document.getElementById('buscaCliente').value.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const listaDiv = document.getElementById('lista');
+        listaDiv.innerHTML = '';
 
-    // 4. FILTRAGEM: Filtra ignorando acentos
-    const clientesFiltrados = dbClientes.filter(c => {
-        const nomeCliente = (c.nome || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        return nomeCliente.includes(busca);
-    });
+        const dataHoje = `${String(new Date().getDate()).padStart(2, '0')}/${String(new Date().getMonth() + 1).padStart(2, '0')}`;
 
-    // 5. ORDENAÇÃO: Aniversariantes de HOJE no topo apenas se NÃO houver busca ativa
-    // Se estiver pesquisando, mantemos a ordem alfabética para facilitar achar o nome
-    clientesFiltrados.sort((a, b) => {
+        let filtrados = dbClientes.filter(c => c.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(busca));
+
         if (busca === "") {
-            if (a.aniversario === dataHoje && b.aniversario !== dataHoje) return -1;
-            if (a.aniversario !== dataHoje && b.aniversario === dataHoje) return 1;
-        }
-        return a.nome.localeCompare(b.nome);
-    });
-
-    // 6. CONSTRUÇÃO DOS CARDS
-    clientesFiltrados.forEach(c => {
-        const saldo = c.compras ? c.compras.reduce((acc, i) => acc + i.valor_total, 0) : 0;
-        const ehAniversarianteHoje = (c.aniversario === dataHoje);
-        
-        let iconeNiver = "";
-        let classeDestaque = "";
-
-        if (ehAniversarianteHoje) {
-            iconeNiver = `<span class="ico-niver">🎁</span><span class="label-niver-hoje" style="background:var(--primary); color:white; font-size:10px; padding:2px 5px; border-radius:5px; margin-left:5px;">HOJE!</span>`;
-            classeDestaque = "card-niver-destaque";
-        } else if (c.aniversario === dataAmanha) {
-            iconeNiver = `<span class="ico-niver" style="filter: grayscale(100%); opacity: 0.7;">🎁</span>`;
+            filtrados.sort((a, b) => {
+                if (a.aniversario === dataHoje && b.aniversario !== dataHoje) return -1;
+                if (a.aniversario !== dataHoje && b.aniversario === dataHoje) return 1;
+                return a.nome.localeCompare(b.nome);
+            });
         }
 
-        const card = document.createElement('div');
-        card.className = `card ${classeDestaque}`;
-        card.innerHTML = `
-            <div class="card-header">
-                <span style="font-weight:800;">${c.nome.toUpperCase()} ${iconeNiver}</span>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen"></i></button>
-                    <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash"></i></button>
+        filtrados.forEach(c => {
+            const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
+            const isNiver = (c.aniversario === dataHoje);
+            const card = document.createElement('div');
+            card.className = `card ${isNiver ? 'card-niver-destaque' : ''}`;
+            card.innerHTML = `
+                <div class="card-header">
+                    <b>${c.nome.toUpperCase()} ${isNiver ? '<span class="ico-niver">🎁</span><span class="label-niver-hoje">HOJE!</span>' : ''}</b>
+                    <div>
+                        <button onclick="prepararEdicao(${c.id})" style="display:inline; width:auto; background:none; color:blue"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="excluirCliente(${c.id})" style="display:inline; width:auto; background:none; color:red"><i class="fa-solid fa-trash"></i></button>
+                    </div>
                 </div>
-            </div>
-            <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
-            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:5px; margin-bottom: 10px;">
-                <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
-                <input type="number" id="qt-${c.id}" value="1">
-                <input type="number" id="vl-${c.id}" placeholder="R$">
-            </div>
-            <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
-                <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO MENSAL</button>
-            </div>`;
-        listaDiv.appendChild(card);
-    });
-}
+                <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
+                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:5px">
+                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="sugerirPreco(this, ${c.id})">
+                    <input type="number" id="vl-${c.id}" placeholder="R$">
+                </div>
+                <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
+                <button class="btn-action" onclick="abrirHistorico(${c.id})">PAGAMENTO / COBRANÇA</button>
+            `;
+            listaDiv.appendChild(card);
+        });
+    }
 
     async function salvarVenda(id) {
-        const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
-        const qt = parseInt(document.getElementById(`qt-${id}`).value) || 1;
+        const it = document.getElementById(`it-${id}`).value || "DOCE";
         const vl = parseFloat(document.getElementById(`vl-${id}`).value);
-        if(!vl) return alert("Valor é obrigatório!");
-        await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }]);
-        document.getElementById(`it-${id}`).value = ''; 
-        document.getElementById(`vl-${id}`).value = '';
+        if (!vl) return alert("Valor vazio!");
+        await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, valor_total: vl, qtd: 1 }]);
+        alert("Anotado!");
+        carregarDados();
     }
 
-    function atualizarPreco(input, cId) {
-        const prod = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
-        if (prod) document.getElementById(`vl-${cId}`).value = prod.preco;
-    }
-
-    // --- 3. WHATSAPP (CORREÇÃO MOBILE E MENSAGENS UNIFICADAS) ---
-async function enviarZapDoces(tipo) {
-    const c = dbClientes.find(x => x.id === clienteAbertoId);
-    if (!c) return alert("Selecione um cliente primeiro!");
-
-    const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
-    const itensParaEnviar = checks.length > 0 
-        ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
-        : itensPendentesGlobal;
-
-    let texto = "";
-
-    // Lógica para cada tipo de mensagem
-    if (tipo === 'agradecer') {
-        // Mensagem de Carinho / Agradecimento
-        texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! Beijos, Fer. ❤️`;
-    } 
-    else if (tipo === 'pix') {
-        // Mensagem de Cobrança com PIX
-        if (itensParaEnviar.length === 0) return alert("Não há itens pendentes para cobrar!");
+    async function salvarCliente() {
+        const n = document.getElementById('novoNome').value;
+        const t = document.getElementById('novoTel').value;
+        const d = document.getElementById('novoNiver').value;
+        const l = document.getElementById('novoLimite').value;
         
-        let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
+        if (clienteEmEdicao) {
+            await _supabase.from('clientes').update({ nome: n, tel: t, aniversario: d, limite: l }).eq('id', clienteEmEdicao);
+            clienteEmEdicao = null;
+        } else {
+            await _supabase.from('clientes').insert([{ nome: n, tel: t, aniversario: d, limite: l }]);
+        }
         
-        // Pega o nome do mês atual em português
-        const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
-        const mesAtual = meses[new Date().getMonth()];
-
-        // Monta a lista de produtos: ▫️ 10x FATIA DE BOLO: R$ 120.00
-        let listaMsg = itensParaEnviar.map(i => {
-            const qtdTexto = i.qtd > 1 ? `${i.qtd}x ` : "";
-            return `▫️ ${qtdTexto}${i.descricao.toUpperCase()}: R$ ${i.valor_exibir.toFixed(2)}`;
-        }).join('\n');
-        
-        texto = `Olá! Tudo bem? ✨\n\n` +
-                `Estou passando para fecharmos o seu resumo de ${mesAtual} aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:\n\n` +
-                `${listaMsg}\n\n` +
-                `*TOTAL: R$ ${total.toFixed(2)}*\n` +
-                `*PIX:* ${pixConfig.chave_pix}\n` +
-                `*NOME:* ${pixConfig.nome_pix}\n\n` +
-                `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍰❤️`;
-    }
-    else {
-        // Mensagem de Informar Consumo (Últimas Escolhas)
-        if (itensParaEnviar.length === 0) return alert("Não há itens pendentes para informar!");
-        let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao.toUpperCase()}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
-        
-        texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:\n\n${listaMsg}\n\nÉ só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
+        document.querySelectorAll('#mainContainer input').forEach(i => i.value = '');
+        document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE";
+        carregarDados();
     }
 
-    // Disparo seguro para Mobile
-    const telLimpo = c.tel.replace(/\D/g, '');
-    window.location.href = `https://api.whatsapp.com/send?phone=55${telLimpo}&text=${encodeURIComponent(texto)}`;
-}
-
-
-    async function salvarPixAutomatico() {
-        const c = document.getElementById('cfgChavePix').value, n = document.getElementById('cfgNomePix').value;
-        await _supabase.from('configuracoes').upsert({ id: 1, chave_pix: c, nome_pix: n }, { onConflict: 'id' });
-        pixConfig = { chave_pix: c, nome_pix: n };
-    }
-
-    window.abrirResumoConta = (id) => {
+    function prepararEdicao(id) {
         const c = dbClientes.find(x => x.id === id);
-        const mes = new Date().getMonth(), ano = new Date().getFullYear();
-        document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
-        const corpo = document.getElementById('corpoExtrato');
-        corpo.innerHTML = `<div class="extrato-header"><div>DATA</div><div>QTD</div><div>PRODUTO</div><div style="text-align:right">VALOR</div></div>`;
-        const comprasMes = c.compras.filter(i => {
-            const d = new Date(i.data);
-            return i.valor_total > 0 && d.getMonth() === mes && d.getFullYear() === ano;
-        });
-        comprasMes.forEach(i => {
-            corpo.innerHTML += `<div class="extrato-item"><div>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</div><div class="qtd">${i.qtd}x</div><div>${i.descricao}</div><div class="valor">R$ ${i.valor_total.toFixed(2)}</div></div>`;
-        });
-        document.getElementById('modalResumo').style.display = 'block';
-    };
+        clienteEmEdicao = id;
+        document.getElementById('novoNome').value = c.nome;
+        document.getElementById('novoTel').value = c.tel;
+        document.getElementById('novoNiver').value = c.aniversario;
+        document.getElementById('btnCadastrar').innerText = "SALVAR ALTERAÇÕES";
+        window.scrollTo(0,0);
+    }
+
+    async function excluirCliente(id) {
+        if(confirm("Excluir cliente?")) {
+            await _supabase.from('clientes').delete().eq('id', id);
+            carregarDados();
+        }
+    }
+
+    function sugerirPreco(input, id) {
+        const p = dbProdutos.find(x => x.nome.toLowerCase() === input.value.toLowerCase());
+        if (p) document.getElementById(`vl-${id}`).value = p.preco;
+    }
 
     window.abrirHistorico = (id) => {
         clienteAbertoId = id;
         const c = dbClientes.find(x => x.id === id);
         document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
-        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
-        const compras = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
-        itensPendentesGlobal = [];
-        compras.forEach(item => { 
+        
+        let pendentes = [];
+        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((a, b) => a + b.valor_total, 0));
+        let compras = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
+
+        compras.forEach(item => {
             if (totalPagos >= item.valor_total) totalPagos -= item.valor_total;
-            else { itensPendentesGlobal.push({...item, valor_exibir: item.valor_total - totalPagos}); totalPagos = 0; }
+            else { pendentes.push({...item, valor_final: item.valor_total - totalPagos}); totalPagos = 0; }
         });
+
         const lista = document.getElementById('listaItensModal');
-        lista.innerHTML = '';
-        itensPendentesGlobal.forEach(i => {
-            lista.innerHTML += `<label class="item-selecionavel"><input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" onchange="atualizarSoma()"><div class="item-detalhe"><div><small>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</small><br>${i.qtd}x ${i.descricao}</div><b>R$ ${i.valor_exibir.toFixed(2)}</b></div></label>`;
+        lista.innerHTML = pendentes.length ? '' : '<p style="text-align:center">Tudo pago! ✅</p>';
+        pendentes.forEach(i => {
+            lista.innerHTML += `
+                <label class="item-selecionavel">
+                    <input type="checkbox" class="chk-item" data-valor="${i.valor_final}" onchange="atualizarSoma()">
+                    <div style="flex:1">
+                        <small>${new Date(i.data).toLocaleDateString('pt-BR')}</small><br>
+                        ${i.descricao}
+                    </div>
+                    <b>R$ ${i.valor_final.toFixed(2)}</b>
+                </label>
+            `;
         });
-        document.getElementById('modalHistorico').style.display='block';
+        document.getElementById('modalHistorico').style.display = 'block';
     };
 
     window.atualizarSoma = () => {
-        let soma = 0;
-        document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
-        document.getElementById('txtSoma').innerText = `R$ ${soma.toFixed(2)}`;
-        document.getElementById('containerSoma').style.display = soma > 0 ? 'block' : 'none';
+        let s = 0;
+        document.querySelectorAll('.chk-item:checked').forEach(c => s += parseFloat(c.dataset.valor));
+        document.getElementById('txtSoma').innerText = `R$ ${s.toFixed(2)}`;
+        document.getElementById('containerSoma').style.display = s > 0 ? 'block' : 'none';
     };
 
-    window.processarPagamento = async (id) => {
-        let soma = 0;
-        document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
-        if(confirm(`Confirmar R$ ${soma.toFixed(2)}?`)) {
-            await _supabase.from('compras').insert([{ cliente_id: id, descricao: "PAGAMENTO", valor_total: -soma }]);
-            document.getElementById('modalHistorico').style.display = 'none';
+    window.processarPagamento = async () => {
+        let s = 0;
+        document.querySelectorAll('.chk-item:checked').forEach(c => s += parseFloat(c.dataset.valor));
+        if (confirm(`Pagar R$ ${s.toFixed(2)}?`)) {
+            await _supabase.from('compras').insert([{ cliente_id: clienteAbertoId, descricao: "PAGAMENTO", valor_total: -s }]);
+            fecharModais();
+            carregarDados();
         }
     };
 
-    window.prepararEdicao = (id) => {
-        const c = dbClientes.find(x => x.id === id);
-        clienteEmEdicao = id;
-        document.getElementById('novoNome').value = c.nome;
-        document.getElementById('novoTel').value = c.tel;
-        document.getElementById('novoNiver').value = c.aniversario || '';
-        document.getElementById('novoLimite').value = c.limite;
-        document.getElementById('btnCadastrar').innerText = "SALVAR ALTERAÇÕES";
-        window.scrollTo(0,0);
-    };
-
-    window.excluir = async (id) => {
-        if(confirm("Excluir cliente?")) await _supabase.from('clientes').delete().eq('id', id);
-    };
-
-    document.getElementById('btnCadastrar').onclick = async () => {
-        const n = document.getElementById('novoNome').value, t = document.getElementById('novoTel').value, nv = document.getElementById('novoNiver').value, l = document.getElementById('novoLimite').value;
-        const dados = { nome: n, tel: t, aniversario: nv, limite: parseFloat(l) };
-        if(clienteEmEdicao) await _supabase.from('clientes').update(dados).eq('id', clienteEmEdicao);
-        else await _supabase.from('clientes').insert([dados]);
-        clienteEmEdicao = null;
-        document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE";
-        ['novoNome', 'novoTel', 'novoNiver'].forEach(id => document.getElementById(id).value = '');
-        carregarDados();
-    };
-
-    document.getElementById('btnPixZap').onclick = async () => { await salvarPixAutomatico(); enviarZapDoces('pix'); };
-    document.getElementById('btnZapRapido').onclick = () => enviarZapDoces('informar');
-    document.getElementById('btnMensagemCarinho').onclick = () => enviarZapDoces('agradecer');
-    document.getElementById('btnLogin').onclick = async () => {
-        const { error } = await _supabase.auth.signInWithPassword({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value });
-        if(error) alert("Erro!"); else checkUser();
-    };
-
-    function toggleTheme() { document.body.classList.toggle('dark-mode'); localStorage.setItem('tema', document.body.classList.contains('dark-mode') ? 'dark' : 'light'); }
-    function carregarTema() { if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-mode'); }
-    function mascaraData(input) {
-        let v = input.value.replace(/\D/g, "");
-        if (v.length === 1 && /[4-9]/.test(v)) v = "0" + v;
-        if (v.length >= 2) {
-            let d = Math.min(parseInt(v.substring(0,2)), 31);
-            v = String(d).padStart(2, '0') + "/" + v.substring(2);
-        }
-        if (v.length >= 5) {
-            let m = Math.min(parseInt(v.substring(3,5)), 12);
-            v = v.substring(0,3) + String(m).padStart(2, '0');
-        }
-        input.value = v.substring(0,5);
+    function fecharModais() { 
+        document.getElementById('modalHistorico').style.display = 'none';
+        document.getElementById('containerSoma').style.display = 'none';
     }
-    async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
+
+    async function enviarZapDoces(tipo) {
+        const c = dbClientes.find(x => x.id === clienteAbertoId);
+        let msg = "";
+        if (tipo === 'agradecer') msg = "Oi! Muito obrigada pelo pagamento! ✨ Beijos, Fer. ❤️";
+        else if (tipo === 'consumo') msg = `Oi! Passando para informar seu consumo recente. ✨`;
+        else msg = `Oi! Segue o resumo dos seus pedidos para fecharmos. ✨`;
+        
+        window.open(`https://api.whatsapp.com/send?phone=55${c.tel.replace(/\D/g,'')}&text=${encodeURIComponent(msg)}`);
+    }
 
     checkUser();
 </script>
+
 </body>
 </html>
