@@ -108,23 +108,38 @@
             .no-print { display: none !important; }
         }
         /* Card de destaque para o aniversariante */
+/* Card de destaque para o aniversariante */
 .card-niver-destaque {
-    border: 3px solid #ff85a2 !important;
-    background: linear-gradient(145deg, #ffffff, #fff0f3) !important;
-    box-shadow: 0 8px 25px rgba(255, 133, 162, 0.3) !important;
+    border: 3px solid #FFD700 !important; /* Dourado */
+    background: linear-gradient(145deg, #ffffff, #fff9e6) !important;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4) !important;
     transform: scale(1.02);
-    z-index: 10;
+    position: relative;
 }
 
+/* Pequena etiqueta escrita HOJE */
 .label-niver-hoje {
-    background: #ff85a2;
-    color: white;
+    background: #FFD700;
+    color: #000;
     font-size: 10px;
     padding: 2px 8px;
     border-radius: 10px;
     font-weight: 800;
-    margin-left: 5px;
-    vertical-align: middle;
+    margin-left: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Animação do presente para balançar */
+.ico-niver {
+    display: inline-block;
+    animation: balancar 1s infinite;
+}
+
+@keyframes balancar {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(10deg); }
+    75% { transform: rotate(-10deg); }
+    100% { transform: rotate(0deg); }
 }
     </style>
 </head>
@@ -263,13 +278,21 @@
     async function checkUser() {
         carregarTema();
         const { data: { session } } = await _supabase.auth.getSession();
+        
         if (session) {
             document.getElementById('authContainer').style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
-            await carregarDados();
-            carregarConfiguracoes();
-            configurarRealtime();
-            verificarAniversarios();
+            
+            // Carrega os dados primeiro
+            await carregarDados(); 
+            
+            // Só depois de ter os dados, a gente liga o "escultador" (Realtime)
+            // e as outras configurações
+            setTimeout(() => {
+                carregarConfiguracoes();
+                configurarRealtime();
+                verificarAniversarios();
+            }, 500); // Meio segundo de folga para o sistema respirar
         }
     }
 
@@ -304,73 +327,100 @@
     }
 
     function configurarRealtime() { 
-        _supabase.channel('db_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, () => carregarDados())
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => carregarDados())
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'produtos' }, () => carregarDados())
-            .subscribe(); 
+        // 1. Limpa qualquer conexão anterior para não travar
+        _supabase.removeAllChannels();
+
+        // 2. Cria um novo canal monitorando TODAS as mudanças na tabela 'public'
+        const canal = _supabase.channel('db-geral')
+            .on(
+                'postgres_changes', 
+                { event: '*', schema: 'public' }, 
+                (payload) => {
+                    console.log('Mudança detectada no banco:', payload);
+                    carregarDados(); // Recarrega a lista e o dashboard
+                }
+            )
+            .subscribe((status) => {
+                console.log("Status da conexão Realtime:", status);
+            });
     }
 
     function render() {
-        const busca = document.getElementById('buscaCliente').value.toLowerCase();
-        const listaDiv = document.getElementById('lista');
-        
-        listaDiv.innerHTML = '<datalist id="lista-prod">' + dbProdutos.map(p => `<option value="${p.nome}">`).join('') + '</datalist>';
-        
-        const hojeObj = new Date();
-        const amanhaObj = new Date(hojeObj);
-        amanhaObj.setDate(hojeObj.getDate() + 1);
-        const dataHoje = `${String(hojeObj.getDate()).padStart(2, '0')}/${String(hojeObj.getMonth() + 1).padStart(2, '0')}`;
-        const dataAmanha = `${String(amanhaObj.getDate()).padStart(2, '0')}/${String(amanhaObj.getMonth() + 1).padStart(2, '0')}`;
+    // 1. Captura e limpa o texto da busca (remove espaços extras e ignora acentos/maiúsculas)
+    const buscaRaw = document.getElementById('buscaCliente').value || "";
+    const busca = buscaRaw.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    
+    const listaDiv = document.getElementById('lista');
+    
+    // 2. Limpa a lista antes de renderizar (Mantendo o datalist fixo)
+    listaDiv.innerHTML = ''; 
+    const dataList = document.createElement('datalist');
+    dataList.id = 'lista-prod';
+    dataList.innerHTML = dbProdutos.map(p => `<option value="${p.nome}">`).join('');
+    listaDiv.appendChild(dataList);
+    
+    // 3. Prepara as datas para verificar aniversários
+    const hojeObj = new Date();
+    const amanhaObj = new Date(hojeObj);
+    amanhaObj.setDate(hojeObj.getDate() + 1);
+    const dataHoje = `${String(hojeObj.getDate()).padStart(2, '0')}/${String(hojeObj.getMonth() + 1).padStart(2, '0')}`;
+    const dataAmanha = `${String(amanhaObj.getDate()).padStart(2, '0')}/${String(amanhaObj.getMonth() + 1).padStart(2, '0')}`;
 
-        // --- LÓGICA DE ORDENAÇÃO ---
-        const clientesFiltrados = dbClientes.filter(c => c.nome.toLowerCase().includes(busca));
+    // 4. FILTRAGEM: Filtra ignorando acentos
+    const clientesFiltrados = dbClientes.filter(c => {
+        const nomeCliente = (c.nome || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return nomeCliente.includes(busca);
+    });
 
-        // Ordena: Aniversariantes de HOJE primeiro, depois o resto por nome
-        clientesFiltrados.sort((a, b) => {
+    // 5. ORDENAÇÃO: Aniversariantes de HOJE no topo apenas se NÃO houver busca ativa
+    // Se estiver pesquisando, mantemos a ordem alfabética para facilitar achar o nome
+    clientesFiltrados.sort((a, b) => {
+        if (busca === "") {
             if (a.aniversario === dataHoje && b.aniversario !== dataHoje) return -1;
             if (a.aniversario !== dataHoje && b.aniversario === dataHoje) return 1;
-            return a.nome.localeCompare(b.nome); // Ordem alfabética para os demais
-        });
+        }
+        return a.nome.localeCompare(b.nome);
+    });
 
-        clientesFiltrados.forEach(c => {
-            const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
-            const ehAniversarianteHoje = (c.aniversario === dataHoje);
-            
-            let iconeNiver = "";
-            let classeDestaque = "";
+    // 6. CONSTRUÇÃO DOS CARDS
+    clientesFiltrados.forEach(c => {
+        const saldo = c.compras ? c.compras.reduce((acc, i) => acc + i.valor_total, 0) : 0;
+        const ehAniversarianteHoje = (c.aniversario === dataHoje);
+        
+        let iconeNiver = "";
+        let classeDestaque = "";
 
-            if (ehAniversarianteHoje) {
-                iconeNiver = `<span class="ico-niver">🎁</span><span class="label-niver-hoje">HOJE!</span>`;
-                classeDestaque = "card-niver-destaque";
-            } else if (c.aniversario === dataAmanha) {
-                iconeNiver = `<span class="ico-niver" style="filter: grayscale(100%); opacity: 0.7;">🎁</span>`;
-            }
+        if (ehAniversarianteHoje) {
+            iconeNiver = `<span class="ico-niver">🎁</span><span class="label-niver-hoje" style="background:var(--primary); color:white; font-size:10px; padding:2px 5px; border-radius:5px; margin-left:5px;">HOJE!</span>`;
+            classeDestaque = "card-niver-destaque";
+        } else if (c.aniversario === dataAmanha) {
+            iconeNiver = `<span class="ico-niver" style="filter: grayscale(100%); opacity: 0.7;">🎁</span>`;
+        }
 
-            const card = document.createElement('div');
-            card.className = `card ${classeDestaque}`; // Aplica a classe de destaque se for niver hoje
-            card.innerHTML = `
-                <div class="card-header">
-                    <span style="font-weight:800;">${c.nome.toUpperCase()} ${iconeNiver}</span>
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash"></i></button>
-                    </div>
+        const card = document.createElement('div');
+        card.className = `card ${classeDestaque}`;
+        card.innerHTML = `
+            <div class="card-header">
+                <span style="font-weight:800;">${c.nome.toUpperCase()} ${iconeNiver}</span>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash"></i></button>
                 </div>
-                <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
-                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:5px; margin-bottom: 10px;">
-                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
-                    <input type="number" id="qt-${c.id}" value="1">
-                    <input type="number" id="vl-${c.id}" placeholder="R$">
-                </div>
-                <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                    <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
-                    <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO MENSAL</button>
-                </div>`;
-            listaDiv.appendChild(card);
-        });
-    }
+            </div>
+            <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:5px; margin-bottom: 10px;">
+                <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
+                <input type="number" id="qt-${c.id}" value="1">
+                <input type="number" id="vl-${c.id}" placeholder="R$">
+            </div>
+            <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
+                <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO MENSAL</button>
+            </div>`;
+        listaDiv.appendChild(card);
+    });
+}
 
     async function salvarVenda(id) {
         const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
