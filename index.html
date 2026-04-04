@@ -189,7 +189,7 @@
         
     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
         <input type="text" id="prodNome" placeholder="Nome do Doce (ex: Brigadeiro)">
-        <input type="tel" id="prodPreco" placeholder="Preço R$" step="0.01">
+        <input type="text" inputmode="decimal" id="prodPreco" placeholder="Preço R$" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
     </div>
     <button id="btnSalvarProduto" class="btn-main" style="background: var(--success);">
         <i class="fa-solid fa-plus"></i> SALVAR PRODUTO
