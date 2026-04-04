@@ -11,9 +11,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="#ff85a2">
     <meta name="theme-color" content="#ff85a2">
 
-    <title>Brasil Doces® | Gestão Premium</title>
+    <title>Brasil Doces®</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -21,8 +21,7 @@
         :root { 
             --bg: #fff0f3; --card: #ffffff; --primary: #ff85a2; --accent: #d63384; 
             --text: #4a4a4a; --danger: #e74c3c; --border: #ffd1dc; --success: #2ecc71;
-            --brown: #6d4c41; --info: #3498db; --gold: #FFD700;
-            --shadow: 0 8px 30px rgba(214, 51, 132, 0.1);
+            --brown: #6d4c41; --info: #3498db;
         }
 
         body.dark-mode {
@@ -30,304 +29,581 @@
             --primary: #ffb1c1; --accent: #ff85a2; --brown: #ffdadf; --success: #4cd137;
         }
 
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; transition: all 0.3s ease; line-height: 1.5; }
-        
-        #authContainer { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; width: 100%; background: var(--bg); padding: 20px; box-sizing: border-box; }
-        .login-card { background: var(--card); padding: 40px 30px; border-radius: 30px; width: 100%; max-width: 350px; box-shadow: var(--shadow); border: 1px solid var(--border); text-align: center; }
-        
-        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .zn-brand-text { font-family: 'Pacifico', cursive; font-size: 1.8em; color: var(--brown); margin: 0; }
-        .zn-slogan { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); display: block; margin-top: -5px; }
-        
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .dash-box { background: var(--card); padding: 20px; border-radius: 20px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
-        .dash-label { font-size: 10px; font-weight: 800; color: #999; text-transform: uppercase; margin-bottom: 8px; display: block; }
-        .dash-val { font-size: 1.3em; font-weight: 800; color: var(--accent); }
+        body.dark-mode .zn-brand-text { color: var(--primary); }
+        body.dark-mode .price-tag { color: var(--primary); }
+        body.dark-mode .dash-val { color: var(--primary); }
+        body.dark-mode input { background: #252525; border-color: #444; }
+        body.dark-mode .btn-action { background: #2a2a2a; color: var(--primary); border-color: var(--border); }
+        body.dark-mode .zn-slogan { color: #b5a1a1; }
 
-        .card { background: var(--card); padding: 20px; border-radius: 24px; margin-bottom: 20px; border: 1px solid var(--border); border-left: 6px solid var(--primary); position: relative; transition: transform 0.2s; box-shadow: var(--shadow); }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; transition: background 0.3s, color 0.3s; }
         
-        .card-niver-destaque {
-            border: 3px solid var(--gold) !important;
-            background: linear-gradient(145deg, var(--card), #fffcf0) !important;
-            box-shadow: 0 0 25px rgba(255, 215, 0, 0.3) !important;
-            transform: scale(1.02);
-            z-index: 10;
+        #authContainer { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; width: 100%; background-color: var(--bg); padding: 20px; box-sizing: border-box; }
+        .login-logo { width: 220px; height: auto; display: block; margin: 0 auto -25px auto; mix-blend-mode: multiply; position: relative; z-index: 10; }
+        .login-card { background: var(--card); padding: 30px; border-radius: 24px; width: 100%; max-width: 320px; box-shadow: 0 10px 30px rgba(214, 51, 132, 0.1); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .zn-brand-container { display: flex; align-items: center; gap: 12px; }
+        .zn-column-titles { display: flex; flex-direction: column; justify-content: center; }
+        .zn-brand-text { font-family: 'Pacifico', cursive; font-size: 1.6em; color: var(--brown); margin: 0; line-height: 1.1; }
+        .zn-slogan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #8e736b; margin-top: -2px; }
+        
+        .header-actions { display: flex; gap: 8px; align-items: center; }
+        .btn-logout { background: white; border: 1px solid var(--danger); color: var(--danger); padding: 8px 15px; border-radius: 10px; font-size: 12px; width: auto; margin: 0; font-weight: 700; }
+        .btn-theme { background: var(--card); border: 1px solid var(--border); color: var(--accent); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; }
+
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .dash-label { font-size: 10px; color: #999; text-transform: uppercase; display: block; margin-bottom: 5px; font-weight: 700; }
+        .dash-val { font-size: 1.2em; font-weight: 800; color: var(--accent); }
+
+        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 18px; border: 1px solid var(--border); border-left: 5px solid var(--primary); position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .price-tag { color: var(--brown); font-size: 1.8em; font-weight: 900; margin-bottom: 12px; display: block; }
+
+        input { width: 100%; padding: 14px; margin: 6px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); box-sizing: border-box; font-size: 16px; outline: none; }
+        button { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
+        .btn-main { background: var(--accent); color: white; transition: 0.3s; }
+        .btn-action { background: var(--card); color: var(--brown); border: 1px solid var(--border); }
+        .btn-zap { background: #25D366; color: white; }
+        
+        .btn-delete { color: #ddd; background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
+        .btn-edit { color: var(--info); background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
+
+        /* ESTILO DO MODAL */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--card); border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; color: var(--text); border: 1px solid var(--border); }
+        
+        #nomeClienteModal, #nomeClienteResumo { color: var(--text) !important; text-align: center; font-weight: 800 !important; font-size: 1.5em !important; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: block; }
+        .modal-section-title { font-weight: 800; font-size: 11px; color: #999; text-transform: uppercase; margin: 15px 0 10px 5px; display: block; letter-spacing: 0.5px; }
+
+        .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 10px; transition: background 0.2s; }
+        .item-detalhe { flex: 1; display: flex; justify-content: space-between; align-items: center; font-size: 0.95em; }
+        .chk-item { width: 18px; height: 18px; flex-shrink: 0; margin: 0; cursor: pointer; }
+
+        /* AJUSTE CARD PIX BRASIL DOCES */
+        .box-pix-config { background: #fff5f7; padding: 18px; border-radius: 18px; margin-top: 15px; border: 2px solid var(--border); }
+        .label-pix-small { color: var(--accent); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; display: block; letter-spacing: 1px; }
+        .input-pix-dark { background: #fff !important; border: 1px solid var(--border) !important; color: var(--brown) !important; padding: 10px !important; border-radius: 10px !important; font-size: 14px !important; text-align: center; margin-bottom: 10px !important; }
+
+        .extrato-container { background: var(--card); border: 1px dashed var(--border); border-radius: 12px; padding: 15px; font-size: 0.9em; color: var(--text); }
+        .extrato-header { display: grid; grid-template-columns: 45px 35px 1fr 70px; gap: 5px; font-weight: 800; font-size: 10px; text-transform: uppercase; color: #999; border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-bottom: 10px; }
+        .extrato-item { display: grid; grid-template-columns: 45px 35px 1fr 70px; gap: 5px; padding: 8px 0; border-bottom: 1px solid var(--border); align-items: center; }
+        .extrato-item .qtd { font-weight: 700; color: var(--accent); text-align: center; }
+        .extrato-item .valor { text-align: right; font-weight: 700; color: var(--success); }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* TELA TUDO PAGO */
-        .tela-tudo-pago {
-            text-align: center;
-            padding: 40px 20px;
-            background: linear-gradient(145deg, #f0fff4, #ffffff);
-            border-radius: 25px;
-            border: 2px dashed var(--success);
-            margin: 20px 0;
-            animation: fadeIn 0.5s ease;
+        #containerSoma { background: var(--bg); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border); display: none; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #modalResumo, #modalResumo * { visibility: visible; }
+            #modalResumo { position: absolute; left: 0; top: 0; width: 100%; height: auto; background: white; }
+            .modal-content { max-height: none !important; overflow: visible !important; border: none !important; width: 100% !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+            .no-print { display: none !important; }
         }
-        .tela-tudo-pago i { font-size: 60px; color: var(--success); margin-bottom: 15px; display: block; }
-        .tela-tudo-pago h2 { color: #27ae60; font-weight: 800; margin: 0; font-family: 'Inter'; }
+        /* Animação para o ícone de presente brilhar */
+.ico-niver {
+    color: #ff85a2;
+    margin-left: 8px;
+    font-size: 1.2em;
+    animation: niver-pulse 1.5s infinite;
+    display: inline-block;
+}
 
-        .price-tag { color: var(--brown); font-size: 2em; font-weight: 900; margin: 10px 0; display: block; letter-spacing: -1px; }
-        
-        input { width: 100%; padding: 15px; margin: 8px 0; border-radius: 15px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 16px; box-sizing: border-box; }
-        button { padding: 15px; border-radius: 15px; border: none; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
-        
-        .btn-main { background: var(--accent); color: white; width: 100%; margin-top: 10px; }
-        .btn-action { background: var(--card); color: var(--brown); border: 1px solid var(--border); width: 100%; margin-top: 10px; }
-        .btn-zap { background: #25D366; color: white; width: 100%; }
-        .btn-danger { background: #fee; color: var(--danger); border: 1px solid #fcc; }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; padding: 20px; box-sizing: border-box; backdrop-filter: blur(8px); }
-        .modal-content { background: var(--card); border-radius: 30px; padding: 30px; max-width: 450px; margin: auto; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border); position: relative; }
-        
-        .item-selecionavel { display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid var(--border); border-radius: 12px; }
-        .chk-item { width: 22px; height: 22px; accent-color: var(--accent); }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes niver-pulse {
+    0% { transform: scale(1); filter: drop-shadow(0 0 0px #ff85a2); }
+    50% { transform: scale(1.2); filter: drop-shadow(0 0 5px #ff85a2); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 0px #ff85a2); }
+}
     </style>
 </head>
 <body>
 
 <div id="authContainer">
+    <img src="logo.png" alt="Brasil Doces" class="login-logo">
     <div class="login-card">
-        <img src="logo.png" alt="Logo" style="width:120px; margin-bottom:20px">
-        <h2 style="font-family:'Pacifico'">Olá, Fer! ✨</h2>
         <input type="email" id="loginEmail" placeholder="E-mail">
         <input type="password" id="loginPassword" placeholder="Senha">
-        <button onclick="handleLogin()" class="btn-main">ENTRAR</button>
+        <button id="btnLogin" class="btn-main">ACESSAR SISTEMA</button>
     </div>
 </div>
 
-<div id="mainContainer" style="display:none; max-width:500px; margin:auto;">
+<div id="mainContainer" style="display:none; max-width:480px; margin:auto;">
     <div class="header-top">
-        <div>
-            <h1 class="zn-brand-text">Brasil Doces</h1>
-            <span class="zn-slogan">Sabor que abraça ♡</span>
+        <div class="zn-brand-container">
+            <div class="zn-column-titles">
+                <h1 class="zn-brand-text">Brasil Doces</h1>
+                <span class="zn-slogan">Feito com amor ♡</span>
+            </div>
         </div>
-        <div style="display:flex; gap:10px">
-            <button onclick="toggleDarkMode()" class="btn-action" style="width:45px; border-radius:50%"><i class="fa-solid fa-moon"></i></button>
-            <button onclick="handleLogout()" class="btn-danger" style="width:45px; border-radius:50%"><i class="fa-solid fa-right-from-bracket"></i></button>
+        <div class="header-actions">
+            <button onclick="window.location.reload()" class="btn-theme" title="Atualizar">
+                <i class="fa-solid fa-rotate"></i>
+            </button>
+            <button class="btn-theme" onclick="toggleTheme()" id="themeBtn" title="Alternar Tema">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button onclick="sair()" class="btn-logout">SAIR</button>
         </div>
     </div>
 
     <div class="dashboard-grid">
-        <div class="dash-box"><span class="dash-label">Hoje</span><div class="dash-val" id="totalHoje">R$ 0,00</div></div>
-        <div class="dash-box"><span class="dash-label">A Receber</span><div class="dash-val" id="totalGeral">R$ 0,00</div></div>
+        <div class="dash-box"><span class="dash-label">PEDIDOS HOJE</span><div class="dash-val" id="totalHoje">R$ 0,00</div></div>
+        <div class="dash-box"><span class="dash-label">SALDO CLIENTES</span><div class="dash-val" id="totalGeral">R$ 0,00</div></div>
     </div>
 
-    <div class="card" style="border-top: 4px solid var(--accent); border-left:none">
-        <h3 id="tituloForm" style="margin-top:0">Novo Cliente</h3>
+    <div class="card" style="border-top: 3px solid var(--accent); border-left: none;">
+        <div id="tituloFormCliente" style="font-weight: 800; margin-bottom: 10px; color: var(--brown);">CADASTRAR NOVO CLIENTE</div>
         <input type="text" id="novoNome" placeholder="Nome Completo">
-        <input type="tel" id="novoTel" placeholder="WhatsApp" oninput="maskTel(this)">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-            <input type="text" id="novoNiver" placeholder="Niver (DD/MM)" maxlength="5" oninput="maskData(this)">
-            <input type="number" id="novoLimite" placeholder="Limite R$" value="1000">
-        </div>
-        <button onclick="saveCliente()" class="btn-main">SALVAR CLIENTE</button>
+        <input type="tel" id="novoTel" placeholder="WhatsApp">
+        <input type="text" id="novoNiver" placeholder="Aniversário (Ex: 15/04)" maxlength="5" oninput="mascaraData(this)">
+        <input type="number" id="novoLimite" placeholder="Limite de Crédito" value="1000">
+        <button id="btnCadastrar" class="btn-main">ADICIONAR CLIENTE</button>
     </div>
 
-    <input type="text" id="inputBusca" placeholder="🔍 Procurar cliente..." onkeyup="renderizarClientes()" style="position:sticky; top:10px; z-index:100;">
-
-    <div id="listaClientes"></div>
+    <input type="text" id="buscaCliente" placeholder="🔍 Procurar por nome..." onkeyup="render()">
+    <div id="lista"></div>
 </div>
 
-<div id="modalCobranca" class="modal">
+<div id="modalHistorico" class="modal">
     <div class="modal-content">
-        <h2 id="nomeCliModal" style="text-align:center; font-family:'Pacifico'; color:var(--brown)"></h2>
+        <h3 id="nomeClienteModal"></h3>
         
-        <div id="containerAcoesZap" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px">
-            <button class="btn-zap" style="background:var(--info)" onclick="sendZap('consumo')"><i class="fa-solid fa-receipt"></i> CONSUMO</button>
-            <button class="btn-zap" onclick="sendZap('pix')"><i class="fa-solid fa-bolt"></i> PIX</button>
-        </div>
+        <button id="btnZapRapido" class="btn-zap" style="margin-bottom: 20px;">
+            <i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO
+        </button>
 
-        <div id="listaPendentes"></div>
-
-        <div id="areaPagamento" style="display:none; background:rgba(46, 204, 113, 0.1); padding:20px; border-radius:20px; border:2px dashed var(--success); margin-top:15px">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
-                <span style="font-weight:800">TOTAL:</span>
-                <span id="txtTotalSelecao" style="font-size:1.4em; font-weight:900; color:var(--success)">R$ 0,00</span>
+        <span class="modal-section-title">Itens Pendentes</span>
+        <div id="listaItensModal"></div>
+        
+        <div id="containerSoma">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 12px; font-weight: bold; color: var(--brown);">TOTAL SELECIONADO:</span>
+                <span id="txtSoma" style="font-size: 18px; font-weight: 800; color: var(--accent);">R$ 0,00</span>
             </div>
-            <button class="btn-main" style="background:var(--success)" onclick="confirmarPagamento()">BAIXAR PAGAMENTO</button>
+            <button id="btnPagarSelecionados" class="btn-main" style="margin-top: 10px; background: var(--success);" onclick="processarPagamento(clienteAbertoId)">
+                <i class="fa-solid fa-check-double"></i> PAGAR SELECIONADOS
+            </button>
         </div>
 
-        <div id="configPixArea" style="background:#f9f9f9; padding:15px; border-radius:15px; margin-top:20px">
-            <span class="dash-label">Dados para Cobrança</span>
-            <input type="text" id="cfgPixChave" placeholder="Sua Chave Pix" onchange="saveLocalConfigs()">
-            <input type="text" id="cfgPixNome" placeholder="Nome do Titular" onchange="saveLocalConfigs()">
+        <div class="box-pix-config">
+            <span class="label-pix-small">SUA CHAVE PIX:</span>
+            <input type="text" id="cfgChavePix" class="input-pix-dark" placeholder="Celular ou CPF">
+            <span class="label-pix-small">TITULAR DA CONTA:</span>
+            <input type="text" id="cfgNomePix" class="input-pix-dark" placeholder="Nome do Titular">
+            
+            <button id="btnPixZap" class="btn-zap" style="background:#3498db; margin-top:5px;">
+                <i class="fa-solid fa-paper-plane"></i> COBRAR E ENVIAR CHAVE PIX
+            </button>
         </div>
 
-        <button onclick="closeModals()" class="btn-action">VOLTAR</button>
+        <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
+            <button id="btnMensagemCarinho" class="btn-action" style="background:#e8f8f5; border:1px solid var(--success); color:#1a1a1a">
+                <i class="fa-solid fa-heart" style="color:var(--success);"></i> AGRADECER PAGAMENTO
+            </button>
+            <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalResumo" class="modal">
+    <div class="modal-content">
+        <h3 id="nomeClienteResumo"></h3>
+        <p style="text-align:center; font-size:11px; color:#999; margin-bottom:15px; font-weight:700;">HISTÓRICO DE PRODUTOS QUITADOS</p>
+        <div class="extrato-container" id="corpoExtrato"></div>
+        <button onclick="window.print()" class="btn-action no-print" style="margin-top: 15px; background: #f8f9fa; color:#333">
+            <i class="fa-solid fa-file-pdf" style="color: #e74c3c;"></i> SALVAR EXTRATO (PDF)
+        </button>
+        <button onclick="document.getElementById('modalResumo').style.display='none'" class="btn-main no-print" style="margin-top:10px;">FECHAR</button>
     </div>
 </div>
 
 <script>
-    const S_URL = 'https://ebfkwuslmneswvovygwh.supabase.co';
-    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViZmt3dXNsbW5lc3d2b3Z5Z3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzU3NzUsImV4cCI6MjA5MDc1MTc3NX0.ElCyWYPr330VLsY6LZIa41Fg9QR_VaHeBj36jQ8oVt0';
-    const _supabase = supabase.createClient(S_URL, S_KEY);
+    const SUPABASE_URL = 'https://ebfkwuslmneswvovygwh.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViZmt3dXNsbW5lc3d2b3Z5Z3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzU3NzUsImV4cCI6MjA5MDc1MTc3NX0.ElCyWYPr330VLsY6LZIa41Fg9QR_VaHeBj36jQ8oVt0'; 
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let DATA_CLIENTES = [], DATA_PRODUTOS = [], CLIENTE_ATIVO_ID = null;
+    let dbClientes = [], dbProdutos = [], clienteEmEdicao = null;
+    let pixConfig = { chave_pix: '', nome_pix: '' }; 
+    let clienteAbertoId = null; 
+    let itensPendentesGlobal = []; 
 
-    async function init() {
+    // --- 1. AVISO DE ANIVERSÁRIO (1 DIA ANTES - APARECE 1 VEZ POR SESSÃO) ---
+    function verificarAniversarios() {
+        // Verifica se já mostramos o aviso nesta sessão de uso
+        if (sessionStorage.getItem('avisoAniversarioMostrado') === 'true') {
+            return; // Se já mostrou, sai da função e não faz nada
+        }
+
+        const hoje = new Date();
+        const amanha = new Date(hoje);
+        amanha.setDate(hoje.getDate() + 1);
+        const diaAmanha = String(amanha.getDate()).padStart(2, '0');
+        const mesAmanha = String(amanha.getMonth() + 1).padStart(2, '0');
+        const dataBusca = `${diaAmanha}/${mesAmanha}`;
+
+        const aniversariantes = dbClientes.filter(c => c.aniversario === dataBusca);
+        
+        if (aniversariantes.length > 0) {
+            aniversariantes.forEach(c => {
+                const alerta = document.createElement('div');
+                alerta.style = "position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--primary); color:white; padding:15px 25px; border-radius:50px; z-index:9999; box-shadow:0 10px 25px rgba(0,0,0,0.2); font-weight:800; animation: bounceIn 1s infinite alternate; border: 2px solid white;";
+                alerta.innerHTML = `🎉 AMANHÃ É ANIVERSÁRIO DE ${c.nome.toUpperCase()}! 🎂`;
+                document.body.appendChild(alerta);
+                
+                // Remove o alerta visual após 8 segundos
+                setTimeout(() => alerta.remove(), 8000);
+            });
+
+            // Marca que o aviso já foi exibido nesta sessão
+            sessionStorage.setItem('avisoAniversarioMostrado', 'true');
+        }
+    }
+
+    async function checkUser() {
+        carregarTema();
         const { data: { session } } = await _supabase.auth.getSession();
         if (session) {
             document.getElementById('authContainer').style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
-            loadLocalConfigs();
-            await fetchData();
-            setupRealtime();
+            await carregarDados();
+            carregarConfiguracoes();
+            configurarRealtime();
+            verificarAniversarios();
         }
     }
 
-    async function fetchData() {
+    async function carregarDados() {
         const { data: p } = await _supabase.from('produtos').select('*').order('nome');
-        DATA_PRODUTOS = p || [];
+        dbProdutos = p || [];
         const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
-        DATA_CLIENTES = c || [];
-        updateDashboard();
-        renderizarClientes();
+        dbClientes = c || [];
+        render();
     }
 
-    function setupRealtime() {
-        _supabase.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public' }, () => fetchData()).subscribe();
+    async function carregarConfiguracoes() {
+        const { data } = await _supabase.from('configuracoes').select('*').maybeSingle();
+        if (data) {
+            pixConfig = data;
+            document.getElementById('cfgChavePix').value = data.chave_pix || '';
+            document.getElementById('cfgNomePix').value = data.nome_pix || '';
+        }
     }
 
-    function updateDashboard() {
-        const hoje = new Date().toISOString().split('T')[0];
-        let tHoje = 0, tGeral = 0;
-        DATA_CLIENTES.forEach(cli => {
-            cli.compras.forEach(co => {
-                tGeral += co.valor_total;
-                if(co.created_at.startsWith(hoje) && co.valor_total > 0) tHoje += co.valor_total;
-            });
-        });
-        document.getElementById('totalHoje').innerText = `R$ ${tHoje.toFixed(2)}`;
-        document.getElementById('totalGeral').innerText = `R$ ${tGeral.toFixed(2)}`;
-    }
-
-    function renderizarClientes() {
-        const busca = document.getElementById('inputBusca').value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const container = document.getElementById('listaClientes');
-        container.innerHTML = '';
-        const dataHoje = `${String(new Date().getDate()).padStart(2, '0')}/${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-
-        DATA_CLIENTES.filter(c => c.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(busca))
-        .sort((a,b) => (a.aniversario === dataHoje ? -1 : 1))
-        .forEach(c => {
-            const saldo = c.compras.reduce((acc, cur) => acc + cur.valor_total, 0);
-            const card = document.createElement('div');
-            card.className = `card ${c.aniversario === dataHoje ? 'card-niver-destaque' : ''}`;
-            card.innerHTML = `
-                <div style="display:flex; justify-content:space-between">
-                    <b>${c.nome.toUpperCase()} ${c.aniversario === dataHoje ? '🎁' : ''}</b>
-                    <i class="fa-solid fa-trash" onclick="deletarCliente(${c.id})" style="color:#ccc"></i>
-                </div>
-                <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
-                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:8px">
-                    <input type="text" id="it-${c.id}" list="dl-prod" placeholder="Produto">
-                    <input type="number" id="vl-${c.id}" placeholder="R$">
-                </div>
-                <button onclick="addVenda(${c.id})" class="btn-main">ANOTAR PEDIDO</button>
-                <button onclick="openCobranca(${c.id})" class="btn-action">VER PENDÊNCIAS / COBRAR</button>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    async function openCobranca(id) {
-        CLIENTE_ATIVO_ID = id;
-        const cli = DATA_CLIENTES.find(x => x.id === id);
-        const container = document.getElementById('listaPendentes');
-        document.getElementById('nomeCliModal').innerText = cli.nome.toUpperCase();
+    // --- 2. RESUMO MENSAL AUTOMÁTICO ---
+    window.abrirResumoConta = (id) => {
+        const c = dbClientes.find(x => x.id === id);
+        const mesAtual = new Date().getMonth();
+        const anoAtual = new Date().getFullYear();
         
-        let pendentes = [];
-        let totalPagoGlobal = Math.abs(cli.compras.filter(i => i.valor_total < 0).reduce((a,b) => a+b.valor_total, 0));
-        let soVendas = cli.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+        document.getElementById('nomeClienteResumo').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center">
+                <span>${c.nome.toUpperCase()}</span>
+                <button onclick="document.getElementById('modalResumo').style.display='none'" style="width:30px; background:none; color:var(--danger); font-size:24px;">&times;</button>
+            </div>`;
 
-        soVendas.forEach(v => {
-            if (totalPagoGlobal >= v.valor_total) totalPagoGlobal -= v.valor_total;
-            else { pendentes.push({...v, valor_restante: v.valor_total - totalPagoGlobal}); totalPagoGlobal = 0; }
+        const corpo = document.getElementById('corpoExtrato');
+        const agora = new Date();
+        corpo.innerHTML = `
+            <div style="text-align:center; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                <img src="logo.png" style="width:80px; mix-blend-mode:multiply;"><br>
+                <b style="font-size:14px;">RECIBO DE CONSUMO - ${agora.toLocaleDateString()}</b><br>
+                <small>Gerado em: ${agora.toLocaleTimeString()}</small>
+            </div>
+            <div class="extrato-header"><div>DATA</div><div>QTD</div><div>PRODUTO</div><div style="text-align:right">VALOR</div></div>`;
+        
+        // Filtra apenas compras do mês atual
+        const comprasMes = c.compras.filter(i => {
+            const dataI = new Date(i.data);
+            return i.valor_total > 0 && dataI.getMonth() === mesAtual && dataI.getFullYear() === anoAtual;
         });
 
-        // TELA TUDO PAGO (O QUE VOCÊ PEDIU)
-        if (pendentes.length === 0) {
-            document.getElementById('containerAcoesZap').style.display = 'none';
-            container.innerHTML = `
-                <div class="tela-tudo-pago">
-                    <i class="fa-solid fa-circle-check"></i>
-                    <h2>TUDO PAGO!</h2>
-                    <p>${totalPagoGlobal > 0 ? `Cliente com R$ ${totalPagoGlobal.toFixed(2)} de crédito!` : 'Nenhuma pendência encontrada.'}</p>
-                    <button class="btn-zap" style="margin-top:15px" onclick="sendZap('agradecer')">
-                        <i class="fa-solid fa-heart"></i> ENVIAR AGRADECIMENTO
-                    </button>
-                </div>
-            `;
-            document.getElementById('areaPagamento').style.display = 'none';
-        } else {
-            document.getElementById('containerAcoesZap').style.display = 'grid';
-            container.innerHTML = '';
-            pendentes.forEach(p => {
-                container.innerHTML += `
-                    <label class="item-selecionavel">
-                        <input type="checkbox" class="chk-item" data-valor="${p.valor_restante}" data-desc="${p.descricao}" onchange="calcSomaModal()">
-                        <div style="flex:1"><b>${p.descricao}</b><br><small>${new Date(p.created_at).toLocaleDateString()}</small></div>
-                        <b style="color:var(--accent)">R$ ${p.valor_restante.toFixed(2)}</b>
-                    </label>
-                `;
-            });
-        }
-        document.getElementById('modalCobranca').style.display = 'block';
-    }
+        comprasMes.forEach(i => {
+            corpo.innerHTML += `<div class="extrato-item"><div>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</div><div class="qtd">${i.qtd}x</div><div>${i.descricao}</div><div class="valor">R$ ${i.valor_total.toFixed(2)}</div></div>`;
+        });
 
-    function sendZap(tipo) {
-        const cli = DATA_CLIENTES.find(x => x.id === CLIENTE_ATIVO_ID);
-        const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
-        const meses = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-        const mes = meses[new Date().getMonth()];
-        const pix = document.getElementById('cfgPixChave').value;
-        const titular = document.getElementById('cfgPixNome').value;
+        const totalMes = comprasMes.reduce((acc, i) => acc + i.valor_total, 0);
+        corpo.innerHTML += `<div style="margin-top:15px; text-align:right; font-weight:800; color:var(--accent); font-size:16px;">TOTAL DO MÊS: R$ ${totalMes.toFixed(2)}</div>`;
         
-        let lista = "", total = 0;
-        checks.forEach(c => { lista += `▫️ ${c.dataset.desc}: R$ ${c.dataset.valor}\n`; total += parseFloat(c.dataset.valor); });
+        document.getElementById('modalResumo').style.display = 'block';
+    };
 
-        let msg = "";
-        if (tipo === 'agradecer') {
-            msg = `Oi! ✨ Passando para agradecer pelo seu pagamento e pela preferência. É um prazer ter você como cliente! Beijos, Fer. ❤️`;
-        } else if (tipo === 'pix') {
-            msg = `Olá! ✨ Resumo de *${mes}* na Brasil Doces:\n\n${lista}\n*Total: R$ ${total.toFixed(2)}*\n\n📌 *Pix:* ${pix}\n👤 *Nome:* ${titular}\n\nMe avisa quando puder? Obrigada! ❤️`;
+    async function salvarPixAutomatico() {
+        const chave = document.getElementById('cfgChavePix').value;
+        const nome = document.getElementById('cfgNomePix').value;
+
+        // O upsert precisa do 'onConflict' para saber que o 'id' é a chave de verificação
+        const { error } = await _supabase
+            .from('configuracoes')
+            .upsert(
+                { id: 1, chave_pix: chave, nome_pix: nome }, 
+                { onConflict: 'id' }
+            );
+
+        if (error) {
+            console.error("Erro ao salvar Pix:", error.message);
+            // Opcional: alert("Erro ao salvar configurações Pix.");
         } else {
-            msg = `Oi! ✨ Segue o seu consumo recente aqui na Brasil Doces:\n\n${lista}\nÉ apenas para seu controle! Beijos. ❤️`;
-        }
-        window.open(`https://api.whatsapp.com/send?phone=55${cli.tel.replace(/\D/g,'')}&text=${encodeURIComponent(msg)}`);
-    }
-
-    function calcSomaModal() {
-        let total = 0;
-        document.querySelectorAll('.chk-item:checked').forEach(c => total += parseFloat(c.dataset.valor));
-        document.getElementById('txtTotalSelecao').innerText = `R$ ${total.toFixed(2)}`;
-        document.getElementById('areaPagamento').style.display = total > 0 ? 'block' : 'none';
-    }
-
-    async function confirmarPagamento() {
-        let total = 0;
-        document.querySelectorAll('.chk-item:checked').forEach(c => total += parseFloat(c.dataset.valor));
-        if (confirm(`Receber R$ ${total.toFixed(2)}?`)) {
-            await _supabase.from('compras').insert([{ cliente_id: CLIENTE_ATIVO_ID, descricao: 'PAGAMENTO', valor_total: -total }]);
-            closeModals();
+            pixConfig = { chave_pix: chave, nome_pix: nome };
+            console.log("Configurações Pix salvas com sucesso!");
         }
     }
 
-    // Utilitários de Máscara e Login
-    function maskData(i) { let v = i.value.replace(/\D/g,''); if (v.length > 2) v = v.substring(0,2) + '/' + v.substring(2,4); i.value = v; }
-    function maskTel(i) { let v = i.value.replace(/\D/g,''); i.value = v.substring(0,11); }
-    function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
-    function saveLocalConfigs() { localStorage.setItem('px_c', document.getElementById('cfgPixChave').value); localStorage.setItem('px_n', document.getElementById('cfgPixNome').value); }
-    function loadLocalConfigs() { document.getElementById('cfgPixChave').value = localStorage.getItem('px_c') || ''; document.getElementById('cfgPixNome').value = localStorage.getItem('px_n') || ''; }
-    async function handleLogin() { 
-        const { error } = await _supabase.auth.signInWithPassword({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value });
-        if (error) alert("Erro!"); else init();
+    // --- 3. WHATSAPP (CORREÇÃO MOBILE E MENSAGENS UNIFICADAS) ---
+async function enviarZapDoces(tipo) {
+    const c = dbClientes.find(x => x.id === clienteAbertoId);
+    if (!c) return alert("Selecione um cliente primeiro!");
+
+    const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
+    const itensParaEnviar = checks.length > 0 
+        ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
+        : itensPendentesGlobal;
+
+    let texto = "";
+
+    // Lógica para cada tipo de mensagem
+    if (tipo === 'agradecer') {
+        // Mensagem de Carinho / Agradecimento
+        texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! Beijos, Fer. ❤️`;
+    } 
+    else if (tipo === 'pix') {
+        // Mensagem de Cobrança com PIX
+        if (itensParaEnviar.length === 0) return alert("Não há itens pendentes para cobrar!");
+        
+        let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
+        
+        // Pega o nome do mês atual em português
+        const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+        const mesAtual = meses[new Date().getMonth()];
+
+        // Monta a lista de produtos: ▫️ 10x FATIA DE BOLO: R$ 120.00
+        let listaMsg = itensParaEnviar.map(i => {
+            const qtdTexto = i.qtd > 1 ? `${i.qtd}x ` : "";
+            return `▫️ ${qtdTexto}${i.descricao.toUpperCase()}: R$ ${i.valor_exibir.toFixed(2)}`;
+        }).join('\n');
+        
+        texto = `Olá! Tudo bem? ✨\n\n` +
+                `Estou passando para fecharmos o seu resumo de ${mesAtual} aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:\n\n` +
+                `${listaMsg}\n\n` +
+                `*TOTAL: R$ ${total.toFixed(2)}*\n` +
+                `*PIX:* ${pixConfig.chave_pix}\n` +
+                `*NOME:* ${pixConfig.nome_pix}\n\n` +
+                `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍫❤️`;
+    }
+    else {
+        // Mensagem de Informar Consumo (Últimas Escolhas)
+        if (itensParaEnviar.length === 0) return alert("Não há itens pendentes para informar!");
+        let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao.toUpperCase()}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
+        
+        texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:\n\n${listaMsg}\n\nÉ só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
+    }
+
+    // Disparo seguro para Mobile
+    const telLimpo = c.tel.replace(/\D/g, '');
+    window.location.href = `https://api.whatsapp.com/send?phone=55${telLimpo}&text=${encodeURIComponent(texto)}`;
+}
+
+// --- ATUALIZE OS GATILHOS NO FINAL DO SCRIPT ---
+document.getElementById('btnZapRapido').onclick = () => enviarZapDoces('informar');
+document.getElementById('btnPixZap').onclick = () => enviarZapDoces('pix');
+document.getElementById('btnMensagemCarinho').onclick = () => enviarZapDoces('agradecer');
+
+    // --- 4. EDIÇÃO E EXCLUSÃO OPERACIONAIS ---
+    window.prepararEdicao = (id) => {
+        const c = dbClientes.find(x => x.id === id);
+        clienteEmEdicao = id;
+        document.getElementById('novoNome').value = c.nome;
+        document.getElementById('novoTel').value = c.tel;
+        document.getElementById('novoNiver').value = c.aniversario || '';
+        document.getElementById('novoLimite').value = c.limite;
+        document.getElementById('btnCadastrar').innerText = "SALVAR ALTERAÇÕES";
+        document.getElementById('tituloFormCliente').innerText = "📝 EDITANDO CLIENTE";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.excluir = async (id) => {
+        if(confirm("Deseja realmente excluir este cliente e todo o histórico?")) {
+            await _supabase.from('clientes').delete().eq('id', id);
+            carregarDados();
+        }
+    };
+
+    // --- CONFIGURAÇÕES DO MODAL ---
+    window.abrirHistorico = (id) => {
+        clienteAbertoId = id;
+        const c = dbClientes.find(x => x.id === id);
+        document.getElementById('nomeClienteModal').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center">
+                <span>${c.nome.toUpperCase()}</span>
+                <button onclick="document.getElementById('modalHistorico').style.display='none'" style="width:30px; background:none; color:var(--danger); font-size:24px;">&times;</button>
+            </div>`;
+        
+        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
+        const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
+        
+        itensPendentesGlobal = [];
+        comprasApenas.forEach(item => { 
+            if (totalPagos >= item.valor_total) { totalPagos -= item.valor_total; } 
+            else { itensPendentesGlobal.push({...item, valor_exibir: item.valor_total - totalPagos}); totalPagos = 0; } 
+        });
+
+        const listAbertos = document.getElementById('listaItensModal');
+        listAbertos.innerHTML = '';
+        
+        itensPendentesGlobal.forEach(i => {
+            const qT = i.qtd > 1 ? `${i.qtd}x ` : "";
+            listAbertos.innerHTML += `<label class="item-selecionavel"><input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}"><div class="item-detalhe"><div><small>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</small><br>${qT}${i.descricao}</div><b>R$ ${i.valor_exibir.toFixed(2)}</b></div></label>`;
+        });
+
+        document.querySelectorAll('.chk-item').forEach(el => el.addEventListener('change', atualizarSoma));
+        document.getElementById('modalHistorico').style.display='block';
+    };
+
+    // Funções de Inicialização e Eventos
+    document.getElementById('btnZapRapido').onclick = () => enviarZapDoces('informar');
+    // No final do script, onde ficam os eventos de clique:
+    document.getElementById('btnPixZap').onclick = async () => {
+        await salvarPixAutomatico(); // O 'await' garante que salvou no banco primeiro
+        enviarZapDoces('pix');       // Depois dispara o WhatsApp
+    };
+    document.getElementById('btnCadastrar').onclick = async () => {
+        const n = document.getElementById('novoNome').value, t = document.getElementById('novoTel').value, nv = document.getElementById('novoNiver').value, l = document.getElementById('novoLimite').value;
+        if(!n || !t) return alert("Preencha Nome e WhatsApp!");
+        const dados = { nome: n, tel: t, aniversario: nv, limite: parseFloat(l) };
+        
+        if(clienteEmEdicao) await _supabase.from('clientes').update(dados).eq('id', clienteEmEdicao);
+        else await _supabase.from('clientes').insert([dados]);
+        
+        clienteEmEdicao = null;
+        document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE";
+        document.getElementById('tituloFormCliente').innerText = "CADASTRAR NOVO CLIENTE";
+        ['novoNome', 'novoTel', 'novoNiver'].forEach(id => document.getElementById(id).value = '');
+        carregarDados();
+    };
+
+    // Mantém as demais funções de UI (render, toggleTheme, etc) do seu código original
+    function carregarTema() { if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-mode'); }
+    function toggleTheme() { document.body.classList.toggle('dark-mode'); localStorage.setItem('tema', document.body.classList.contains('dark-mode') ? 'dark' : 'light'); }
+    function mascaraData(input) {
+    let v = input.value.replace(/\D/g, ""); // Remove tudo que não é número
+    
+    // Se o primeiro número for de 4 a 9, coloca o 0 na frente automaticamente
+    if (v.length === 1 && /[4-9]/.test(v)) {
+        v = "0" + v;
+    }
+
+    if (v.length >= 2) {
+        let dia = parseInt(v.substring(0, 2));
+        if (dia > 31) dia = 31;
+        if (dia === 0 && v.length === 2) dia = 1;
+        v = String(dia).padStart(2, '0') + v.substring(2);
+        v = v.substring(0, 2) + "/" + v.substring(2);
     }
     
-    init();
+    if (v.length >= 5) {
+        let mes = parseInt(v.substring(3, 5));
+        if (mes > 12) mes = 12;
+        if (mes === 0) mes = 1;
+        v = v.substring(0, 3) + String(mes).padStart(2, '0');
+    }
+    
+    input.value = v.substring(0, 5); // Limita a 5 caracteres
+}
+    function configurarRealtime() { _supabase.channel('changes').on('postgres_changes', {event:'*', schema:'public'}, carregarDados).subscribe(); }
+    async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
+    
+    window.atualizarSoma = () => {
+        let soma = 0;
+        document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
+        document.getElementById('txtSoma').innerText = `R$ ${soma.toFixed(2)}`;
+        document.getElementById('containerSoma').style.display = soma > 0 ? 'block' : 'none';
+    };
+
+    window.processarPagamento = async (clienteId) => {
+        let soma = 0;
+        document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
+        if (confirm(`Confirmar pagamento de R$ ${soma.toFixed(2)}?`)) {
+            await _supabase.from('compras').insert([{ cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma }]);
+            document.getElementById('modalHistorico').style.display = 'none';
+            carregarDados();
+        }
+    };
+
+    window.salvarVenda = async (id) => {
+        const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES", qt = parseInt(document.getElementById(`qt-${id}`).value) || 1, vl = parseFloat(document.getElementById(`vl-${id}`).value);
+        if(!vl) return alert("Valor é obrigatório!");
+        await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }]);
+        document.getElementById(`it-${id}`).value = ''; document.getElementById(`vl-${id}`).value = '';
+        carregarDados();
+    };
+
+    window.atualizarPreco = (input, cId) => {
+        const prod = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
+        if (prod) document.getElementById(`vl-${cId}`).value = prod.preco;
+    };
+
+    function render() {
+        const busca = document.getElementById('buscaCliente').value.toLowerCase();
+        const listaDiv = document.getElementById('lista');
+        listaDiv.innerHTML = '';
+        
+        // Pega data de HOJE e AMANHÃ para o ícone fixo
+        const hojeObj = new Date();
+        const amanhaObj = new Date(hojeObj);
+        amanhaObj.setDate(hojeObj.getDate() + 1);
+
+        const dataHoje = `${String(hojeObj.getDate()).padStart(2, '0')}/${String(hojeObj.getMonth() + 1).padStart(2, '0')}`;
+        const dataAmanha = `${String(amanhaObj.getDate()).padStart(2, '0')}/${String(amanhaObj.getMonth() + 1).padStart(2, '0')}`;
+
+        dbClientes.filter(c => c.nome.toLowerCase().includes(busca)).forEach(c => {
+            const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
+            
+            // Regra do Ícone de Presente
+            let iconeNiver = "";
+            if (c.aniversario === dataHoje) {
+                iconeNiver = `<span class="ico-niver" title="Aniversário HOJE! 🎉">🎁</span>`;
+            } else if (c.aniversario === dataAmanha) {
+                iconeNiver = `<span class="ico-niver" style="filter: grayscale(100%); opacity: 0.7;" title="Aniversário Amanhã! 🎂">🎁</span>`;
+            }
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            // Adicionamos ${iconeNiver} logo após o nome do cliente
+            card.innerHTML = `
+                <div class="card-header">
+                    <span style="font-weight:800;">${c.nome.toUpperCase()} ${iconeNiver}</span>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+                <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
+                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:5px; margin-bottom: 10px;">
+                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
+                    <input type="number" id="qt-${c.id}" value="1">
+                    <input type="number" id="vl-${c.id}" placeholder="R$">
+                </div>
+                <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                    <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
+                    <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO MENSAL</button>
+                </div>`;
+            listaDiv.appendChild(card);
+        });
+    }
+
+    document.getElementById('btnLogin').onclick = async () => {
+        const { error } = await _supabase.auth.signInWithPassword({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value });
+        if(error) alert("Erro de acesso!"); else checkUser();
+    };
+
+    checkUser();
 </script>
 </body>
 </html>
