@@ -224,53 +224,6 @@
     let clienteAbertoId = null; 
     let itensPendentesGlobal = []; 
 
-    function gerarPixCopiaCola(chave, nome, valor, cidade) {
-    const f = (id, val) => {
-        const t = val.toString();
-        return id + t.length.toString().padStart(2, '0') + t;
-    };
-
-    const limpar = (t) => t.toString().normalize("NFD")
-                          .replace(/[\u0300-\u036f]/g, "")
-                          .replace(/[^A-Z0-9]/gi, " ") 
-                          .trim()
-                          .toUpperCase();
-
-    // Remove apenas espaços, parênteses e traços. Mantém o + se existir, 
-    // ou garante que a chave tenha o formato que o PicPay entende.
-    let chaveL = chave.toString().replace(/[\s\(\)\-]/g, ""); 
-    
-    // Se a chave for celular de 11 dígitos sem o +55, adiciona.
-    if (chaveL.length === 11 && !chaveL.startsWith("55")) {
-        chaveL = "55" + chaveL;
-    }
-
-    const nomeL = limpar(nome || "FERNANDA BRASIL").substring(0, 25);
-    const cidadeL = limpar(cidade || "MARINGA").substring(0, 15);
-    const valorL = parseFloat(valor).toFixed(2); 
-
-    let pix = "000201"; 
-    pix += f("26", "0014BR.GOV.BCB.PIX" + f("01", chaveL));
-    pix += "52040000";
-    pix += "5303986";
-    pix += f("54", valorL);
-    pix += "5802BR";
-    pix += f("59", nomeL);
-    pix += f("60", cidadeL);
-    pix += "62070503***"; 
-    pix += "6304"; 
-
-    // Cálculo do CRC16 exato
-    let crc = 0xFFFF;
-    for (let i = 0; i < pix.length; i++) {
-        crc ^= (pix.charCodeAt(i) << 8);
-        for (let j = 0; j < 8; j++) {
-            if ((crc & 0x8000) !== 0) crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
-            else crc = (crc << 1) & 0xFFFF;
-        }
-    }
-    return pix + crc.toString(16).toUpperCase().padStart(4, '0');
-}
     async function checkUser() {
         carregarTema();
         const { data: { session } } = await _supabase.auth.getSession();
