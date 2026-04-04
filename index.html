@@ -246,16 +246,26 @@
     let itensPendentesGlobal = []; 
 
     async function checkUser() {
-        carregarTema();
-        const { data: { session } } = await _supabase.auth.getSession();
-        if (session) {
-            document.getElementById('authContainer').style.display = 'none';
-            document.getElementById('mainContainer').style.display = 'block';
-            carregarDados();
-            carregarConfiguracoes();
-            configurarRealtime();
-        }
+    carregarTema();
+    const { data: { session } } = await _supabase.auth.getSession();
+    
+    if (session) {
+        // 1. Troca as telas
+        document.getElementById('authContainer').style.display = 'none';
+        document.getElementById('mainContainer').style.display = 'block';
+        
+        // 2. Carrega os dados do banco
+        await carregarDados();
+        await carregarConfiguracoes();
+        configurarRealtime();
+        
+        // 3. Renderiza a lista inicial
+        render();
+    } else {
+        document.getElementById('authContainer').style.display = 'flex';
+        document.getElementById('mainContainer').style.display = 'none';
     }
+}
 
     async function carregarDados() {
         const { data: p } = await _supabase.from('produtos').select('*').order('nome');
