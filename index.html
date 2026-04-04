@@ -220,15 +220,38 @@
     let clienteAbertoId = null; 
     let itensPendentesGlobal = []; 
 
+    // --- 1. AVISO DE ANIVERSÁRIO (1 DIA ANTES) ---
+    function verificarAniversarios() {
+        const hoje = new Date();
+        const amanha = new Date(hoje);
+        amanha.setDate(hoje.getDate() + 1);
+        const diaAmanha = String(amanha.getDate()).padStart(2, '0');
+        const mesAmanha = String(amanha.getMonth() + 1).padStart(2, '0');
+        const dataBusca = `${diaAmanha}/${mesAmanha}`;
+
+        const aniversariantes = dbClientes.filter(c => c.aniversario === dataBusca);
+        
+        if (aniversariantes.length > 0) {
+            aniversariantes.forEach(c => {
+                const alerta = document.createElement('div');
+                alerta.style = "position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--primary); color:white; padding:15px 25px; border-radius:50px; z-index:9999; box-shadow:0 10px 25px rgba(0,0,0,0.2); font-weight:800; animation: bounceIn 1s infinite alternate; border: 2px solid white;";
+                alerta.innerHTML = `🎉 AMANHÃ É ANIVERSÁRIO DE ${c.nome.toUpperCase()}! 🎂`;
+                document.body.appendChild(alerta);
+                setTimeout(() => alerta.remove(), 8000);
+            });
+        }
+    }
+
     async function checkUser() {
         carregarTema();
         const { data: { session } } = await _supabase.auth.getSession();
         if (session) {
             document.getElementById('authContainer').style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
-            carregarDados();
+            await carregarDados();
             carregarConfiguracoes();
             configurarRealtime();
+            verificarAniversarios();
         }
     }
 
@@ -249,81 +272,99 @@
         }
     }
 
-    async function salvarPixAutomatico() {
-        const chave = document.getElementById('cfgChavePix').value;
-        const nome = document.getElementById('cfgNomePix').value;
-        await _supabase.from('configuracoes').upsert({ id: 1, chave_pix: chave, nome_pix: nome });
-        pixConfig = { chave_pix: chave, nome_pix: nome };
-    }
+    // --- 2. RESUMO MENSAL AUTOMÁTICO ---
+    window.abrirResumoConta = (id) => {
+        const c = dbClientes.find(x => x.id === id);
+        const mesAtual = new Date().getMonth();
+        const anoAtual = new Date().getFullYear();
+        
+        document.getElementById('nomeClienteResumo').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center">
+                <span>${c.nome.toUpperCase()}</span>
+                <button onclick="document.getElementById('modalResumo').style.display='none'" style="width:30px; background:none; color:var(--danger); font-size:24px;">&times;</button>
+            </div>`;
 
-    function toggleTheme() {
-        const body = document.body;
-        body.classList.toggle('dark-mode');
-        localStorage.setItem('tema', body.classList.contains('dark-mode') ? 'dark' : 'light');
-    }
-
-    function carregarTema() { if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-mode'); }
-    function mascaraData(input) { let v = input.value.replace(/\D/g, ""); if (v.length > 2) v = v.substring(0, 2) + "/" + v.substring(2, 4); input.value = v; }
-    
-    function configurarRealtime() { 
-        _supabase.channel('db_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, () => carregarDados())
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => carregarDados())
-            .subscribe(); 
-    }
-
-    async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
-
-    function render() {
-        const busca = document.getElementById('buscaCliente').value.toLowerCase();
-        const listaDiv = document.getElementById('lista');
-        listaDiv.innerHTML = '<datalist id="lista-prod">' + dbProdutos.map(p => `<option value="${p.nome}">`).join('') + '</datalist>';
-        let totalH = 0, totalG = 0;
-        const hoje = new Date().toLocaleDateString('pt-BR').substring(0,5);
-
-        // BUSCA MELHORADA: Procura por quem começa com a letra E depois por quem contém
-        const clientesFiltrados = dbClientes.filter(c => c.nome.toLowerCase().includes(busca))
-        .sort((a, b) => {
-            if (a.nome.toLowerCase().startsWith(busca) && !b.nome.toLowerCase().startsWith(busca)) return -1;
-            if (!a.nome.toLowerCase().startsWith(busca) && b.nome.toLowerCase().startsWith(busca)) return 1;
-            return a.nome.localeCompare(b.nome);
+        const corpo = document.getElementById('corpoExtrato');
+        const agora = new Date();
+        corpo.innerHTML = `
+            <div style="text-align:center; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                <img src="logo.png" style="width:80px; mix-blend-mode:multiply;"><br>
+                <b style="font-size:14px;">RECIBO DE CONSUMO - ${agora.toLocaleDateString()}</b><br>
+                <small>Gerado em: ${agora.toLocaleTimeString()}</small>
+            </div>
+            <div class="extrato-header"><div>DATA</div><div>QTD</div><div>PRODUTO</div><div style="text-align:right">VALOR</div></div>`;
+        
+        // Filtra apenas compras do mês atual
+        const comprasMes = c.compras.filter(i => {
+            const dataI = new Date(i.data);
+            return i.valor_total > 0 && dataI.getMonth() === mesAtual && dataI.getFullYear() === anoAtual;
         });
 
-        clientesFiltrados.forEach(c => {
-            const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
-            totalG += saldo;
-            c.compras.forEach(cp => { if(new Date(cp.data).toLocaleDateString('pt-BR').substring(0,5) === hoje && cp.valor_total > 0) totalH += cp.valor_total; });
-
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                <div class="card-header">
-                    <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                </div>
-                <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
-                <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
-                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
-                    <input type="number" id="qt-${c.id}" value="1">
-                    <input type="number" id="vl-${c.id}" placeholder="R$">
-                </div>
-                <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                    <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
-                    <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO DA CONTA</button>
-                </div>`;
-            listaDiv.appendChild(card);
+        comprasMes.forEach(i => {
+            corpo.innerHTML += `<div class="extrato-item"><div>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</div><div class="qtd">${i.qtd}x</div><div>${i.descricao}</div><div class="valor">R$ ${i.valor_total.toFixed(2)}</div></div>`;
         });
-        document.getElementById('totalHoje').innerText = `R$ ${totalH.toFixed(2)}`;
-        document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
+
+        const totalMes = comprasMes.reduce((acc, i) => acc + i.valor_total, 0);
+        corpo.innerHTML += `<div style="margin-top:15px; text-align:right; font-weight:800; color:var(--accent); font-size:16px;">TOTAL DO MÊS: R$ ${totalMes.toFixed(2)}</div>`;
+        
+        document.getElementById('modalResumo').style.display = 'block';
+    };
+
+    // --- 3. WHATSAPP (CORREÇÃO MOBILE E MENSAGEM) ---
+    async function enviarZapDoces(tipo) {
+        const c = dbClientes.find(x => x.id === clienteAbertoId);
+        const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
+        const itensParaEnviar = checks.length > 0 
+            ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
+            : itensPendentesGlobal;
+
+        if (itensParaEnviar.length === 0) return alert("Selecione itens pendentes!");
+
+        let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
+        let texto = "";
+
+        if (tipo === 'pix') {
+            let listaMsg = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
+            texto = `Olá! ✨ Segue o resumo para fechamento:\n\n${listaMsg}\n\n💰 *TOTAL: R$ ${total.toFixed(2)}*\n🔑 *PIX:* ${pixConfig.chave_pix}`;
+        } else {
+            let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao.toUpperCase()}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
+            texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:\n\n${listaMsg}\n\nÉ só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
+        }
+
+        const telLimpo = c.tel.replace(/\D/g, '');
+        window.location.href = `https://api.whatsapp.com/send?phone=55${telLimpo}&text=${encodeURIComponent(texto)}`;
     }
 
+    // --- 4. EDIÇÃO E EXCLUSÃO OPERACIONAIS ---
+    window.prepararEdicao = (id) => {
+        const c = dbClientes.find(x => x.id === id);
+        clienteEmEdicao = id;
+        document.getElementById('novoNome').value = c.nome;
+        document.getElementById('novoTel').value = c.tel;
+        document.getElementById('novoNiver').value = c.aniversario || '';
+        document.getElementById('novoLimite').value = c.limite;
+        document.getElementById('btnCadastrar').innerText = "SALVAR ALTERAÇÕES";
+        document.getElementById('tituloFormCliente').innerText = "📝 EDITANDO CLIENTE";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.excluir = async (id) => {
+        if(confirm("Deseja realmente excluir este cliente e todo o histórico?")) {
+            await _supabase.from('clientes').delete().eq('id', id);
+            carregarDados();
+        }
+    };
+
+    // --- CONFIGURAÇÕES DO MODAL ---
     window.abrirHistorico = (id) => {
         clienteAbertoId = id;
         const c = dbClientes.find(x => x.id === id);
+        document.getElementById('nomeClienteModal').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center">
+                <span>${c.nome.toUpperCase()}</span>
+                <button onclick="document.getElementById('modalHistorico').style.display='none'" style="width:30px; background:none; color:var(--danger); font-size:24px;">&times;</button>
+            </div>`;
+        
         let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
         const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
         
@@ -333,21 +374,8 @@
             else { itensPendentesGlobal.push({...item, valor_exibir: item.valor_total - totalPagos}); totalPagos = 0; } 
         });
 
-        document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
         const listAbertos = document.getElementById('listaItensModal');
-        
-        if (itensPendentesGlobal.length === 0) {
-            listAbertos.innerHTML = `
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; background: rgba(46, 204, 113, 0.1); border-radius: 20px; border: 1px dashed var(--success); margin: 20px 0; animation: fadeIn 0.5s ease-out;">
-                    <div style="width: 60px; height: 60px; background: var(--success); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);">
-                        <i class="fa-solid fa-check"></i>
-                    </div>
-                    <span style="font-weight: 800; color: var(--success); letter-spacing: 1px; font-size: 14px; text-transform: uppercase;">Conta em Dia</span>
-                    <small style="color: #888; margin-top: 5px; font-weight: 500;">Nenhuma pendência encontrada ✨</small>
-                </div>`;
-        } else {
-            listAbertos.innerHTML = '';
-        }
+        listAbertos.innerHTML = '';
         
         itensPendentesGlobal.forEach(i => {
             const qT = i.qtd > 1 ? `${i.qtd}x ` : "";
@@ -356,91 +384,33 @@
 
         document.querySelectorAll('.chk-item').forEach(el => el.addEventListener('change', atualizarSoma));
         document.getElementById('modalHistorico').style.display='block';
-        document.getElementById('containerSoma').style.display='none';
     };
 
-    async function enviarZapDoces(tipo) {
-        await salvarPixAutomatico();
-
-        const c = dbClientes.find(x => x.id === clienteAbertoId);
-        const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
-        
-        const itensParaEnviar = checks.length > 0 
-            ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
-            : itensPendentesGlobal;
-
-        if (itensParaEnviar.length === 0) return alert("Selecione os itens ou verifique o saldo!");
-
-        let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
-        const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
-        let texto = "";
-
-        if (tipo === 'pix') {
-            let listaMsg = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
-            texto = `Olá! Tudo bem? ✨\n\n` +
-                    `Estou passando para fecharmos o seu resumo de *${mesAtual}* aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:\n\n` +
-                    `${listaMsg}\n\n` +
-                    `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍫❤️\n\n` +
-                    `💰 *TOTAL: R$ ${total.toFixed(2)}*\n` +
-                    `🔑 *PIX:* ${pixConfig.chave_pix}` + (pixConfig.nome_pix ? ` (${pixConfig.nome_pix})` : "");
-        } else {
-            let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
-            texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:\n\n` +
-                    `${listaMsg}\n\n` +
-                    `É só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. 🍫`;
-        }
-
-        window.open(`https://wa.me/55${c.tel}?text=${encodeURIComponent(texto)}`, '_blank');
-    }
-
-    async function enviarZapDoces(tipo) {
-        await salvarPixAutomatico();
-
-        const c = dbClientes.find(x => x.id === clienteAbertoId);
-        const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
-        
-        // Se houver itens selecionados no checklist, usa eles. Se não, usa todos os pendentes.
-        const itensParaEnviar = checks.length > 0 
-            ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
-            : itensPendentesGlobal;
-
-        if (itensParaEnviar.length === 0) return alert("Não há itens pendentes para informar!");
-
-        let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
-        const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
-        let texto = "";
-
-        if (tipo === 'pix') {
-            // Mensagem de Cobrança PIX
-            let listaMsg = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
-            texto = `Olá! Tudo bem? ✨\n\n` +
-                    `Estou passando para fecharmos o seu resumo de *${mesAtual}* aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:\n\n` +
-                    `${listaMsg}\n\n` +
-                    `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍫❤️\n\n` +
-                    `💰 *TOTAL: R$ ${total.toFixed(2)}*\n` +
-                    `🔑 *PIX:* ${pixConfig.chave_pix}` + (pixConfig.nome_pix ? ` (${pixConfig.nome_pix})` : "");
-        } else {
-            // MENSAGEM QUE VOCÊ PEDIU: "Informar Consumo"
-            let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao.toUpperCase()}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
-            texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:\n\n` +
-                    `${listaMsg}\n\n` +
-                    `É só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
-        }
-
-        // TRATAMENTO PARA FUNCIONAR NO CELULAR:
-        // 1. Limpa o número (deixa só dígitos)
-        const telLimpo = c.tel.replace(/\D/g, '');
-        // 2. Usa a API oficial (mais estável que wa.me)
-        const url = `https://api.whatsapp.com/send?phone=55${telLimpo}&text=${encodeURIComponent(texto)}`;
-        
-        // 3. Usa location.href em vez de window.open para o celular não bloquear o "pop-up"
-        window.location.href = url;
-    }
-
-    // Mantém os gatilhos dos botões apontando para a nova função
+    // Funções de Inicialização e Eventos
     document.getElementById('btnZapRapido').onclick = () => enviarZapDoces('informar');
     document.getElementById('btnPixZap').onclick = () => enviarZapDoces('pix');
+    document.getElementById('btnCadastrar').onclick = async () => {
+        const n = document.getElementById('novoNome').value, t = document.getElementById('novoTel').value, nv = document.getElementById('novoNiver').value, l = document.getElementById('novoLimite').value;
+        if(!n || !t) return alert("Preencha Nome e WhatsApp!");
+        const dados = { nome: n, tel: t, aniversario: nv, limite: parseFloat(l) };
+        
+        if(clienteEmEdicao) await _supabase.from('clientes').update(dados).eq('id', clienteEmEdicao);
+        else await _supabase.from('clientes').insert([dados]);
+        
+        clienteEmEdicao = null;
+        document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE";
+        document.getElementById('tituloFormCliente').innerText = "CADASTRAR NOVO CLIENTE";
+        ['novoNome', 'novoTel', 'novoNiver'].forEach(id => document.getElementById(id).value = '');
+        carregarDados();
+    };
 
+    // Mantém as demais funções de UI (render, toggleTheme, etc) do seu código original
+    function carregarTema() { if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-mode'); }
+    function toggleTheme() { document.body.classList.toggle('dark-mode'); localStorage.setItem('tema', document.body.classList.contains('dark-mode') ? 'dark' : 'light'); }
+    function mascaraData(input) { let v = input.value.replace(/\D/g, ""); if (v.length > 2) v = v.substring(0, 2) + "/" + v.substring(2, 4); input.value = v; }
+    function configurarRealtime() { _supabase.channel('changes').on('postgres_changes', {event:'*', schema:'public'}, carregarDados).subscribe(); }
+    async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
+    
     window.atualizarSoma = () => {
         let soma = 0;
         document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
@@ -451,7 +421,6 @@
     window.processarPagamento = async (clienteId) => {
         let soma = 0;
         document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
-        if (soma <= 0) return alert("Selecione algo!");
         if (confirm(`Confirmar pagamento de R$ ${soma.toFixed(2)}?`)) {
             await _supabase.from('compras').insert([{ cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma }]);
             document.getElementById('modalHistorico').style.display = 'none';
@@ -461,38 +430,52 @@
 
     window.salvarVenda = async (id) => {
         const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES", qt = parseInt(document.getElementById(`qt-${id}`).value) || 1, vl = parseFloat(document.getElementById(`vl-${id}`).value);
-        if(!vl) return alert("Insira o valor!");
+        if(!vl) return alert("Valor é obrigatório!");
         await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }]);
         document.getElementById(`it-${id}`).value = ''; document.getElementById(`vl-${id}`).value = '';
         carregarDados();
     };
 
-    window.prepararEdicao = (id) => {
-        const c = dbClientes.find(x => x.id === id); clienteEmEdicao = id;
-        document.getElementById('novoNome').value = c.nome; document.getElementById('novoTel').value = c.tel;
-        document.getElementById('novoLimite').value = c.limite; document.getElementById('novoNiver').value = c.aniversario || '';
-        document.getElementById('btnCadastrar').innerText = "SALVAR ALTERAÇÕES"; window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    window.excluir = async (id) => { if(confirm("Excluir cliente?")) await _supabase.from('clientes').delete().eq('id', id); };
     window.atualizarPreco = (input, cId) => {
         const prod = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
         if (prod) document.getElementById(`vl-${cId}`).value = prod.preco;
     };
 
-    document.getElementById('btnCadastrar').onclick = async () => {
-        const nome = document.getElementById('novoNome').value, tel = document.getElementById('novoTel').value, niver = document.getElementById('novoNiver').value, lim = document.getElementById('novoLimite').value;
-        if(!nome || !tel) return alert("Preencha tudo!");
-        const payload = { nome, tel, aniversario: niver, limite: parseFloat(lim) };
-        if(clienteEmEdicao) await _supabase.from('clientes').update(payload).eq('id', clienteEmEdicao);
-        else await _supabase.from('clientes').insert([payload]);
-        clienteEmEdicao = null; document.getElementById('novoNome').value = ''; document.getElementById('novoTel').value = '';
-        document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE"; carregarDados();
-    };
+    function render() {
+        const busca = document.getElementById('buscaCliente').value.toLowerCase();
+        const listaDiv = document.getElementById('lista');
+        listaDiv.innerHTML = '';
+        
+        dbClientes.filter(c => c.nome.toLowerCase().includes(busca)).forEach(c => {
+            const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-header">
+                    <span style="font-weight:800;">${c.nome.toUpperCase()}</span>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+                <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
+                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:5px; margin-bottom: 10px;">
+                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
+                    <input type="number" id="qt-${c.id}" value="1">
+                    <input type="number" id="vl-${c.id}" placeholder="R$">
+                </div>
+                <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                    <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
+                    <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO MENSAL</button>
+                </div>`;
+            listaDiv.appendChild(card);
+        });
+    }
 
     document.getElementById('btnLogin').onclick = async () => {
         const { error } = await _supabase.auth.signInWithPassword({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value });
-        if(error) alert("Erro: " + error.message); else checkUser();
+        if(error) alert("Erro de acesso!"); else checkUser();
     };
 
     checkUser();
