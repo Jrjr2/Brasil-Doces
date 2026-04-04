@@ -336,10 +336,10 @@ function configurarEventosPainel() {
         let totalH = 0, totalG = 0;
         const hoje = new Date().toLocaleDateString('pt-BR').substring(0, 5);
 
-        // Filtro de segurança
-        const filtrados = dbClientes.filter(c => 
-            c.nome && c.nome.toLowerCase().includes(busca)
-        );
+        // Filtra apenas nomes que COMEÇAM com o que foi digitado
+const filtrados = dbClientes.filter(c => 
+    c.nome && c.nome.toLowerCase().trim().startsWith(busca)
+);
 
         filtrados.forEach(c => {
             const comprasValidas = c.compras || [];
