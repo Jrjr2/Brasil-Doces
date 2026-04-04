@@ -32,24 +32,19 @@
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; transition: all 0.3s ease; line-height: 1.5; }
         
-        /* LOGIN ESTILIZADO */
         #authContainer { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; width: 100%; background: var(--bg); padding: 20px; box-sizing: border-box; }
         .login-card { background: var(--card); padding: 40px 30px; border-radius: 30px; width: 100%; max-width: 350px; box-shadow: var(--shadow); border: 1px solid var(--border); text-align: center; }
         
-        /* HEADER & BRAND */
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .zn-brand-text { font-family: 'Pacifico', cursive; font-size: 1.8em; color: var(--brown); margin: 0; }
         .zn-slogan { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); display: block; margin-top: -5px; }
         
-        /* DASHBOARD */
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
         .dash-box { background: var(--card); padding: 20px; border-radius: 20px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
         .dash-label { font-size: 10px; font-weight: 800; color: #999; text-transform: uppercase; margin-bottom: 8px; display: block; }
         .dash-val { font-size: 1.3em; font-weight: 800; color: var(--accent); }
 
-        /* CARDS DE CLIENTE */
         .card { background: var(--card); padding: 20px; border-radius: 24px; margin-bottom: 20px; border: 1px solid var(--border); border-left: 6px solid var(--primary); position: relative; transition: transform 0.2s; box-shadow: var(--shadow); }
-        .card:active { transform: scale(0.98); }
         
         .card-niver-destaque {
             border: 3px solid var(--gold) !important;
@@ -59,41 +54,36 @@
             z-index: 10;
         }
 
+        /* TELA TUDO PAGO */
+        .tela-tudo-pago {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(145deg, #f0fff4, #ffffff);
+            border-radius: 25px;
+            border: 2px dashed var(--success);
+            margin: 20px 0;
+            animation: fadeIn 0.5s ease;
+        }
+        .tela-tudo-pago i { font-size: 60px; color: var(--success); margin-bottom: 15px; display: block; }
+        .tela-tudo-pago h2 { color: #27ae60; font-weight: 800; margin: 0; font-family: 'Inter'; }
+
         .price-tag { color: var(--brown); font-size: 2em; font-weight: 900; margin: 10px 0; display: block; letter-spacing: -1px; }
         
-        /* INPUTS E BOTÕES */
-        input, select { width: 100%; padding: 15px; margin: 8px 0; border-radius: 15px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 16px; transition: border-color 0.3s; }
-        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(214, 51, 132, 0.1); }
-        
-        button { padding: 15px; border-radius: 15px; border: none; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: filter 0.2s; }
-        button:active { filter: brightness(0.8); }
+        input { width: 100%; padding: 15px; margin: 8px 0; border-radius: 15px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 16px; box-sizing: border-box; }
+        button { padding: 15px; border-radius: 15px; border: none; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
         
         .btn-main { background: var(--accent); color: white; width: 100%; margin-top: 10px; }
         .btn-action { background: var(--card); color: var(--brown); border: 1px solid var(--border); width: 100%; margin-top: 10px; }
-        .btn-zap { background: #25D366; color: white; }
+        .btn-zap { background: #25D366; color: white; width: 100%; }
         .btn-danger { background: #fee; color: var(--danger); border: 1px solid #fcc; }
 
-        /* MODAIS */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; padding: 20px; box-sizing: border-box; backdrop-filter: blur(8px); }
         .modal-content { background: var(--card); border-radius: 30px; padding: 30px; max-width: 450px; margin: auto; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border); position: relative; }
         
-        .item-selecionavel { display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid var(--border); transition: background 0.2s; border-radius: 12px; }
-        .item-selecionavel:hover { background: rgba(0,0,0,0.02); }
+        .item-selecionavel { display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid var(--border); border-radius: 12px; }
         .chk-item { width: 22px; height: 22px; accent-color: var(--accent); }
 
-        /* EXTRATO (PRINT) */
-        .extrato-item { display: grid; grid-template-columns: 50px 1fr 80px; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 13px; }
-
-        @media print {
-            body * { visibility: hidden; }
-            #modalResumo, #modalResumo * { visibility: visible; }
-            #modalResumo { position: absolute; left: 0; top: 0; width: 100%; }
-            .no-print { display: none !important; }
-        }
-
-        /* ANIMAÇÕES */
-        @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); } }
-        .card-niver-destaque { animation: pulse-gold 2s infinite; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -101,10 +91,10 @@
 <div id="authContainer">
     <div class="login-card">
         <img src="logo.png" alt="Logo" style="width:120px; margin-bottom:20px">
-        <h2 style="font-family:'Pacifico'">Bem-vinda, Fer!</h2>
-        <input type="email" id="loginEmail" placeholder="E-mail de acesso">
-        <input type="password" id="loginPassword" placeholder="Sua senha secreta">
-        <button onclick="handleLogin()" class="btn-main">ENTRAR NO SISTEMA</button>
+        <h2 style="font-family:'Pacifico'">Olá, Fer! ✨</h2>
+        <input type="email" id="loginEmail" placeholder="E-mail">
+        <input type="password" id="loginPassword" placeholder="Senha">
+        <button onclick="handleLogin()" class="btn-main">ENTRAR</button>
     </div>
 </div>
 
@@ -112,7 +102,7 @@
     <div class="header-top">
         <div>
             <h1 class="zn-brand-text">Brasil Doces</h1>
-            <span class="zn-slogan">Controle de Afeto & Doçura</span>
+            <span class="zn-slogan">Sabor que abraça ♡</span>
         </div>
         <div style="display:flex; gap:10px">
             <button onclick="toggleDarkMode()" class="btn-action" style="width:45px; border-radius:50%"><i class="fa-solid fa-moon"></i></button>
@@ -121,57 +111,47 @@
     </div>
 
     <div class="dashboard-grid">
-        <div class="dash-box">
-            <span class="dash-label">Vendas Hoje</span>
-            <div class="dash-val" id="totalHoje">R$ 0,00</div>
-        </div>
-        <div class="dash-box">
-            <span class="dash-label">Total a Receber</span>
-            <div class="dash-val" id="totalGeral">R$ 0,00</div>
-        </div>
+        <div class="dash-box"><span class="dash-label">Hoje</span><div class="dash-val" id="totalHoje">R$ 0,00</div></div>
+        <div class="dash-box"><span class="dash-label">A Receber</span><div class="dash-val" id="totalGeral">R$ 0,00</div></div>
     </div>
 
     <div class="card" style="border-top: 4px solid var(--accent); border-left:none">
         <h3 id="tituloForm" style="margin-top:0">Novo Cliente</h3>
-        <input type="text" id="novoNome" placeholder="Nome do Cliente">
-        <input type="tel" id="novoTel" placeholder="WhatsApp (com DDD)" oninput="maskTel(this)">
+        <input type="text" id="novoNome" placeholder="Nome Completo">
+        <input type="tel" id="novoTel" placeholder="WhatsApp" oninput="maskTel(this)">
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
             <input type="text" id="novoNiver" placeholder="Niver (DD/MM)" maxlength="5" oninput="maskData(this)">
             <input type="number" id="novoLimite" placeholder="Limite R$" value="1000">
         </div>
-        <button id="btnSalvarCli" onclick="saveCliente()" class="btn-main">SALVAR CLIENTE</button>
+        <button onclick="saveCliente()" class="btn-main">SALVAR CLIENTE</button>
     </div>
 
-    <div style="position:sticky; top:10px; z-index:100; background:var(--bg); padding: 5px 0">
-        <input type="text" id="inputBusca" placeholder="🔍 Quem você está procurando?" onkeyup="renderizarClientes()">
-    </div>
+    <input type="text" id="inputBusca" placeholder="🔍 Procurar cliente..." onkeyup="renderizarClientes()" style="position:sticky; top:10px; z-index:100;">
 
     <div id="listaClientes"></div>
 </div>
 
 <div id="modalCobranca" class="modal">
     <div class="modal-content">
-        <h2 id="nomeCliModal" style="text-align:center; font-family:'Pacifico'"></h2>
+        <h2 id="nomeCliModal" style="text-align:center; font-family:'Pacifico'; color:var(--brown)"></h2>
         
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px">
-            <button class="btn-zap" onclick="sendZap('consumo')"><i class="fa-solid fa-cookie-bite"></i> CONSUMO</button>
-            <button class="btn-zap" style="background:var(--info)" onclick="sendZap('pix')"><i class="fa-solid fa-paper-plane"></i> COBRAR PIX</button>
+        <div id="containerAcoesZap" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px">
+            <button class="btn-zap" style="background:var(--info)" onclick="sendZap('consumo')"><i class="fa-solid fa-receipt"></i> CONSUMO</button>
+            <button class="btn-zap" onclick="sendZap('pix')"><i class="fa-solid fa-bolt"></i> PIX</button>
         </div>
 
-        <div id="listaPendentes" style="margin-bottom:20px"></div>
+        <div id="listaPendentes"></div>
 
-        <div id="areaPagamento" style="display:none; background:rgba(46, 204, 113, 0.1); padding:20px; border-radius:20px; border:2px dashed var(--success)">
+        <div id="areaPagamento" style="display:none; background:rgba(46, 204, 113, 0.1); padding:20px; border-radius:20px; border:2px dashed var(--success); margin-top:15px">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
-                <span style="font-weight:800">TOTAL SELECIONADO:</span>
+                <span style="font-weight:800">TOTAL:</span>
                 <span id="txtTotalSelecao" style="font-size:1.4em; font-weight:900; color:var(--success)">R$ 0,00</span>
             </div>
             <button class="btn-main" style="background:var(--success)" onclick="confirmarPagamento()">BAIXAR PAGAMENTO</button>
         </div>
 
-        <hr style="margin:20px 0; opacity:0.2">
-        
-        <div style="background:#f9f9f9; padding:15px; border-radius:15px; margin-bottom:15px" class="no-dark">
-            <span class="dash-label">Configuração de Pix</span>
+        <div id="configPixArea" style="background:#f9f9f9; padding:15px; border-radius:15px; margin-top:20px">
+            <span class="dash-label">Dados para Cobrança</span>
             <input type="text" id="cfgPixChave" placeholder="Sua Chave Pix" onchange="saveLocalConfigs()">
             <input type="text" id="cfgPixNome" placeholder="Nome do Titular" onchange="saveLocalConfigs()">
         </div>
@@ -180,28 +160,13 @@
     </div>
 </div>
 
-<div id="modalResumo" class="modal">
-    <div class="modal-content">
-        <h3 id="resumoNome" style="text-align:center"></h3>
-        <p style="text-align:center; font-size:12px; color:#999">EXTRATO DE PEDIDOS QUITADOS</p>
-        <div id="corpoExtrato" style="margin:20px 0"></div>
-        <button onclick="window.print()" class="btn-main no-print"><i class="fa-solid fa-print"></i> IMPRIMIR / PDF</button>
-        <button onclick="closeModals()" class="btn-action no-print">FECHAR</button>
-    </div>
-</div>
-
 <script>
-    // CONFIGURAÇÕES SUPABASE
     const S_URL = 'https://ebfkwuslmneswvovygwh.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViZmt3dXNsbW5lc3d2b3Z5Z3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzU3NzUsImV4cCI6MjA5MDc1MTc3NX0.ElCyWYPr330VLsY6LZIa41Fg9QR_VaHeBj36jQ8oVt0';
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
-    let DATA_CLIENTES = [];
-    let DATA_PRODUTOS = [];
-    let CLIENTE_ATIVO_ID = null;
-    let EDITANDO_ID = null;
+    let DATA_CLIENTES = [], DATA_PRODUTOS = [], CLIENTE_ATIVO_ID = null;
 
-    // --- INICIALIZAÇÃO ---
     async function init() {
         const { data: { session } } = await _supabase.auth.getSession();
         if (session) {
@@ -214,37 +179,27 @@
     }
 
     async function fetchData() {
-        try {
-            const { data: p } = await _supabase.from('produtos').select('*').order('nome');
-            DATA_PRODUTOS = p || [];
-            
-            const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
-            DATA_CLIENTES = c || [];
-            
-            updateDashboard();
-            renderizarClientes();
-            checkNiverAmanha();
-        } catch (err) { console.error("Erro ao carregar dados:", err); }
+        const { data: p } = await _supabase.from('produtos').select('*').order('nome');
+        DATA_PRODUTOS = p || [];
+        const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
+        DATA_CLIENTES = c || [];
+        updateDashboard();
+        renderizarClientes();
     }
 
     function setupRealtime() {
-        _supabase.channel('custom-all-channel')
-        .on('postgres_changes', { event: '*', schema: 'public' }, () => fetchData())
-        .subscribe();
+        _supabase.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public' }, () => fetchData()).subscribe();
     }
 
-    // --- LÓGICA DE INTERFACE ---
     function updateDashboard() {
         const hoje = new Date().toISOString().split('T')[0];
         let tHoje = 0, tGeral = 0;
-
         DATA_CLIENTES.forEach(cli => {
             cli.compras.forEach(co => {
                 tGeral += co.valor_total;
                 if(co.created_at.startsWith(hoje) && co.valor_total > 0) tHoje += co.valor_total;
             });
         });
-
         document.getElementById('totalHoje').innerText = `R$ ${tHoje.toFixed(2)}`;
         document.getElementById('totalGeral').innerText = `R$ ${tGeral.toFixed(2)}`;
     }
@@ -253,126 +208,96 @@
         const busca = document.getElementById('inputBusca').value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const container = document.getElementById('listaClientes');
         container.innerHTML = '';
-
         const dataHoje = `${String(new Date().getDate()).padStart(2, '0')}/${String(new Date().getMonth() + 1).padStart(2, '0')}`;
 
-        // Filtro e Ordenação
-        let lista = DATA_CLIENTES.filter(c => {
-            const nome = c.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            return nome.includes(busca);
-        });
-
-        if (busca === "") {
-            lista.sort((a, b) => {
-                if (a.aniversario === dataHoje) return -1;
-                if (b.aniversario === dataHoje) return 1;
-                return a.nome.localeCompare(b.nome);
-            });
-        }
-
-        lista.forEach(c => {
+        DATA_CLIENTES.filter(c => c.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(busca))
+        .sort((a,b) => (a.aniversario === dataHoje ? -1 : 1))
+        .forEach(c => {
             const saldo = c.compras.reduce((acc, cur) => acc + cur.valor_total, 0);
-            const isNiver = (c.aniversario === dataHoje);
-            
             const card = document.createElement('div');
-            card.className = `card ${isNiver ? 'card-niver-destaque' : ''}`;
+            card.className = `card ${c.aniversario === dataHoje ? 'card-niver-destaque' : ''}`;
             card.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start">
-                    <div>
-                        <span style="font-weight:800; font-size:1.1em">${c.nome.toUpperCase()}</span>
-                        ${isNiver ? '<br><span class="dash-label" style="color:var(--accent)">🎂 ANIVERSÁRIO HOJE!</span>' : ''}
-                    </div>
-                    <div style="display:flex; gap:10px">
-                        <i class="fa-solid fa-pen-to-square" onclick="prepararEdicao(${c.id})" style="color:var(--info); cursor:pointer"></i>
-                        <i class="fa-solid fa-trash" onclick="deletarCliente(${c.id})" style="color:var(--danger); cursor:pointer"></i>
-                    </div>
+                <div style="display:flex; justify-content:space-between">
+                    <b>${c.nome.toUpperCase()} ${c.aniversario === dataHoje ? '🎁' : ''}</b>
+                    <i class="fa-solid fa-trash" onclick="deletarCliente(${c.id})" style="color:#ccc"></i>
                 </div>
-                
                 <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
-                
                 <div style="display:grid; grid-template-columns: 2fr 1fr; gap:8px">
-                    <input type="text" id="it-${c.id}" list="dl-prod" placeholder="Produto" oninput="autoPreco(this, ${c.id})">
+                    <input type="text" id="it-${c.id}" list="dl-prod" placeholder="Produto">
                     <input type="number" id="vl-${c.id}" placeholder="R$">
                 </div>
-                
-                <button onclick="addVenda(${c.id})" class="btn-main"><i class="fa-solid fa-plus"></i> ANOTAR</button>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px">
-                    <button onclick="openCobranca(${c.id})" class="btn-action">COBRAR</button>
-                    <button onclick="openExtrato(${c.id})" class="btn-action">EXTRATO</button>
-                </div>
+                <button onclick="addVenda(${c.id})" class="btn-main">ANOTAR PEDIDO</button>
+                <button onclick="openCobranca(${c.id})" class="btn-action">VER PENDÊNCIAS / COBRAR</button>
             `;
             container.appendChild(card);
         });
-
-        // Datalist para autocomplete
-        const dl = document.createElement('datalist');
-        dl.id = 'dl-prod';
-        dl.innerHTML = DATA_PRODUTOS.map(p => `<option value="${p.nome}">`).join('');
-        container.appendChild(dl);
-    }
-
-    // --- FUNÇÕES DE NEGÓCIO ---
-    async function addVenda(id) {
-        const desc = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCE";
-        const valor = parseFloat(document.getElementById(`vl-${id}`).value);
-        const cli = DATA_CLIENTES.find(x => x.id === id);
-
-        if (!valor) return alert("Informe o valor!");
-
-        const saldoAtual = cli.compras.reduce((a, b) => a + b.valor_total, 0);
-        if (saldoAtual + valor > cli.limite) {
-            if (!confirm("Limite de crédito excedido! Deseja anotar mesmo assim?")) return;
-        }
-
-        const { error } = await _supabase.from('compras').insert([{
-            cliente_id: id,
-            descricao: desc,
-            valor_total: valor,
-            qtd: 1
-        }]);
-
-        if (!error) {
-            document.getElementById(`it-${id}`).value = '';
-            document.getElementById(`vl-${id}`).value = '';
-            fetchData();
-        }
     }
 
     async function openCobranca(id) {
         CLIENTE_ATIVO_ID = id;
         const cli = DATA_CLIENTES.find(x => x.id === id);
-        document.getElementById('nomeCliModal').innerText = cli.nome;
+        const container = document.getElementById('listaPendentes');
+        document.getElementById('nomeCliModal').innerText = cli.nome.toUpperCase();
         
         let pendentes = [];
         let totalPagoGlobal = Math.abs(cli.compras.filter(i => i.valor_total < 0).reduce((a,b) => a+b.valor_total, 0));
         let soVendas = cli.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
 
         soVendas.forEach(v => {
-            if (totalPagoGlobal >= v.valor_total) {
-                totalPagoGlobal -= v.valor_total;
-            } else {
-                pendentes.push({...v, valor_restante: v.valor_total - totalPagoGlobal});
-                totalPagoGlobal = 0;
-            }
+            if (totalPagoGlobal >= v.valor_total) totalPagoGlobal -= v.valor_total;
+            else { pendentes.push({...v, valor_restante: v.valor_total - totalPagoGlobal}); totalPagoGlobal = 0; }
         });
 
-        const container = document.getElementById('listaPendentes');
-        container.innerHTML = pendentes.length ? '' : '<p style="text-align:center">Tudo pago! ✅</p>';
-        
-        pendentes.forEach(p => {
-            container.innerHTML += `
-                <label class="item-selecionavel">
-                    <input type="checkbox" class="chk-item" data-valor="${p.valor_restante}" data-desc="${p.descricao}" onchange="calcSomaModal()">
-                    <div style="flex:1">
-                        <small style="color:#999">${new Date(p.created_at).toLocaleDateString()}</small><br>
-                        <b>${p.descricao}</b>
-                    </div>
-                    <b style="color:var(--accent)">R$ ${p.valor_restante.toFixed(2)}</b>
-                </label>
+        // TELA TUDO PAGO (O QUE VOCÊ PEDIU)
+        if (pendentes.length === 0) {
+            document.getElementById('containerAcoesZap').style.display = 'none';
+            container.innerHTML = `
+                <div class="tela-tudo-pago">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <h2>TUDO PAGO!</h2>
+                    <p>${totalPagoGlobal > 0 ? `Cliente com R$ ${totalPagoGlobal.toFixed(2)} de crédito!` : 'Nenhuma pendência encontrada.'}</p>
+                    <button class="btn-zap" style="margin-top:15px" onclick="sendZap('agradecer')">
+                        <i class="fa-solid fa-heart"></i> ENVIAR AGRADECIMENTO
+                    </button>
+                </div>
             `;
-        });
-
+            document.getElementById('areaPagamento').style.display = 'none';
+        } else {
+            document.getElementById('containerAcoesZap').style.display = 'grid';
+            container.innerHTML = '';
+            pendentes.forEach(p => {
+                container.innerHTML += `
+                    <label class="item-selecionavel">
+                        <input type="checkbox" class="chk-item" data-valor="${p.valor_restante}" data-desc="${p.descricao}" onchange="calcSomaModal()">
+                        <div style="flex:1"><b>${p.descricao}</b><br><small>${new Date(p.created_at).toLocaleDateString()}</small></div>
+                        <b style="color:var(--accent)">R$ ${p.valor_restante.toFixed(2)}</b>
+                    </label>
+                `;
+            });
+        }
         document.getElementById('modalCobranca').style.display = 'block';
+    }
+
+    function sendZap(tipo) {
+        const cli = DATA_CLIENTES.find(x => x.id === CLIENTE_ATIVO_ID);
+        const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
+        const meses = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+        const mes = meses[new Date().getMonth()];
+        const pix = document.getElementById('cfgPixChave').value;
+        const titular = document.getElementById('cfgPixNome').value;
+        
+        let lista = "", total = 0;
+        checks.forEach(c => { lista += `▫️ ${c.dataset.desc}: R$ ${c.dataset.valor}\n`; total += parseFloat(c.dataset.valor); });
+
+        let msg = "";
+        if (tipo === 'agradecer') {
+            msg = `Oi! ✨ Passando para agradecer pelo seu pagamento e pela preferência. É um prazer ter você como cliente! Beijos, Fer. ❤️`;
+        } else if (tipo === 'pix') {
+            msg = `Olá! ✨ Resumo de *${mes}* na Brasil Doces:\n\n${lista}\n*Total: R$ ${total.toFixed(2)}*\n\n📌 *Pix:* ${pix}\n👤 *Nome:* ${titular}\n\nMe avisa quando puder? Obrigada! ❤️`;
+        } else {
+            msg = `Oi! ✨ Segue o seu consumo recente aqui na Brasil Doces:\n\n${lista}\nÉ apenas para seu controle! Beijos. ❤️`;
+        }
+        window.open(`https://api.whatsapp.com/send?phone=55${cli.tel.replace(/\D/g,'')}&text=${encodeURIComponent(msg)}`);
     }
 
     function calcSomaModal() {
@@ -385,90 +310,23 @@
     async function confirmarPagamento() {
         let total = 0;
         document.querySelectorAll('.chk-item:checked').forEach(c => total += parseFloat(c.dataset.valor));
-        
-        if (confirm(`Confirmar recebimento de R$ ${total.toFixed(2)}?`)) {
-            await _supabase.from('compras').insert([{
-                cliente_id: CLIENTE_ATIVO_ID,
-                descricao: 'PAGAMENTO RECIBO',
-                valor_total: -total
-            }]);
+        if (confirm(`Receber R$ ${total.toFixed(2)}?`)) {
+            await _supabase.from('compras').insert([{ cliente_id: CLIENTE_ATIVO_ID, descricao: 'PAGAMENTO', valor_total: -total }]);
             closeModals();
-            fetchData();
         }
     }
 
-    // --- MENSAGENS WHATSAPP (A pedidos) ---
-    function sendZap(tipo) {
-        const cli = DATA_CLIENTES.find(x => x.id === CLIENTE_ATIVO_ID);
-        const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
-        const meses = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-        const mes = meses[new Date().getMonth()];
-        
-        let lista = "", total = 0;
-        checks.forEach(c => {
-            lista += `▫️ ${c.dataset.desc}: R$ ${c.dataset.valor}\n`;
-            total += parseFloat(c.dataset.valor);
-        });
-
-        let msg = "";
-        const pix = document.getElementById('cfgPixChave').value;
-        const titular = document.getElementById('cfgPixNome').value;
-
-        if (tipo === 'pix') {
-            msg = `Olá! ✨ Passando para fecharmos o resumo de *${mes}*:\n\n${lista}\n*Total: R$ ${total.toFixed(2)}*\n\n📌 *Chave Pix:* ${pix}\n👤 *Titular:* ${titular}\n\nMe avisa quando puder? Obrigada! ❤️`;
-        } else {
-            msg = `Oi! ✨ Segue o seu consumo recente aqui na Brasil Doces:\n\n${lista}\nÉ apenas para seu controle! Beijos. ❤️`;
-        }
-
-        window.open(`https://api.whatsapp.com/send?phone=55${cli.tel.replace(/\D/g,'')}&text=${encodeURIComponent(msg)}`);
+    // Utilitários de Máscara e Login
+    function maskData(i) { let v = i.value.replace(/\D/g,''); if (v.length > 2) v = v.substring(0,2) + '/' + v.substring(2,4); i.value = v; }
+    function maskTel(i) { let v = i.value.replace(/\D/g,''); i.value = v.substring(0,11); }
+    function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+    function saveLocalConfigs() { localStorage.setItem('px_c', document.getElementById('cfgPixChave').value); localStorage.setItem('px_n', document.getElementById('cfgPixNome').value); }
+    function loadLocalConfigs() { document.getElementById('cfgPixChave').value = localStorage.getItem('px_c') || ''; document.getElementById('cfgPixNome').value = localStorage.getItem('px_n') || ''; }
+    async function handleLogin() { 
+        const { error } = await _supabase.auth.signInWithPassword({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value });
+        if (error) alert("Erro!"); else init();
     }
-
-    // --- UTILITÁRIOS ---
-    function maskData(i) {
-        let v = i.value.replace(/\D/g,'');
-        if (v.length > 2) v = v.substring(0,2) + '/' + v.substring(2,4);
-        i.value = v;
-    }
-
-    function maskTel(i) {
-        let v = i.value.replace(/\D/g,'');
-        if (v.length > 11) v = v.substring(0,11);
-        i.value = v;
-    }
-
-    function toggleDarkMode() {
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('dark', document.body.classList.contains('dark-mode'));
-    }
-
-    function closeModals() {
-        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-        document.getElementById('areaPagamento').style.display = 'none';
-    }
-
-    function saveLocalConfigs() {
-        localStorage.setItem('px_c', document.getElementById('cfgPixChave').value);
-        localStorage.setItem('px_n', document.getElementById('cfgPixNome').value);
-    }
-
-    function loadLocalConfigs() {
-        document.getElementById('cfgPixChave').value = localStorage.getItem('px_c') || '';
-        document.getElementById('cfgPixNome').value = localStorage.getItem('px_n') || '';
-        if(localStorage.getItem('dark') === 'true') document.body.classList.add('dark-mode');
-    }
-
-    function checkNiverAmanha() {
-        const amanhã = new Date();
-        amanhã.setDate(amanhã.getDate() + 1);
-        const data = `${String(amanhã.getDate()).padStart(2,'0')}/${String(amanhã.getMonth()+1).padStart(2,'0')}`;
-        
-        const quem = DATA_CLIENTES.find(c => c.aniversario === data);
-        if (quem && !sessionStorage.getItem('aviso_'+quem.id)) {
-            alert(`📢 AVISO: Amanhã é aniversário de ${quem.nome.split(' ')[0]}! 🎁`);
-            sessionStorage.setItem('aviso_'+quem.id, 'true');
-        }
-    }
-
+    
     init();
 </script>
 </body>
