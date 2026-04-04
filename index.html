@@ -355,32 +355,60 @@
         if (prod) document.getElementById(`vl-${cId}`).value = prod.preco;
     }
 
-    async function enviarZapDoces(tipo) {
-        const c = dbClientes.find(x => x.id === clienteAbertoId);
-        const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
-        const itensParaEnviar = checks.length > 0 
-            ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
-            : itensPendentesGlobal;
+    // --- 3. WHATSAPP (CORREÇÃO MOBILE E MENSAGENS UNIFICADAS) ---
+async function enviarZapDoces(tipo) {
+    const c = dbClientes.find(x => x.id === clienteAbertoId);
+    if (!c) return alert("Selecione um cliente primeiro!");
 
-        let texto = "";
-        if (tipo === 'agradecer') {
-            texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! Beijos, Fer. ❤️`;
-        } 
-        else if (tipo === 'pix') {
-            if (itensParaEnviar.length === 0) return alert("Selecione itens para cobrar!");
-            const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
-            const mesNome = meses[new Date().getMonth()];
-            let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
-            let lista = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao.toUpperCase()}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
-            texto = `Olá! Tudo bem? ✨\n\nEstou passando para fecharmos o seu resumo de ${mesNome} aqui na Brasil Doces. Segue o detalhamento:\n\n${lista}\n\n*TOTAL: R$ ${total.toFixed(2)}*\n*PIX:* ${pixConfig.chave_pix}\n*NOME:* ${pixConfig.nome_pix}\n\nQuando puder, me avise? Obrigada! 🍫❤️`;
-        } else {
-            if (itensParaEnviar.length === 0) return alert("Nada para informar!");
-            let lista = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao.toUpperCase()}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
-            texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas na Brasil Doces:\n\n${lista}\n\nQualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
-        }
+    const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
+    const itensParaEnviar = checks.length > 0 
+        ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
+        : itensPendentesGlobal;
 
-        window.location.href = `https://api.whatsapp.com/send?phone=55${c.tel.replace(/\D/g, '')}&text=${encodeURIComponent(texto)}`;
+    let texto = "";
+
+    // Lógica para cada tipo de mensagem
+    if (tipo === 'agradecer') {
+        // Mensagem de Carinho / Agradecimento
+        texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! Beijos, Fer. ❤️`;
+    } 
+    else if (tipo === 'pix') {
+        // Mensagem de Cobrança com PIX
+        if (itensParaEnviar.length === 0) return alert("Não há itens pendentes para cobrar!");
+        
+        let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
+        
+        // Pega o nome do mês atual em português
+        const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+        const mesAtual = meses[new Date().getMonth()];
+
+        // Monta a lista de produtos: ▫️ 10x FATIA DE BOLO: R$ 120.00
+        let listaMsg = itensParaEnviar.map(i => {
+            const qtdTexto = i.qtd > 1 ? `${i.qtd}x ` : "";
+            return `▫️ ${qtdTexto}${i.descricao.toUpperCase()}: R$ ${i.valor_exibir.toFixed(2)}`;
+        }).join('\n');
+        
+        texto = `Olá! Tudo bem? ✨\n\n` +
+                `Estou passando para fecharmos o seu resumo de ${mesAtual} aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:\n\n` +
+                `${listaMsg}\n\n` +
+                `*TOTAL: R$ ${total.toFixed(2)}*\n` +
+                `*PIX:* ${pixConfig.chave_pix}\n` +
+                `*NOME:* ${pixConfig.nome_pix}\n\n` +
+                `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍰❤️`;
     }
+    else {
+        // Mensagem de Informar Consumo (Últimas Escolhas)
+        if (itensParaEnviar.length === 0) return alert("Não há itens pendentes para informar!");
+        let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao.toUpperCase()}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
+        
+        texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:\n\n${listaMsg}\n\nÉ só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
+    }
+
+    // Disparo seguro para Mobile
+    const telLimpo = c.tel.replace(/\D/g, '');
+    window.location.href = `https://api.whatsapp.com/send?phone=55${telLimpo}&text=${encodeURIComponent(texto)}`;
+}
+
 
     async function salvarPixAutomatico() {
         const c = document.getElementById('cfgChavePix').value, n = document.getElementById('cfgNomePix').value;
