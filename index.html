@@ -3,14 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <link rel="icon" type="image/png" sizes="512x512" href="logo.png">
-    <link rel="apple-touch-icon" href="logo.png">
-    <link rel="manifest" href="manifest.json">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="#ff85a2">
-    <meta name="theme-color" content="#ff85a2">
-
     <title>Brasil Doces®</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
@@ -29,140 +21,127 @@
             --primary: #ffb1c1; --accent: #ff85a2; --brown: #ffdadf; --success: #4cd137;
         }
 
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; transition: background 0.3s, color 0.3s; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; transition: 0.3s; padding-bottom: 50px; }
         
-        #authContainer { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; width: 100%; background-color: var(--bg); padding: 20px; box-sizing: border-box; }
-        .login-logo { width: 220px; height: auto; display: block; margin: 0 auto -25px auto; mix-blend-mode: multiply; position: relative; z-index: 10; }
-        .login-card { background: var(--card); padding: 30px; border-radius: 24px; width: 100%; max-width: 320px; box-shadow: 0 10px 30px rgba(214, 51, 132, 0.1); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+        /* Auth */
+        #authContainer { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .login-card { background: var(--card); padding: 30px; border-radius: 24px; width: 100%; max-width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid var(--border); }
 
-        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .zn-brand-text { font-family: 'Pacifico', cursive; font-size: 1.6em; color: var(--brown); margin: 0; line-height: 1.1; }
-        .zn-slogan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #8e736b; margin-top: -2px; }
+        /* Header & Dash */
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .zn-brand-text { font-family: 'Pacifico', cursive; font-size: 1.6em; color: var(--brown); margin: 0; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); }
+        .dash-val { font-size: 1.1em; font-weight: 800; color: var(--accent); }
+
+        /* Cards */
+        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--border); border-left: 5px solid var(--primary); position: relative; }
+        input, select { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 15px; box-sizing: border-box; }
         
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        .dash-label { font-size: 10px; color: #999; text-transform: uppercase; display: block; margin-bottom: 5px; font-weight: 700; }
-        .dash-val { font-size: 1.2em; font-weight: 800; color: var(--accent); }
-
-        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 18px; border: 1px solid var(--border); border-left: 5px solid var(--primary); position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.05); transition: 0.3s; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .price-tag { color: var(--brown); font-size: 1.8em; font-weight: 900; margin-bottom: 12px; display: block; }
-
-        input { width: 100%; padding: 14px; margin: 6px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); box-sizing: border-box; font-size: 16px; outline: none; }
-        button { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
-        .btn-main { background: var(--accent); color: white; transition: 0.3s; }
-        .btn-action { background: var(--card); color: var(--brown); border: 1px solid var(--border); }
-        .btn-zap { background: #25D366; color: white; }
-        .btn-close-modal { position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; border-radius: 50%; background: #eee; color: #333; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; z-index: 10; border: none; }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); }
-        .modal-content { background: var(--card); border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; position: relative; max-height: 85vh; overflow-y: auto; color: var(--text); border: 1px solid var(--border); }
+        button { padding: 12px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-main { background: var(--accent); color: white; width: 100%; margin-top: 10px; }
+        .btn-action { background: var(--card); color: var(--brown); border: 1px solid var(--border); width: 100%; }
+        .btn-zap { background: #25D366; color: white; width: 100%; }
         
-        .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid var(--border); cursor: pointer; }
-        
-        .extrato-container { background: white; border: 1px solid #eee; border-radius: 8px; padding: 15px; color: #333; }
-        .extrato-item { display: grid; grid-template-columns: 50px 30px 1fr 70px; gap: 5px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px; align-items: center; }
+        /* Modais */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; padding: 15px; box-sizing: border-box; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card); border-radius: 24px; padding: 20px; max-width: 450px; margin: auto; position: relative; max-height: 90vh; overflow-y: auto; }
+        .btn-close-x { position: absolute; top: 15px; right: 15px; background: #eee; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: #333; cursor: pointer; font-weight: bold; border: none; }
 
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        /* Extrato PDF */
+        .recibo-header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 10px; margin-bottom: 15px; }
+        .extrato-item { display: grid; grid-template-columns: 50px 30px 1fr 80px; gap: 5px; font-size: 12px; padding: 8px 0; border-bottom: 1px solid #eee; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
 
         @media print {
             body * { visibility: hidden; }
-            #modalResumo, #modalResumo * { visibility: visible; }
-            #modalResumo { position: absolute; left: 0; top: 0; width: 100%; }
+            #areaImpressao, #areaImpressao * { visibility: visible; }
+            #areaImpressao { position: absolute; left: 0; top: 0; width: 100%; }
             .no-print { display: none !important; }
-            .extrato-container { border: none; }
         }
     </style>
 </head>
 <body>
 
 <div id="authContainer">
-    <img src="logo.png" alt="Brasil Doces" class="login-logo">
+    <h1 class="zn-brand-text">Brasil Doces</h1>
     <div class="login-card">
         <input type="email" id="loginEmail" placeholder="E-mail">
         <input type="password" id="loginPassword" placeholder="Senha">
-        <button id="btnLogin" class="btn-main">ACESSAR SISTEMA</button>
+        <button id="btnLogin" class="btn-main">ENTRAR</button>
     </div>
 </div>
 
 <div id="mainContainer" style="display:none; max-width:480px; margin:auto;">
     <div class="header-top">
-        <div class="zn-column-titles">
+        <div>
             <h1 class="zn-brand-text">Brasil Doces</h1>
-            <span class="zn-slogan">Feito com amor ♡</span>
+            <small style="font-weight:bold; color:var(--accent)">CONTROLE DE VENDAS</small>
         </div>
-        <div style="display:flex; gap:8px;">
-            <button onclick="window.location.reload()" class="btn-theme"><i class="fa-solid fa-rotate"></i></button>
-            <button class="btn-theme" onclick="toggleTheme()"><i class="fa-solid fa-moon"></i></button>
-            <button onclick="sair()" class="btn-logout" style="width:auto; padding:8px 12px; color:var(--danger); border:1px solid var(--danger); background:transparent; border-radius:8px; font-size:12px; font-weight:800;">SAIR</button>
+        <div style="display:flex; gap:5px;">
+            <button onclick="toggleTheme()" style="background:none; color:var(--accent); font-size:18px;"><i class="fa-solid fa-moon"></i></button>
+            <button onclick="sair()" style="background:none; color:var(--danger); font-size:18px;"><i class="fa-solid fa-right-from-bracket"></i></button>
         </div>
     </div>
 
     <div class="dashboard-grid">
-        <div class="dash-box"><span class="dash-label">PEDIDOS HOJE</span><div class="dash-val" id="totalHoje">R$ 0,00</div></div>
-        <div class="dash-box"><span class="dash-label">SALDO CLIENTES</span><div class="dash-val" id="totalGeral">R$ 0,00</div></div>
+        <div class="dash-box"><small>HOJE</small><div class="dash-val" id="totalHoje">R$ 0,00</div></div>
+        <div class="dash-box"><small>SALDO TOTAL</small><div class="dash-val" id="totalGeral">R$ 0,00</div></div>
     </div>
 
-    <div class="card" style="border-top: 3px solid var(--accent); border-left: none;">
-        <div id="tituloFormCliente" style="font-weight: 800; margin-bottom: 10px; color: var(--brown);">CADASTRAR CLIENTE</div>
-        <input type="text" id="novoNome" placeholder="Nome Completo">
-        <input type="tel" id="novoTel" placeholder="WhatsApp (DDD+Número)">
+    <div class="card" style="border-top: 4px solid var(--accent); border-left:none;">
+        <b id="labelForm">CADASTRAR NOVO CLIENTE</b>
+        <input type="text" id="novoNome" placeholder="Nome do Cliente">
+        <input type="tel" id="novoTel" placeholder="WhatsApp (ex: 44999...)">
         <input type="text" id="novoNiver" placeholder="Aniversário (DD/MM)" maxlength="5" oninput="mascaraData(this)">
-        <input type="number" id="novoLimite" placeholder="Limite de Crédito" value="1000">
-        <button id="btnCadastrar" class="btn-main">ADICIONAR CLIENTE</button>
+        <button id="btnSalvarCliente" class="btn-main">SALVAR CLIENTE</button>
     </div>
 
-    <input type="text" id="buscaCliente" placeholder="🔍 Procurar por nome..." onkeyup="render()">
+    <input type="text" id="buscaCliente" placeholder="🔍 Buscar cliente..." onkeyup="render()">
     <div id="lista"></div>
 </div>
 
-<div id="modalHistorico" class="modal">
+<div id="modalHist" class="modal">
     <div class="modal-content">
-        <button class="btn-close-modal" onclick="fecharModais()"><i class="fa-solid fa-xmark"></i></button>
-        <h3 id="nomeClienteModal" style="text-align:center;"></h3>
+        <button class="btn-close-x" onclick="fecharModais()">X</button>
+        <h3 id="nomeClHist" style="text-align:center; color:var(--brown);"></h3>
         
-        <button onclick="enviarZapDoces('informar')" class="btn-zap" style="margin-bottom: 10px;">
-            <i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO
-        </button>
-
-        <div id="listaItensModal"></div>
+        <button onclick="enviarZap('informar')" class="btn-zap"><i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO</button>
         
-        <div id="containerSoma" style="display:none; background: #f8f9fa; padding:15px; border-radius:12px; margin-top:15px; border:1px solid #ddd;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 11px; font-weight: bold;">TOTAL SELECIONADO:</span>
-                <span id="txtSoma" style="font-size: 18px; font-weight: 800; color: var(--accent);">R$ 0,00</span>
+        <div id="itensPendentes" style="margin-top:15px;"></div>
+        
+        <div id="boxSoma" style="display:none; background:#f9f9f9; padding:15px; border-radius:12px; margin-top:15px; border:1px solid #ddd;">
+            <div style="display:flex; justify-content:space-between; font-weight:800;">
+                <span>SELECIONADO:</span>
+                <span id="txtSoma" style="color:var(--accent);">R$ 0,00</span>
             </div>
-            <button onclick="processarPagamento(clienteAbertoId)" class="btn-main" style="background: var(--success); margin-top:10px;">PAGAR SELECIONADOS</button>
+            <button onclick="baixarPagamento()" class="btn-main" style="background:var(--success);">CONFIRMAR PAGAMENTO</button>
         </div>
 
-        <div style="background: #f0f7ff; padding:15px; border-radius:15px; margin-top:15px;">
-            <span style="font-size:10px; font-weight:800;">CONFIGURAR PIX:</span>
-            <input type="text" id="cfgChavePix" placeholder="Chave PIX" style="padding:8px; font-size:13px;">
-            <input type="text" id="cfgNomePix" placeholder="Nome do Titular" style="padding:8px; font-size:13px;">
-            <button onclick="enviarZapDoces('pix')" class="btn-zap" style="background:#3498db;">
-                <i class="fa-solid fa-paper-plane"></i> COBRAR + PIX
-            </button>
+        <div style="margin-top:20px; padding:15px; background:#fff5f7; border-radius:15px; border:1px solid var(--border);">
+            <small><b>CONFIGURAÇÕES PIX</b></small>
+            <input type="text" id="pixChave" placeholder="Sua Chave PIX">
+            <input type="text" id="pixNome" placeholder="Seu Nome">
+            <button onclick="enviarZap('pix')" class="btn-zap" style="background:#3498db; margin-top:5px;"><i class="fa-solid fa-paper-plane"></i> ENVIAR PIX</button>
         </div>
-        <button onclick="fecharModais()" class="btn-action" style="margin-top:10px;">FECHAR</button>
     </div>
 </div>
 
 <div id="modalResumo" class="modal">
     <div class="modal-content">
-        <button class="btn-close-modal" onclick="fecharModais()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="btn-close-x" onclick="fecharModais()">X</button>
         <div id="areaImpressao">
-            <div style="text-align:center; margin-bottom:20px;">
-                <h2 style="font-family:'Pacifico'; color:#d63384; margin:0;">Brasil Doces</h2>
-                <p style="font-size:12px; margin:5px 0;">Recibo de Consumo Mensal</p>
-                <p id="dataHoraRecibo" style="font-size:10px; color:#666;"></p>
+            <div class="recibo-header">
+                <h2 style="font-family:'Pacifico'; color:var(--accent); margin:0;">Brasil Doces</h2>
+                <p style="font-size:12px; margin:2px;">Comprovante de Pedidos do Mês</p>
+                <small id="pdfDataHora"></small>
             </div>
-            <h3 id="nomeClienteResumo" style="border-bottom:2px solid #eee; padding-bottom:10px;"></h3>
-            <div class="extrato-container" id="corpoExtrato"></div>
+            <b id="pdfNomeCliente" style="display:block; margin-bottom:10px; font-size:16px;"></b>
+            <div id="pdfItens"></div>
+            <div id="pdfTotal" style="text-align:right; font-weight:800; font-size:18px; margin-top:15px; border-top:1px solid #000; padding-top:5px;"></div>
         </div>
-        <button onclick="window.print()" class="btn-action no-print" style="margin-top: 15px; background: #333; color:white;">
-            <i class="fa-solid fa-print"></i> IMPRIMIR / SALVAR PDF
-        </button>
-        <button onclick="fecharModais()" class="btn-main no-print" style="margin-top:10px;">FECHAR</button>
+        <button onclick="window.print()" class="btn-main no-print" style="background:#333;"><i class="fa-solid fa-file-pdf"></i> IMPRIMIR / SALVAR PDF</button>
     </div>
 </div>
 
@@ -171,7 +150,7 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViZmt3dXNsbW5lc3d2b3Z5Z3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzU3NzUsImV4cCI6MjA5MDc1MTc3NX0.ElCyWYPr330VLsY6LZIa41Fg9QR_VaHeBj36jQ8oVt0'; 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let dbClientes = [], dbProdutos = [], clienteAbertoId = null, itensPendentesGlobal = [], pixConfig = { chave_pix: '', nome_pix: '' };
+    let dbClientes = [], dbProdutos = [], clienteIdAberto = null, editandoId = null;
 
     async function checkUser() {
         const { data: { session } } = await _supabase.auth.getSession();
@@ -179,7 +158,7 @@
             document.getElementById('authContainer').style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
             carregarDados();
-            carregarConfiguracoes();
+            carregarPix();
         }
     }
 
@@ -191,208 +170,218 @@
         render();
     }
 
-    async function carregarConfiguracoes() {
+    async function carregarPix() {
         const { data } = await _supabase.from('configuracoes').select('*').maybeSingle();
         if (data) {
-            pixConfig = data;
-            document.getElementById('cfgChavePix').value = data.chave_pix || '';
-            document.getElementById('cfgNomePix').value = data.nome_pix || '';
+            document.getElementById('pixChave').value = data.chave_pix || '';
+            document.getElementById('pixNome').value = data.nome_pix || '';
         }
     }
 
-    function mascaraData(input) {
-        let v = input.value.replace(/\D/g, "");
+    function mascaraData(i) {
+        let v = i.value.replace(/\D/g, "");
         if (v.length > 2) v = v.substring(0, 2) + "/" + v.substring(2, 4);
-        input.value = v;
+        i.value = v;
     }
 
     function fecharModais() {
-        document.getElementById('modalHistorico').style.display = 'none';
-        document.getElementById('modalResumo').style.display = 'none';
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
     }
 
     function render() {
         const busca = document.getElementById('buscaCliente').value.toLowerCase();
         const listaDiv = document.getElementById('lista');
         const hoje = new Date().toLocaleDateString('pt-BR').substring(0, 5);
-        
-        let totalH = 0, totalG = 0;
+        let tH = 0, tG = 0;
 
         listaDiv.innerHTML = '';
-        const filtrados = dbClientes.filter(c => c.nome.toLowerCase().includes(busca));
-
-        filtrados.forEach(c => {
+        dbClientes.filter(c => c.nome.toLowerCase().includes(busca)).forEach(c => {
             const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
-            totalG += saldo;
+            tG += saldo;
             
             c.compras.forEach(cp => {
-                if(new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0) totalH += cp.valor_total;
+                if(new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0) tH += cp.valor_total;
             });
 
-            const ehAniversariante = (c.aniversario === hoje);
-            const tagAniversario = ehAniversariante ? 
-                `<div style="background:var(--accent); color:white; font-size:10px; font-weight:800; padding:4px 10px; border-radius:20px; display:inline-block; margin-bottom:8px; animation:pulse 1.5s infinite;">
-                    <i class="fa-solid fa-cake-candles"></i> HOJE É O ANIVERSÁRIO! 🎉
-                </div>` : '';
-
+            const ehAniver = (c.aniversario === hoje);
             const card = document.createElement('div');
             card.className = 'card';
-            if(ehAniversariante) card.style.boxShadow = "0 0 15px rgba(214, 51, 132, 0.4)";
+            if(ehAniver) card.style.boxShadow = "0 0 15px rgba(214, 51, 132, 0.4)";
 
             card.innerHTML = `
-                ${tagAniversario}
-                <div class="card-header">
-                    <span style="font-weight:800;">${c.nome.toUpperCase()}</span>
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn-delete" style="color:#ffb1c1" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
+                ${ehAniver ? `<div style="background:var(--accent); color:white; font-size:10px; font-weight:800; padding:4px 10px; border-radius:20px; display:inline-block; margin-bottom:8px; animation:pulse 1.5s infinite;">🎉 ANIVERSÁRIO HOJE!</div>` : ''}
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <b style="color:var(--brown);">${c.nome.toUpperCase()}</b>
+                    <div>
+                        <button onclick="prepararEdit(${c.id})" style="display:inline; background:none; color:var(--info);"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="excluirCl(${c.id})" style="display:inline; background:none; color:var(--danger);"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
-                <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
-                <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px;">
-                    <input type="text" id="it-${c.id}" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
+                <span style="font-size:22px; font-weight:900; display:block; margin:5px 0;">R$ ${saldo.toFixed(2)}</span>
+                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:5px;">
+                    <input type="text" id="it-${c.id}" placeholder="Produto" oninput="autoPreco(this, ${c.id})">
                     <input type="number" id="qt-${c.id}" value="1">
                     <input type="number" id="vl-${c.id}" placeholder="R$">
                 </div>
-                <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                    <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR</button>
-                    <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO MÊS</button>
+                <button class="btn-main" onclick="venda(${c.id})">ANOTAR PEDIDO</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:5px;">
+                    <button class="btn-action" onclick="abrirHist(${c.id})">COBRAR</button>
+                    <button class="btn-action" onclick="abrirResumo(${c.id})">RESUMO MÊS</button>
                 </div>`;
             listaDiv.appendChild(card);
         });
-
-        document.getElementById('totalHoje').innerText = `R$ ${totalH.toFixed(2)}`;
-        document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
+        document.getElementById('totalHoje').innerText = `R$ ${tH.toFixed(2)}`;
+        document.getElementById('totalGeral').innerText = `R$ ${tG.toFixed(2)}`;
     }
 
-    window.abrirHistorico = (id) => {
-        clienteAbertoId = id;
+    window.autoPreco = (input, id) => {
+        const p = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
+        if(p) document.getElementById(`vl-${id}`).value = p.preco;
+    }
+
+    window.venda = async (id) => {
+        const d = document.getElementById(`it-${id}`).value || "DOCE", 
+              q = parseInt(document.getElementById(`qt-${id}`).value) || 1, 
+              v = parseFloat(document.getElementById(`vl-${id}`).value);
+        if(!v) return alert("Valor vazio!");
+        await _supabase.from('compras').insert([{ cliente_id: id, descricao: d.toUpperCase(), qtd: q, valor_total: (q*v) }]);
+        carregarDados();
+    }
+
+    window.abrirHist = (id) => {
+        clienteIdAberto = id;
         const c = dbClientes.find(x => x.id === id);
-        document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
+        document.getElementById('nomeClHist').innerText = c.nome.toUpperCase();
         
-        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
+        let pagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
         const compras = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
         
-        itensPendentesGlobal = [];
+        const lista = document.getElementById('itensPendentes');
+        lista.innerHTML = '';
+        
         compras.forEach(item => {
-            if (totalPagos >= item.valor_total) { totalPagos -= item.valor_total; }
-            else { itensPendentesGlobal.push({...item, valor_exibir: item.valor_total - totalPagos}); totalPagos = 0; }
+            let valorPendente = item.valor_total;
+            if (pagos >= item.valor_total) { pagos -= item.valor_total; valorPendente = 0; }
+            else { valorPendente -= pagos; pagos = 0; }
+
+            if(valorPendente > 0) {
+                lista.innerHTML += `
+                    <label style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
+                        <input type="checkbox" class="chk-pag" data-val="${valorPendente}" onchange="somaCheck()" style="width:20px; margin-right:10px;">
+                        <div style="flex:1; font-size:13px;">${item.descricao}<br><small>${new Date(item.data).toLocaleDateString()}</small></div>
+                        <b>R$ ${valorPendente.toFixed(2)}</b>
+                    </label>`;
+            }
         });
+        document.getElementById('modalHist').style.display = 'block';
+    }
 
-        const listAbertos = document.getElementById('listaItensModal');
-        listAbertos.innerHTML = '';
-        itensPendentesGlobal.forEach(i => {
-            listAbertos.innerHTML += `
-                <label class="item-selecionavel">
-                    <input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" onchange="atualizarSoma()">
-                    <div style="flex:1; display:flex; justify-content:space-between;">
-                        <span>${i.descricao} (${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)})</span>
-                        <b>R$ ${i.valor_exibir.toFixed(2)}</b>
-                    </div>
-                </label>`;
-        });
-        document.getElementById('modalHistorico').style.display='block';
-    };
+    window.somaCheck = () => {
+        let s = 0;
+        document.querySelectorAll('.chk-pag:checked').forEach(c => s += parseFloat(c.dataset.val));
+        document.getElementById('txtSoma').innerText = `R$ ${s.toFixed(2)}`;
+        document.getElementById('boxSoma').style.display = s > 0 ? 'block' : 'none';
+    }
 
-    window.atualizarSoma = () => {
-        let soma = 0;
-        document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
-        document.getElementById('txtSoma').innerText = `R$ ${soma.toFixed(2)}`;
-        document.getElementById('containerSoma').style.display = soma > 0 ? 'block' : 'none';
-    };
+    window.baixarPagamento = async () => {
+        let s = 0;
+        document.querySelectorAll('.chk-pag:checked').forEach(c => s += parseFloat(c.dataset.val));
+        if(confirm(`Confirmar pagamento de R$ ${s.toFixed(2)}?`)) {
+            await _supabase.from('compras').insert([{ cliente_id: clienteIdAberto, descricao: "PAGAMENTO RECEBIDO", valor_total: -s }]);
+            fecharModais(); carregarDados();
+        }
+    }
 
-    window.abrirResumoConta = (id) => {
+    window.abrirResumo = (id) => {
         const c = dbClientes.find(x => x.id === id);
-        const mesAtual = new Date().getMonth();
-        const anoAtual = new Date().getFullYear();
+        const mes = new Date().getMonth(), ano = new Date().getFullYear();
         
-        document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
-        document.getElementById('dataHoraRecibo').innerText = `Gerado em: ${new Date().toLocaleString('pt-BR')}`;
+        document.getElementById('pdfNomeCliente').innerText = c.nome.toUpperCase();
+        document.getElementById('pdfDataHora').innerText = `Emitido em: ${new Date().toLocaleString()}`;
         
-        const corpo = document.getElementById('corpoExtrato');
-        corpo.innerHTML = '<div style="display:grid; grid-template-columns: 50px 30px 1fr 70px; font-weight:bold; border-bottom:1px solid #000; padding-bottom:5px; font-size:10px;"><div>DATA</div><div>QTD</div><div>PRODUTO</div><div style="text-align:right">VALOR</div></div>';
-        
-        // Filtra apenas compras do mês atual
-        const comprasMes = c.compras.filter(i => {
+        const itens = c.compras.filter(i => {
             const d = new Date(i.data);
-            return i.valor_total > 0 && d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+            return i.valor_total > 0 && d.getMonth() === mes && d.getFullYear() === ano;
         });
 
-        if(comprasMes.length === 0) {
-            corpo.innerHTML += '<p style="text-align:center; padding:20px;">Nenhum pedido este mês.</p>';
-        } else {
-            let somaMes = 0;
-            comprasMes.forEach(i => {
-                somaMes += i.valor_total;
-                corpo.innerHTML += `
+        const box = document.getElementById('pdfItens');
+        box.innerHTML = '<div class="extrato-item" style="font-weight:bold; border-bottom:1px solid #000;"><div>DATA</div><div>QTD</div><div>PRODUTO</div><div style="text-align:right">VALOR</div></div>';
+        
+        let total = 0;
+        itens.forEach(i => {
+            total += i.valor_total;
+            box.innerHTML += `
                 <div class="extrato-item">
-                    <div>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</div>
+                    <div>${new Date(i.data).toLocaleDateString().substring(0,5)}</div>
                     <div>${i.qtd}x</div>
                     <div>${i.descricao}</div>
                     <div style="text-align:right">R$ ${i.valor_total.toFixed(2)}</div>
                 </div>`;
-            });
-            corpo.innerHTML += `<div style="text-align:right; font-weight:bold; padding-top:10px; font-size:14px;">TOTAL MÊS: R$ ${somaMes.toFixed(2)}</div>`;
-        }
-        
+        });
+        document.getElementById('pdfTotal').innerText = `TOTAL MÊS: R$ ${total.toFixed(2)}`;
         document.getElementById('modalResumo').style.display = 'block';
-    };
-
-    async function enviarZapDoces(tipo) {
-        const c = dbClientes.find(x => x.id === clienteAbertoId);
-        const chave = document.getElementById('cfgChavePix').value;
-        const titular = document.getElementById('cfgNomePix').value;
-
-        // Salva configs de pix
-        await _supabase.from('configuracoes').upsert({ id: 1, chave_pix: chave, nome_pix: titular });
-
-        let msg = "";
-        if(tipo === 'pix') {
-            const total = itensPendentesGlobal.reduce((acc, i) => acc + i.valor_exibir, 0);
-            msg = `Olá ${c.nome}! ✨\nPassando para enviar seu resumo de pedidos:\nTotal: *R$ ${total.toFixed(2)}*\n\n🔑 *Chave PIX:* ${chave}\n👤 *Titular:* ${titular}\n\nMuito obrigada! ❤️`;
-        } else {
-            let lista = itensPendentesGlobal.map(i => `▫️ ${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
-            msg = `Oi ${c.nome}! ✨ Segue seu consumo atual:\n\n${lista}\n\nQualquer dúvida estou aqui! 🍫`;
-        }
-        window.open(`https://wa.me/55${c.tel}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    window.processarPagamento = async (clienteId) => {
-        let soma = 0;
-        document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
-        if (confirm(`Confirmar pagamento de R$ ${soma.toFixed(2)}?`)) {
-            await _supabase.from('compras').insert([{ cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma }]);
-            fecharModais();
+    window.enviarZap = async (tipo) => {
+        const c = dbClientes.find(x => x.id === clienteIdAberto);
+        const chave = document.getElementById('pixChave').value;
+        const nome = document.getElementById('pixNome').value;
+        await _supabase.from('configuracoes').upsert({ id: 1, chave_pix: chave, nome_pix: nome });
+
+        let texto = "";
+        const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
+
+        if(tipo === 'pix') {
+            texto = `Olá ${c.nome}! ✨\nSegue dados para pagamento:\nTotal: *R$ ${saldo.toFixed(2)}*\n\n🔑 *PIX:* ${chave}\n👤 *Nome:* ${nome}\n\nObrigada! ❤️`;
+        } else {
+            texto = `Oi ${c.nome}! ✨ Passando para informar seu consumo atual na Brasil Doces:\nSaldo Devedor: *R$ ${saldo.toFixed(2)}*\n\nQualquer dúvida estou à disposição! 🍫`;
+        }
+        window.open(`https://wa.me/55${c.tel}?text=${encodeURIComponent(texto)}`, '_blank');
+    }
+
+    window.prepararEdit = (id) => {
+        const c = dbClientes.find(x => x.id === id);
+        editandoId = id;
+        document.getElementById('novoNome').value = c.nome;
+        document.getElementById('novoTel').value = c.tel;
+        document.getElementById('novoNiver').value = c.aniversario || '';
+        document.getElementById('labelForm').innerText = "EDITANDO CLIENTE";
+        window.scrollTo(0,0);
+    }
+
+    window.excluirCl = async (id) => {
+        if(confirm("Deseja excluir este cliente permanentemente?")) {
+            await _supabase.from('clientes').delete().eq('id', id);
             carregarDados();
         }
-    };
+    }
 
-    window.salvarVenda = async (id) => {
-        const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCE", 
-              qt = parseInt(document.getElementById(`qt-${id}`).value) || 1, 
-              vl = parseFloat(document.getElementById(`vl-${id}`).value);
-        if(!vl) return alert("Insira o valor!");
-        await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }]);
+    document.getElementById('btnSalvarCliente').onclick = async () => {
+        const n = document.getElementById('novoNome').value, t = document.getElementById('novoTel').value, ani = document.getElementById('novoNiver').value;
+        if(!n || !t) return alert("Preencha Nome e Telefone!");
+        
+        if(editandoId) {
+            await _supabase.from('clientes').update({ nome: n, tel: t, aniversario: ani }).eq('id', editandoId);
+            editandoId = null;
+            document.getElementById('labelForm').innerText = "CADASTRAR NOVO CLIENTE";
+        } else {
+            await _supabase.from('clientes').insert([{ nome: n, tel: t, aniversario: ani, limite: 1000 }]);
+        }
+        
+        document.getElementById('novoNome').value = ''; document.getElementById('novoTel').value = ''; document.getElementById('novoNiver').value = '';
         carregarDados();
-    };
-
-    document.getElementById('btnCadastrar').onclick = async () => {
-        const nome = document.getElementById('novoNome').value, tel = document.getElementById('novoTel').value, 
-              niver = document.getElementById('novoNiver').value, lim = document.getElementById('novoLimite').value;
-        if(!nome || !tel) return alert("Nome e Tel são obrigatórios!");
-        await _supabase.from('clientes').insert([{ nome, tel, aniversario: niver, limite: parseFloat(lim) }]);
-        carregarDados();
-    };
+    }
 
     document.getElementById('btnLogin').onclick = async () => {
-        const { error } = await _supabase.auth.signInWithPassword({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value });
-        if(error) alert("Erro: " + error.message); else checkUser();
+        const { error } = await _supabase.auth.signInWithPassword({ 
+            email: document.getElementById('loginEmail').value, 
+            password: document.getElementById('loginPassword').value 
+        });
+        if(error) alert(error.message); else checkUser();
     };
 
-    function toggleTheme() {
-        document.body.classList.toggle('dark-mode');
-    }
+    function toggleTheme() { document.body.classList.toggle('dark-mode'); }
+    function sair() { _supabase.auth.signOut(); location.reload(); }
 
     checkUser();
 </script>
