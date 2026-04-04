@@ -315,43 +315,66 @@
     async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
 
     function render() {
-        const busca = document.getElementById('buscaCliente').value.toLowerCase();
-        const listaDiv = document.getElementById('lista');
-        listaDiv.innerHTML = '<datalist id="lista-prod">' + dbProdutos.map(p => `<option value="${p.nome}">`).join('') + '</datalist>';
-        let totalH = 0, totalG = 0;
-        const hoje = new Date().toLocaleDateString('pt-BR').substring(0,5);
+    const busca = document.getElementById('buscaCliente').value.trim().toLowerCase();
+    const listaDiv = document.getElementById('lista');
+    
+    // Limpa a lista antes de renderizar
+    listaDiv.innerHTML = '';
+    
+    // Atualiza o datalist de produtos para o autocomplete
+    const datalist = document.createElement('datalist');
+    datalist.id = 'lista-prod';
+    datalist.innerHTML = dbProdutos.map(p => `<option value="${p.nome}">`).join('');
+    listaDiv.appendChild(datalist);
 
-        dbClientes.filter(c => c.nome.toLowerCase().includes(busca)).forEach(c => {
-            const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
-            totalG += saldo;
-            c.compras.forEach(cp => { if(new Date(cp.data).toLocaleDateString('pt-BR').substring(0,5) === hoje && cp.valor_total > 0) totalH += cp.valor_total; });
+    let totalH = 0, totalG = 0;
+    const hoje = new Date().toLocaleDateString('pt-BR').substring(0, 5);
 
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                <div class="card-header">
-                    <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                </div>
-                <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
-                <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
-                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
-                    <input type="number" id="qt-${c.id}" value="1">
-                    <input type="number" id="vl-${c.id}" placeholder="R$">
-                </div>
-                <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                    <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
-                    <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO DA CONTA</button>
-                </div>`;
-            listaDiv.appendChild(card);
+    // Filtra os clientes ANTES de começar o loop de criação dos cards
+    const clientesFiltrados = dbClientes.filter(c => 
+        c.nome.toLowerCase().includes(busca)
+    );
+
+    clientesFiltrados.forEach(c => {
+        // Cálculo do saldo (Compras - Pagamentos)
+        const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
+        totalG += saldo;
+
+        // Cálculo do total vendido hoje
+        c.compras.forEach(cp => { 
+            if(new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0) {
+                totalH += cp.valor_total; 
+            }
         });
-        document.getElementById('totalHoje').innerText = `R$ ${totalH.toFixed(2)}`;
-        document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
-    }
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <div class="card-header">
+                <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+            </div>
+            <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
+                <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
+                <input type="number" id="qt-${c.id}" value="1">
+                <input type="number" inputmode="decimal" id="vl-${c.id}" placeholder="R$">
+            </div>
+            <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
+                <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO DA CONTA</button>
+            </div>`;
+        listaDiv.appendChild(card);
+    });
+
+    // Atualiza os painéis de resumo no topo
+    document.getElementById('totalHoje').innerText = `R$ ${totalH.toFixed(2)}`;
+    document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
+}
 
     window.abrirHistorico = (id) => {
         clienteAbertoId = id;
