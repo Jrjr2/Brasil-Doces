@@ -393,25 +393,53 @@
         window.open(`https://wa.me/55${c.tel}?text=${encodeURIComponent(texto)}`, '_blank');
     }
 
+    async function enviarZapDoces(tipo) {
+        await salvarPixAutomatico();
+
+        const c = dbClientes.find(x => x.id === clienteAbertoId);
+        const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
+        
+        // Se houver itens selecionados no checklist, usa eles. Se não, usa todos os pendentes.
+        const itensParaEnviar = checks.length > 0 
+            ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
+            : itensPendentesGlobal;
+
+        if (itensParaEnviar.length === 0) return alert("Não há itens pendentes para informar!");
+
+        let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
+        const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
+        let texto = "";
+
+        if (tipo === 'pix') {
+            // Mensagem de Cobrança PIX
+            let listaMsg = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
+            texto = `Olá! Tudo bem? ✨\n\n` +
+                    `Estou passando para fecharmos o seu resumo de *${mesAtual}* aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:\n\n` +
+                    `${listaMsg}\n\n` +
+                    `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍫❤️\n\n` +
+                    `💰 *TOTAL: R$ ${total.toFixed(2)}*\n` +
+                    `🔑 *PIX:* ${pixConfig.chave_pix}` + (pixConfig.nome_pix ? ` (${pixConfig.nome_pix})` : "");
+        } else {
+            // MENSAGEM QUE VOCÊ PEDIU: "Informar Consumo"
+            let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao.toUpperCase()}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
+            texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:\n\n` +
+                    `${listaMsg}\n\n` +
+                    `É só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
+        }
+
+        // TRATAMENTO PARA FUNCIONAR NO CELULAR:
+        // 1. Limpa o número (deixa só dígitos)
+        const telLimpo = c.tel.replace(/\D/g, '');
+        // 2. Usa a API oficial (mais estável que wa.me)
+        const url = `https://api.whatsapp.com/send?phone=55${telLimpo}&text=${encodeURIComponent(texto)}`;
+        
+        // 3. Usa location.href em vez de window.open para o celular não bloquear o "pop-up"
+        window.location.href = url;
+    }
+
+    // Mantém os gatilhos dos botões apontando para a nova função
     document.getElementById('btnZapRapido').onclick = () => enviarZapDoces('informar');
     document.getElementById('btnPixZap').onclick = () => enviarZapDoces('pix');
-
-    window.abrirResumoConta = (id) => {
-        const c = dbClientes.find(x => x.id === id);
-        document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
-        const corpo = document.getElementById('corpoExtrato');
-        corpo.innerHTML = '<div class="extrato-header"><div>DATA</div><div>QTD</div><div>PRODUTO</div><div style="text-align:right">VALOR</div></div>';
-        c.compras.filter(i => i.valor_total > 0).forEach(i => {
-            corpo.innerHTML += `<div class="extrato-item"><div>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</div><div class="qtd">${i.qtd}x</div><div>${i.descricao}</div><div class="valor">R$ ${i.valor_total.toFixed(2)}</div></div>`;
-        });
-        document.getElementById('modalResumo').style.display = 'block';
-    };
-
-    document.getElementById('btnMensagemCarinho').onclick = () => {
-        const c = dbClientes.find(x => x.id === clienteAbertoId);
-        const msg = "Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! ❤️";
-        window.open(`https://wa.me/55${c.tel}?text=${encodeURIComponent(msg)}`, '_blank');
-    };
 
     window.atualizarSoma = () => {
         let soma = 0;
