@@ -31,47 +31,52 @@
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; transition: background 0.3s, color 0.3s; }
         
+        /* AUTH */
         #authContainer { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; width: 100%; background-color: var(--bg); padding: 20px; box-sizing: border-box; }
         .login-logo { width: 220px; height: auto; display: block; margin: 0 auto -25px auto; mix-blend-mode: multiply; position: relative; z-index: 10; }
         .login-card { background: var(--card); padding: 30px; border-radius: 24px; width: 100%; max-width: 320px; box-shadow: 0 10px 30px rgba(214, 51, 132, 0.1); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
 
+        /* HEADER */
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .zn-brand-text { font-family: 'Pacifico', cursive; font-size: 1.6em; color: var(--brown); margin: 0; line-height: 1.1; }
         .zn-slogan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #8e736b; margin-top: -2px; }
         
+        /* DASHBOARD */
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); }
+        .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .dash-val { font-size: 1.2em; font-weight: 800; color: var(--accent); }
 
-        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 18px; border: 1px solid var(--border); border-left: 5px solid var(--primary); position: relative; transition: transform 0.3s; }
+        /* CARDS & ANIVERSARIANTE */
+        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 18px; border: 1px solid var(--border); border-left: 5px solid var(--primary); position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
         
-        /* DESTAQUE ANIVERSARIANTE */
         .card-niver-destaque {
             border: 3px solid var(--gold) !important;
             background: linear-gradient(145deg, #ffffff, #fff9e6) !important;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3) !important;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4) !important;
             transform: scale(1.02);
             z-index: 5;
         }
-        .label-niver-hoje { background: var(--gold); color: #000; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 800; margin-left: 5px; }
+        .label-niver-hoje { background: var(--gold); color: #000; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 800; margin-left: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .ico-niver { display: inline-block; animation: balancar 1s infinite; }
+        @keyframes balancar { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } }
 
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        /* UI ELEMENTS */
         .price-tag { color: var(--brown); font-size: 1.8em; font-weight: 900; margin-bottom: 12px; display: block; }
-
-        input { width: 100%; padding: 14px; margin: 6px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); box-sizing: border-box; font-size: 16px; }
+        input { width: 100%; padding: 14px; margin: 6px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); box-sizing: border-box; font-size: 16px; outline: none; }
         button { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-main { background: var(--accent); color: white; margin-top: 8px; }
+        .btn-main { background: var(--accent); color: white; margin-top: 8px; transition: 0.3s; }
         .btn-action { background: var(--card); color: var(--brown); border: 1px solid var(--border); margin-top: 8px; }
         .btn-zap { background: #25D366; color: white; margin-top: 8px; }
         
+        /* MODAL */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px); }
-        .modal-content { background: var(--card); border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; }
+        .modal-content { background: var(--card); border-radius: 24px; padding: 25px; max-width: 420px; margin: auto; max-height: 85vh; overflow-y: auto; color: var(--text); border: 1px solid var(--border); }
+        .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 10px; }
+        .chk-item { width: 20px; height: 20px; flex-shrink: 0; }
 
-        .item-selecionavel { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid var(--border); }
-        .chk-item { width: 20px; height: 20px; }
-
-        @keyframes balancar { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } }
-        .ico-niver { display: inline-block; animation: balancar 1s infinite; }
+        /* PIX CONFIG AREA */
+        .box-pix-config { background: #fff5f7; padding: 15px; border-radius: 18px; margin-top: 15px; border: 1px solid var(--border); }
+        .label-pix-small { color: var(--accent); font-size: 10px; font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 4px; }
     </style>
 </head>
 <body>
@@ -117,20 +122,30 @@
 
 <div id="modalHistorico" class="modal">
     <div class="modal-content">
-        <h3 id="nomeClienteModal" style="text-align:center"></h3>
+        <h3 id="nomeClienteModal" style="text-align:center; border-bottom: 2px solid var(--border); padding-bottom:10px"></h3>
+        
         <button class="btn-zap" onclick="enviarZapDoces('consumo')"><i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO</button>
 
-        <div id="listaItensModal" style="margin-top:20px"></div>
+        <span style="font-weight:800; font-size:11px; color:#999; text-transform:uppercase; margin-top:15px; display:block">Itens Pendentes</span>
+        <div id="listaItensModal"></div>
         
-        <div id="containerSoma" style="display:none; background:#f9f9f9; padding:15px; border-radius:12px; margin-top:15px">
-            <div style="display:flex; justify-content:space-between">
-                <b>TOTAL:</b> <span id="txtSoma" style="color:var(--accent); font-weight:800">R$ 0,00</span>
+        <div id="containerSoma" style="display:none; background:#f9f9f9; padding:15px; border-radius:12px; margin-top:15px; border:1px solid var(--border)">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+                <b style="font-size:12px">TOTAL SELECIONADO:</b> 
+                <span id="txtSoma" style="color:var(--accent); font-weight:800; font-size:18px">R$ 0,00</span>
             </div>
-            <button class="btn-main" style="background:var(--success)" onclick="processarPagamento()">PAGAR SELECIONADOS</button>
+            <button class="btn-main" style="background:var(--success)" onclick="processarPagamento()"><i class="fa-solid fa-check"></i> PAGAR SELECIONADOS</button>
         </div>
 
-        <button class="btn-zap" style="background:var(--info)" onclick="enviarZapDoces('pix')">COBRAR COM PIX</button>
-        <button class="btn-zap" style="background:var(--success); opacity:0.8" onclick="enviarZapDoces('agradecer')">AGRADECER PAGAMENTO</button>
+        <div class="box-pix-config">
+            <span class="label-pix-small">CHAVE PIX:</span>
+            <input type="text" id="cfgChavePix" placeholder="Chave Pix" onchange="salvarPixConfig()">
+            <span class="label-pix-small">NOME TITULAR:</span>
+            <input type="text" id="cfgNomePix" placeholder="Nome do Titular" onchange="salvarPixConfig()">
+            <button class="btn-zap" style="background:var(--info)" onclick="enviarZapDoces('pix')"><i class="fa-solid fa-paper-plane"></i> COBRAR COM PIX</button>
+        </div>
+
+        <button class="btn-zap" style="background:var(--success); opacity:0.8" onclick="enviarZapDoces('agradecer')"><i class="fa-solid fa-heart"></i> AGRADECER PAGAMENTO</button>
         <button onclick="fecharModais()" class="btn-action">FECHAR</button>
     </div>
 </div>
@@ -146,7 +161,7 @@
         const e = document.getElementById('loginEmail').value;
         const s = document.getElementById('loginPassword').value;
         const { error } = await _supabase.auth.signInWithPassword({ email: e, password: s });
-        if (error) alert("Erro ao acessar"); else location.reload();
+        if (error) alert("E-mail ou senha inválidos"); else location.reload();
     }
 
     async function sair() { await _supabase.auth.signOut(); location.reload(); }
@@ -157,6 +172,7 @@
             document.getElementById('authContainer').style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
             await carregarDados();
+            carregarPixConfig();
             configurarRealtime();
         }
     }
@@ -167,7 +183,9 @@
         const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
         dbClientes = c || [];
         
-        let hoje = new Date().toISOString().split('T')[0], tHoje = 0, tGeral = 0;
+        // Atualiza Dashboard
+        const hoje = new Date().toISOString().split('T')[0];
+        let tHoje = 0, tGeral = 0;
         dbClientes.forEach(cli => {
             cli.compras.forEach(co => {
                 tGeral += co.valor_total;
@@ -180,17 +198,23 @@
     }
 
     function configurarRealtime() {
+        _supabase.removeAllChannels();
         _supabase.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public' }, () => carregarDados()).subscribe();
     }
 
     function render() {
-        const busca = document.getElementById('buscaCliente').value.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const buscaRaw = document.getElementById('buscaCliente').value || "";
+        const busca = buscaRaw.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const listaDiv = document.getElementById('lista');
-        listaDiv.innerHTML = '';
+        
+        listaDiv.innerHTML = '<datalist id="lista-prod">' + dbProdutos.map(p => `<option value="${p.nome}">`).join('') + '</datalist>';
 
         const dataHoje = `${String(new Date().getDate()).padStart(2, '0')}/${String(new Date().getMonth() + 1).padStart(2, '0')}`;
 
-        let filtrados = dbClientes.filter(c => c.nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(busca));
+        let filtrados = dbClientes.filter(c => {
+            const nomeCli = (c.nome || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            return nomeCli.includes(busca);
+        });
 
         if (busca === "") {
             filtrados.sort((a, b) => {
@@ -207,10 +231,10 @@
             card.className = `card ${isNiver ? 'card-niver-destaque' : ''}`;
             card.innerHTML = `
                 <div class="card-header">
-                    <b>${c.nome.toUpperCase()} ${isNiver ? '<span class="ico-niver">🎁</span><span class="label-niver-hoje">HOJE!</span>' : ''}</b>
+                    <span style="font-weight:800;">${c.nome.toUpperCase()} ${isNiver ? '<span class="ico-niver">🎁</span><span class="label-niver-hoje">HOJE!</span>' : ''}</span>
                     <div>
-                        <button onclick="prepararEdicao(${c.id})" style="display:inline; width:auto; background:none; color:blue"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="excluirCliente(${c.id})" style="display:inline; width:auto; background:none; color:red"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="prepararEdicao(${c.id})" style="display:inline; width:auto; background:none; color:var(--info); padding:5px"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="excluirCliente(${c.id})" style="display:inline; width:auto; background:none; color:var(--danger); padding:5px"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
                 <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
@@ -219,19 +243,19 @@
                     <input type="number" id="vl-${c.id}" placeholder="R$">
                 </div>
                 <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
-                <button class="btn-action" onclick="abrirHistorico(${c.id})">PAGAMENTO / COBRANÇA</button>
+                <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
             `;
             listaDiv.appendChild(card);
         });
     }
 
     async function salvarVenda(id) {
-        const it = document.getElementById(`it-${id}`).value || "DOCE";
+        const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCE";
         const vl = parseFloat(document.getElementById(`vl-${id}`).value);
-        if (!vl) return alert("Valor vazio!");
+        if (!vl) return alert("Por favor, informe o valor!");
         await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, valor_total: vl, qtd: 1 }]);
-        alert("Anotado!");
-        carregarDados();
+        document.getElementById(`it-${id}`).value = '';
+        document.getElementById(`vl-${id}`).value = '';
     }
 
     async function salvarCliente() {
@@ -243,12 +267,14 @@
         if (clienteEmEdicao) {
             await _supabase.from('clientes').update({ nome: n, tel: t, aniversario: d, limite: l }).eq('id', clienteEmEdicao);
             clienteEmEdicao = null;
+            document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE";
         } else {
             await _supabase.from('clientes').insert([{ nome: n, tel: t, aniversario: d, limite: l }]);
         }
         
-        document.querySelectorAll('#mainContainer input').forEach(i => i.value = '');
-        document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE";
+        document.getElementById('novoNome').value = '';
+        document.getElementById('novoTel').value = '';
+        document.getElementById('novoNiver').value = '';
         carregarDados();
     }
 
@@ -263,9 +289,8 @@
     }
 
     async function excluirCliente(id) {
-        if(confirm("Excluir cliente?")) {
+        if(confirm("Deseja realmente excluir este cliente?")) {
             await _supabase.from('clientes').delete().eq('id', id);
-            carregarDados();
         }
     }
 
@@ -274,6 +299,7 @@
         if (p) document.getElementById(`vl-${id}`).value = p.preco;
     }
 
+    // --- LOGICA DE COBRANÇA ---
     window.abrirHistorico = (id) => {
         clienteAbertoId = id;
         const c = dbClientes.find(x => x.id === id);
@@ -285,20 +311,20 @@
 
         compras.forEach(item => {
             if (totalPagos >= item.valor_total) totalPagos -= item.valor_total;
-            else { pendentes.push({...item, valor_final: item.valor_total - totalPagos}); totalPagos = 0; }
+            else { pendentes.push({...item, valor_exibir: item.valor_total - totalPagos}); totalPagos = 0; }
         });
 
         const lista = document.getElementById('listaItensModal');
-        lista.innerHTML = pendentes.length ? '' : '<p style="text-align:center">Tudo pago! ✅</p>';
+        lista.innerHTML = pendentes.length ? '' : '<p style="text-align:center; padding:20px">Tudo pago! ✅</p>';
         pendentes.forEach(i => {
             lista.innerHTML += `
                 <label class="item-selecionavel">
-                    <input type="checkbox" class="chk-item" data-valor="${i.valor_final}" onchange="atualizarSoma()">
-                    <div style="flex:1">
-                        <small>${new Date(i.data).toLocaleDateString('pt-BR')}</small><br>
-                        ${i.descricao}
+                    <input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" onchange="atualizarSoma()">
+                    <div style="flex:1; font-size:14px">
+                        <small style="color:#999">${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</small><br>
+                        <b>${i.descricao}</b>
                     </div>
-                    <b>R$ ${i.valor_final.toFixed(2)}</b>
+                    <b style="color:var(--accent)">R$ ${i.valor_exibir.toFixed(2)}</b>
                 </label>
             `;
         });
@@ -315,30 +341,54 @@
     window.processarPagamento = async () => {
         let s = 0;
         document.querySelectorAll('.chk-item:checked').forEach(c => s += parseFloat(c.dataset.valor));
-        if (confirm(`Pagar R$ ${s.toFixed(2)}?`)) {
+        if (confirm(`Confirmar recebimento de R$ ${s.toFixed(2)}?`)) {
             await _supabase.from('compras').insert([{ cliente_id: clienteAbertoId, descricao: "PAGAMENTO", valor_total: -s }]);
             fecharModais();
-            carregarDados();
         }
     };
 
-    function fecharModais() { 
-        document.getElementById('modalHistorico').style.display = 'none';
-        document.getElementById('containerSoma').style.display = 'none';
-    }
-
     async function enviarZapDoces(tipo) {
         const c = dbClientes.find(x => x.id === clienteAbertoId);
-        let msg = "";
-        if (tipo === 'agradecer') msg = "Oi! Muito obrigada pelo pagamento! ✨ Beijos, Fer. ❤️";
-        else if (tipo === 'consumo') msg = `Oi! Passando para informar seu consumo recente. ✨`;
-        else msg = `Oi! Segue o resumo dos seus pedidos para fecharmos. ✨`;
+        const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
         
-        window.open(`https://api.whatsapp.com/send?phone=55${c.tel.replace(/\D/g,'')}&text=${encodeURIComponent(msg)}`);
+        let texto = "", totalSoma = 0, listaItens = "";
+        
+        checks.forEach(cb => {
+            totalSoma += parseFloat(cb.dataset.valor);
+            listaItens += `▫️ ${cb.dataset.desc}: R$ ${parseFloat(cb.dataset.valor).toFixed(2)}\n`;
+        });
+
+        const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+        const mesAtual = meses[new Date().getMonth()];
+
+        if (tipo === 'agradecer') {
+            texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! Beijos, Fer. ❤️`;
+        } else if (tipo === 'pix') {
+            if (checks.length === 0) return alert("Selecione os itens para cobrar!");
+            const chave = document.getElementById('cfgChavePix').value;
+            const nome = document.getElementById('cfgNomePix').value;
+            texto = `Olá! ✨\n\nEstou passando para fecharmos o seu resumo de *${mesAtual}* na Brasil Doces:\n\n${listaItens}\n*TOTAL: R$ ${totalSoma.toFixed(2)}*\n\n*PIX:* ${chave}\n*NOME:* ${nome}\n\nQuando puder, me avisa? Obrigada! ❤️`;
+        } else {
+            if (checks.length === 0) return alert("Selecione os itens para informar!");
+            texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas na Brasil Doces:\n\n${listaItens}\nQualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
+        }
+
+        window.open(`https://api.whatsapp.com/send?phone=55${c.tel.replace(/\D/g,'')}&text=${encodeURIComponent(texto)}`);
+    }
+
+    function fecharModais() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+    
+    // Configurações Locais de Pix
+    function salvarPixConfig() {
+        localStorage.setItem('pix_chave', document.getElementById('cfgChavePix').value);
+        localStorage.setItem('pix_nome', document.getElementById('cfgNomePix').value);
+    }
+    function carregarPixConfig() {
+        document.getElementById('cfgChavePix').value = localStorage.getItem('pix_chave') || '';
+        document.getElementById('cfgNomePix').value = localStorage.getItem('pix_nome') || '';
     }
 
     checkUser();
 </script>
-
 </body>
 </html>
