@@ -98,6 +98,12 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
         #containerSoma { background: var(--bg); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border); display: none; }
 
         @media print {
@@ -263,63 +269,75 @@
     }
 
     function carregarTema() { if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-mode'); }
-    function mascaraData(input) { let v = input.value.replace(/\D/g, ""); if (v.length > 2) v = v.substring(0, 2) + "/" + v.substring(2, 4); input.value = v; }
+    function mascaraData(input) {
+    let v = input.value.replace(/\D/g, "");
+    if (v.length > 2) v = v.substring(0, 2) + "/" + v.substring(2, 4);
+    input.value = v;
+}
+
+function render() {
+    const busca = document.getElementById('buscaCliente').value.toLowerCase();
+    const listaDiv = document.getElementById('lista');
+    listaDiv.innerHTML = '<datalist id="lista-prod">' + dbProdutos.map(p => `<option value="${p.nome}">`).join('') + '</datalist>';
     
-    function configurarRealtime() { 
-        _supabase.channel('db_changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'compras' }, () => carregarDados())
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => carregarDados())
-            .subscribe(); 
-    }
+    let totalH = 0, totalG = 0;
+    const hoje = new Date().toLocaleDateString('pt-BR').substring(0, 5); // Ex: "15/04"
 
-    async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
+    // Filtro e Ordenação (Busca por primeira letra e depois conteúdo)
+    const clientesFiltrados = dbClientes.filter(c => c.nome.toLowerCase().includes(busca))
+    .sort((a, b) => {
+        if (a.nome.toLowerCase().startsWith(busca) && !b.nome.toLowerCase().startsWith(busca)) return -1;
+        if (!a.nome.toLowerCase().startsWith(busca) && b.nome.toLowerCase().startsWith(busca)) return 1;
+        return a.nome.localeCompare(b.nome);
+    });
 
-    function render() {
-        const busca = document.getElementById('buscaCliente').value.toLowerCase();
-        const listaDiv = document.getElementById('lista');
-        listaDiv.innerHTML = '<datalist id="lista-prod">' + dbProdutos.map(p => `<option value="${p.nome}">`).join('') + '</datalist>';
-        let totalH = 0, totalG = 0;
-        const hoje = new Date().toLocaleDateString('pt-BR').substring(0,5);
-
-        // BUSCA MELHORADA: Procura por quem começa com a letra E depois por quem contém
-        const clientesFiltrados = dbClientes.filter(c => c.nome.toLowerCase().includes(busca))
-        .sort((a, b) => {
-            if (a.nome.toLowerCase().startsWith(busca) && !b.nome.toLowerCase().startsWith(busca)) return -1;
-            if (!a.nome.toLowerCase().startsWith(busca) && b.nome.toLowerCase().startsWith(busca)) return 1;
-            return a.nome.localeCompare(b.nome);
+    clientesFiltrados.forEach(c => {
+        const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
+        totalG += saldo;
+        
+        // Cálculo de pedidos de hoje
+        c.compras.forEach(cp => { 
+            if(new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0) totalH += cp.valor_total; 
         });
 
-        clientesFiltrados.forEach(c => {
-            const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
-            totalG += saldo;
-            c.compras.forEach(cp => { if(new Date(cp.data).toLocaleDateString('pt-BR').substring(0,5) === hoje && cp.valor_total > 0) totalH += cp.valor_total; });
+        // Lógica do Aviso de Aniversário
+        const ehAniversariante = (c.aniversario === hoje);
+        const tagAniversario = ehAniversariante ? 
+            `<div style="background: var(--accent); color: white; font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 20px; display: inline-block; margin-bottom: 8px; animation: pulse 1.5s infinite;">
+                <i class="fa-solid fa-cake-candles"></i> 🎉 ANIVERSARIANTE HOJE!
+            </div>` : '';
 
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                <div class="card-header">
-                    <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
+        const card = document.createElement('div');
+        card.className = 'card';
+        // Adiciona um brilho especial se for aniversário
+        if(ehAniversariante) card.style.boxShadow = "0 0 15px rgba(214, 51, 132, 0.3)";
+
+        card.innerHTML = `
+            ${tagAniversario}
+            <div class="card-header">
+                <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
-                <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
-                <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
-                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
-                    <input type="number" id="qt-${c.id}" value="1">
-                    <input type="number" id="vl-${c.id}" placeholder="R$">
-                </div>
-                <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                    <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
-                    <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO DA CONTA</button>
-                </div>`;
-            listaDiv.appendChild(card);
-        });
-        document.getElementById('totalHoje').innerText = `R$ ${totalH.toFixed(2)}`;
-        document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
-    }
+            </div>
+            <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
+                <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
+                <input type="number" id="qt-${c.id}" value="1">
+                <input type="number" id="vl-${c.id}" placeholder="R$">
+            </div>
+            <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
+                <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO DA CONTA</button>
+            </div>`;
+        listaDiv.appendChild(card);
+    });
+
+    document.getElementById('totalHoje').innerText = `R$ ${totalH.toFixed(2)}`;
+    document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
+}
 
     window.abrirHistorico = (id) => {
         clienteAbertoId = id;
