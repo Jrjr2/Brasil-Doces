@@ -107,6 +107,25 @@
             .modal-content { max-height: none !important; overflow: visible !important; border: none !important; width: 100% !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
             .no-print { display: none !important; }
         }
+        /* Card de destaque para o aniversariante */
+.card-niver-destaque {
+    border: 3px solid #ff85a2 !important;
+    background: linear-gradient(145deg, #ffffff, #fff0f3) !important;
+    box-shadow: 0 8px 25px rgba(255, 133, 162, 0.3) !important;
+    transform: scale(1.02);
+    z-index: 10;
+}
+
+.label-niver-hoje {
+    background: #ff85a2;
+    color: white;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 800;
+    margin-left: 5px;
+    vertical-align: middle;
+}
     </style>
 </head>
 <body>
@@ -296,7 +315,6 @@
         const busca = document.getElementById('buscaCliente').value.toLowerCase();
         const listaDiv = document.getElementById('lista');
         
-        // Reconstrói o datalist para o filtro de produtos funcionar
         listaDiv.innerHTML = '<datalist id="lista-prod">' + dbProdutos.map(p => `<option value="${p.nome}">`).join('') + '</datalist>';
         
         const hojeObj = new Date();
@@ -305,18 +323,32 @@
         const dataHoje = `${String(hojeObj.getDate()).padStart(2, '0')}/${String(hojeObj.getMonth() + 1).padStart(2, '0')}`;
         const dataAmanha = `${String(amanhaObj.getDate()).padStart(2, '0')}/${String(amanhaObj.getMonth() + 1).padStart(2, '0')}`;
 
-        dbClientes.filter(c => c.nome.toLowerCase().includes(busca)).forEach(c => {
+        // --- LÓGICA DE ORDENAÇÃO ---
+        const clientesFiltrados = dbClientes.filter(c => c.nome.toLowerCase().includes(busca));
+
+        // Ordena: Aniversariantes de HOJE primeiro, depois o resto por nome
+        clientesFiltrados.sort((a, b) => {
+            if (a.aniversario === dataHoje && b.aniversario !== dataHoje) return -1;
+            if (a.aniversario !== dataHoje && b.aniversario === dataHoje) return 1;
+            return a.nome.localeCompare(b.nome); // Ordem alfabética para os demais
+        });
+
+        clientesFiltrados.forEach(c => {
             const saldo = c.compras.reduce((acc, i) => acc + i.valor_total, 0);
+            const ehAniversarianteHoje = (c.aniversario === dataHoje);
             
             let iconeNiver = "";
-            if (c.aniversario === dataHoje) {
-                iconeNiver = `<span class="ico-niver" title="Aniversário HOJE! 🎉">🎁</span>`;
+            let classeDestaque = "";
+
+            if (ehAniversarianteHoje) {
+                iconeNiver = `<span class="ico-niver">🎁</span><span class="label-niver-hoje">HOJE!</span>`;
+                classeDestaque = "card-niver-destaque";
             } else if (c.aniversario === dataAmanha) {
-                iconeNiver = `<span class="ico-niver" style="filter: grayscale(100%); opacity: 0.7;" title="Aniversário Amanhã! 🎂">🎁</span>`;
+                iconeNiver = `<span class="ico-niver" style="filter: grayscale(100%); opacity: 0.7;">🎁</span>`;
             }
 
             const card = document.createElement('div');
-            card.className = 'card';
+            card.className = `card ${classeDestaque}`; // Aplica a classe de destaque se for niver hoje
             card.innerHTML = `
                 <div class="card-header">
                     <span style="font-weight:800;">${c.nome.toUpperCase()} ${iconeNiver}</span>
