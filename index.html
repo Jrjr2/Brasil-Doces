@@ -441,12 +441,26 @@
     };
 
     window.salvarVenda = async (id) => {
-        const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES", qt = parseInt(document.getElementById(`qt-${id}`).value) || 1, vl = parseFloat(document.getElementById(`vl-${id}`).value);
-        if(!vl) return alert("Insira o valor!");
-        await _supabase.from('compras').insert([{ cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }]);
-        document.getElementById(`it-${id}`).value = ''; document.getElementById(`vl-${id}`).value = '';
-        carregarDados();
-    };
+    const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
+    const qt = parseInt(document.getElementById(`qt-${id}`).value) || 1;
+    const vl = parseFloat(document.getElementById(`vl-${id}`).value);
+
+    if(!vl) return alert("Insira o valor!");
+
+    // Adicionamos { error } para capturar falhas
+    const { error } = await _supabase.from('compras').insert([
+        { cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }
+    ]);
+
+    if (error) {
+        console.error("Erro ao salvar:", error.message);
+        alert("Erro no banco: " + error.message);
+    } else {
+        document.getElementById(`it-${id}`).value = ''; 
+        document.getElementById(`vl-${id}`).value = '';
+        carregarDados(); // Atualiza a lista na tela
+    }
+};
 
     window.prepararEdicao = (id) => {
         const c = dbClientes.find(x => x.id === id); clienteEmEdicao = id;
