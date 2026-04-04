@@ -310,30 +310,69 @@
         document.getElementById('modalResumo').style.display = 'block';
     };
 
-    // --- 3. WHATSAPP (CORREÇÃO MOBILE E MENSAGEM) ---
-    async function enviarZapDoces(tipo) {
-        const c = dbClientes.find(x => x.id === clienteAbertoId);
-        const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
-        const itensParaEnviar = checks.length > 0 
-            ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
-            : itensPendentesGlobal;
+    async function salvarPixAutomatico() {
+        const chave = document.getElementById('cfgChavePix').value;
+        const nome = document.getElementById('cfgNomePix').value;
 
-        if (itensParaEnviar.length === 0) return alert("Selecione itens pendentes!");
+        // O upsert precisa do 'onConflict' para saber que o 'id' é a chave de verificação
+        const { error } = await _supabase
+            .from('configuracoes')
+            .upsert(
+                { id: 1, chave_pix: chave, nome_pix: nome }, 
+                { onConflict: 'id' }
+            );
 
-        let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
-        let texto = "";
-
-        if (tipo === 'pix') {
-            let listaMsg = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
-            texto = `Olá! ✨ Segue o resumo para fechamento:\n\n${listaMsg}\n\n💰 *TOTAL: R$ ${total.toFixed(2)}*\n🔑 *PIX:* ${pixConfig.chave_pix}`;
+        if (error) {
+            console.error("Erro ao salvar Pix:", error.message);
+            // Opcional: alert("Erro ao salvar configurações Pix.");
         } else {
-            let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao.toUpperCase()}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
-            texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:\n\n${listaMsg}\n\nÉ só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
+            pixConfig = { chave_pix: chave, nome_pix: nome };
+            console.log("Configurações Pix salvas com sucesso!");
         }
-
-        const telLimpo = c.tel.replace(/\D/g, '');
-        window.location.href = `https://api.whatsapp.com/send?phone=55${telLimpo}&text=${encodeURIComponent(texto)}`;
     }
+
+    // --- 3. WHATSAPP (CORREÇÃO MOBILE E MENSAGENS UNIFICADAS) ---
+async function enviarZapDoces(tipo) {
+    const c = dbClientes.find(x => x.id === clienteAbertoId);
+    if (!c) return alert("Selecione um cliente primeiro!");
+
+    const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
+    const itensParaEnviar = checks.length > 0 
+        ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
+        : itensPendentesGlobal;
+
+    let texto = "";
+
+    // Lógica para cada tipo de mensagem
+    if (tipo === 'agradecer') {
+        // Mensagem de Carinho / Agradecimento
+        texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! Beijos, Fer. ❤️`;
+    } 
+    else if (tipo === 'pix') {
+        // Mensagem de Cobrança com PIX
+        if (itensParaEnviar.length === 0) return alert("Não há itens pendentes para cobrar!");
+        let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
+        let listaMsg = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
+        
+        texto = `Olá! ✨ Segue o resumo para fechamento:\n\n${listaMsg}\n\n💰 *TOTAL: R$ ${total.toFixed(2)}*\n🔑 *PIX:* ${pixConfig.chave_pix}`;
+    } 
+    else {
+        // Mensagem de Informar Consumo (Últimas Escolhas)
+        if (itensParaEnviar.length === 0) return alert("Não há itens pendentes para informar!");
+        let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd+'x ' : ''}${i.descricao.toUpperCase()}: R$ ${i.valor_exibir.toFixed(2)}`).join('\n');
+        
+        texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:\n\n${listaMsg}\n\nÉ só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
+    }
+
+    // Disparo seguro para Mobile
+    const telLimpo = c.tel.replace(/\D/g, '');
+    window.location.href = `https://api.whatsapp.com/send?phone=55${telLimpo}&text=${encodeURIComponent(texto)}`;
+}
+
+// --- ATUALIZE OS GATILHOS NO FINAL DO SCRIPT ---
+document.getElementById('btnZapRapido').onclick = () => enviarZapDoces('informar');
+document.getElementById('btnPixZap').onclick = () => enviarZapDoces('pix');
+document.getElementById('btnMensagemCarinho').onclick = () => enviarZapDoces('agradecer');
 
     // --- 4. EDIÇÃO E EXCLUSÃO OPERACIONAIS ---
     window.prepararEdicao = (id) => {
@@ -388,7 +427,11 @@
 
     // Funções de Inicialização e Eventos
     document.getElementById('btnZapRapido').onclick = () => enviarZapDoces('informar');
-    document.getElementById('btnPixZap').onclick = () => enviarZapDoces('pix');
+    // No final do script, onde ficam os eventos de clique:
+    document.getElementById('btnPixZap').onclick = async () => {
+        await salvarPixAutomatico(); // O 'await' garante que salvou no banco primeiro
+        enviarZapDoces('pix');       // Depois dispara o WhatsApp
+    };
     document.getElementById('btnCadastrar').onclick = async () => {
         const n = document.getElementById('novoNome').value, t = document.getElementById('novoTel').value, nv = document.getElementById('novoNiver').value, l = document.getElementById('novoLimite').value;
         if(!n || !t) return alert("Preencha Nome e WhatsApp!");
