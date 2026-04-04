@@ -443,15 +443,31 @@
     };
 
     window.processarPagamento = async (clienteId) => {
-        let soma = 0;
-        document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
-        if (soma <= 0) return alert("Selecione algo!");
-        if (confirm(`Confirmar pagamento de R$ ${soma.toFixed(2)}?`)) {
-            await _supabase.from('compras').insert([{ cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma }]);
-            document.getElementById('modalHistorico').style.display = 'none';
-            carregarDados();
+    let soma = 0;
+    const selecionados = document.querySelectorAll('.chk-item:checked');
+    
+    selecionados.forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
+    
+    if (soma <= 0) return alert("Selecione pelo menos um item para pagar!");
+
+    if (confirm(`Confirmar pagamento de R$ ${soma.toFixed(2)}?`)) {
+        const { error } = await _supabase.from('compras').insert([
+            { cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma }
+        ]);
+
+        if (error) {
+            alert("Erro ao processar: " + error.message);
+        } else {
+            // Em vez de fechar tudo, apenas atualizamos os dados
+            await carregarDados(); 
+            // Reabre o histórico para o usuário ver que os itens sumiram/atualizaram
+            abrirHistorico(clienteId); 
+            
+            // Opcional: Um aviso discreto de sucesso
+            console.log("Pagamento registrado!");
         }
-    };
+    }
+};
 
     window.salvarVenda = async (id) => {
     const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
