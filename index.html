@@ -50,7 +50,16 @@
         body.dark-mode .btn-action { background: #2a2a2a; color: var(--primary); border-color: var(--border); }
         body.dark-mode .zn-slogan { color: #b5a1a1; }
 
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; transition: background 0.3s, color 0.3s; }
+        body { 
+    font-family: 'Inter', sans-serif; 
+    background-color: var(--bg); 
+    color: var(--text); 
+    /* Adicionamos 400 pixels de espaço vazio no fim da tela (padding-bottom) para o scroll sempre ter pista livre */
+    padding: 20px 20px 400px 20px; 
+    margin: 0; 
+    transition: background 0.3s, color 0.3s; 
+}
+
         
         #authContainer { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; width: 100%; background-color: var(--bg); padding: 20px; box-sizing: border-box; }
         .login-logo { width: 220px; height: auto; display: block; margin: 0 auto -25px auto; mix-blend-mode: multiply; position: relative; z-index: 10; }
