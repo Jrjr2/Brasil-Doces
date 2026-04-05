@@ -458,68 +458,64 @@
         document.getElementById('containerSoma').style.display='none';
     };
 
-        async function enviarZapDoces(tipo) {
+            async function enviarZapDoces(tipo) {
         const c = dbClientes.find(x => x.id === clienteAbertoId);
         if (!c) return;
 
-        // Pega do campo texto. Se não achar ou você tiver apagado as Tags, pega direto do banco!
+        // Pega do campo texto. Se não achar, pega direto da memória do banco!
         const inputChave = document.getElementById('cfgChavePix');
         const inputNome = document.getElementById('cfgNomePix');
         
-        const chave = inputChave && inputChave.value ? inputChave.value : pixConfig.chave_pix;
-        const nomeTitular = inputNome && inputNome.value ? inputNome.value : pixConfig.nome_pix;
+        const chave = inputChave && inputChave.value ? inputChave.value : (pixConfig ? pixConfig.chave_pix : '');
+        const nomeTitular = inputNome && inputNome.value ? inputNome.value : (pixConfig ? pixConfig.nome_pix : '');
 
-        // Salva a configuração de PIX e tira o 'await' para o navegador não bloquear o pop-up do WhatsApp
+        // Salva a configuração de PIX e tira o 'await' para funcionar o WhatsApp Web
         if (chave && (tipo === 'pix')) {
             _supabase.from('configuracoes').upsert({ id: 1, chave_pix: chave, nome_pix: nomeTitular }).then();
         }
 
-        // ... o resto do seu código das checks continua normal a partir daqui ...
+        // Checa se o usuário selecionou coisas
         const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
+        const itensParaEnviar = checks.length > 0 
+            ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
+            : itensPendentesGlobal;
 
+        const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
+        let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
+        let texto = "";
 
+        if (tipo === 'pix') {
+            if (itensParaEnviar.length === 0) return alert("Selecione os itens para cobrar!");
+            
+            // Aqui já tem a nossa correção para enviar a Qtd 
+            let listaMsg = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+            
+            texto = `Olá! Tudo bem? ✨%0A%0A`;
+            texto += `Estou passando para fecharmos o seu resumo de *${mesAtual}* aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:%0A%0A`;
+            texto += `${listaMsg}%0A%0A`;
+            texto += `💰 *TOTAL: R$ ${total.toFixed(2)}*%0A`;
+            texto += `🔑 *PIX:* ${chave}%0A`;
+            if(nomeTitular) texto += `👤 *NOME:* ${nomeTitular}%0A%0A`;
+            texto += `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍰❤️`;
 
-    const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
-    const itensParaEnviar = checks.length > 0 
-        ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
-        : itensPendentesGlobal;
-
-    const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
-    let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
-    let texto = "";
-
-    if (tipo === 'pix') {
-        if (itensParaEnviar.length === 0) return alert("Selecione os itens para cobrar!");
-        let listaMsg = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');        
-        texto = `Olá! Tudo bem? ✨%0A%0A`;
-        texto += `Estou passando para fecharmos o seu resumo de *${mesAtual}* aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:%0A%0A`;
-        texto += `${listaMsg}%0A%0A`;
-        texto += `💰 *TOTAL: R$ ${total.toFixed(2)}*%0A`;
-        texto += `🔑 *PIX:* ${chave}%0A`;
-        if(nomeTitular) texto += `👤 *NOME:* ${nomeTitular}%0A%0A`;
-        texto += `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍰❤️`;
-
-    } 
-            else if (tipo === 'informar') {
-            // Se houver checks, envia só os selecionados. Se não, envia tudo que está no modal.
-            const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
-            const itensParaEnviar = checks.length > 0 
-                ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
-                : itensPendentesGlobal;
-
+        } else if (tipo === 'informar') {
             if (itensParaEnviar.length === 0) return alert("Não há itens para informar!");
 
-          let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+            // Aqui tbm a quantidade para apenas informar
+            let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
             
             texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:%0A%0A`;
             texto += `${listaMsg}%0A%0A`;
             texto += `É só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
+            
         } else if (tipo === 'obrigado') {
             texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! ❤️`;
         }
 
+        // Abre de fato no WhatsApp
         window.open(`https://wa.me/55${c.tel}?text=${texto}`, '_blank');
     }
+
     
     window.abrirResumoConta = (id) => {
     sessionStorage.setItem('modalAberto', 'res-'+id);
