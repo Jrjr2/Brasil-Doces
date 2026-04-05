@@ -539,8 +539,10 @@ function configurarEventosPainel() {
         ]);
 
         if (error) {
-            alert("Erro ao processar: " + error.message);
-        } else {
+    alert("Erro: " + error.message);
+} else { 
+    checkUser();
+}
             // Em vez de fechar tudo, apenas atualizamos os dados
             await carregarDados(); 
             // Reabre o histórico para o usuário ver que os itens sumiram/atualizaram
