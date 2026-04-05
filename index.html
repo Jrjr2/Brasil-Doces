@@ -331,11 +331,11 @@
         
         <div class="extrato-container" id="corpoExtrato"></div>
         
-        <button onclick="window.print()" class="btn-action no-print" style="margin-top: 15px; background: #f8f9fa; color:#333">
-            <i class="fa-solid fa-file-pdf" style="color: #e74c3c;"></i> SALVAR EXTRATO (PDF)
-        </button>        
+        <button onclick="window.print()" class="btn-zap-novo no-print" style="margin-top: 15px;">
+            <i class="fa-solid fa-file-pdf"></i> SALVAR EXTRATO MENSAL (PDF)
+        </button>   
         
-        <button onclick="fecharModais()" class="btn-main no-print" style="margin-top:10px;">FECHAR</button>
+        <button onclick="fecharModais()" class="btn-fechar-novo no-print" style="margin-top:15px; margin-bottom: 5px;">FECHAR ABA DE RESUMO</button>
     </div>
 </div>
 
@@ -591,75 +591,64 @@
     }
 
     
-    window.abrirResumoConta = (id) => {
-    sessionStorage.setItem('modalAberto', 'res-'+id);
-    clienteAbertoId = id;
-    document.getElementById('modalHistorico').style.display = 'none'; // Fecha o outro por segurança
-    const c = dbClientes.find(x => x.id === id);
-    document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
-    const corpo = document.getElementById('corpoExtrato');
-    corpo.innerHTML = '<div class="extrato-header"><div>DATA</div><div>QTD</div><div>PRODUTO</div><div style="text-align:right">VALOR</div></div>';
-    c.compras.filter(i => i.valor_total > 0).forEach(i => {
-        corpo.innerHTML += `<div class="extrato-item"><div>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</div><div class="qtd">${i.qtd}x</div><div>${i.descricao}</div><div class="valor">R$ ${i.valor_total.toFixed(2)}</div></div>`;
-    });
-    document.getElementById('modalResumo').style.display = 'block';
-};
-    
-    window.atualizarSoma = () => {
-        let soma = 0;
-        document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
-        document.getElementById('txtSoma').innerText = `R$ ${soma.toFixed(2)}`;
-        document.getElementById('containerSoma').style.display = soma > 0 ? 'block' : 'none';
-    };
-
-    window.processarPagamento = async (clienteId) => {
-    let soma = 0;
-    const selecionados = document.querySelectorAll('.chk-item:checked');
-    
-    selecionados.forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
-    
-    if (soma <= 0) return alert("Selecione pelo menos um item para pagar!");
-
-            if (confirm(`Confirmar pagamento de R$ ${soma.toFixed(2)}?`)) {
-            const { error } = await _supabase.from('compras').insert([
-                { cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma }
-            ]);
-
-            if (error) {
-                alert("Erro: " + error.message);
-            } else { 
-                // Em vez de fechar tudo, apenas atualizamos os dados
-                await carregarDados(); 
-                // Reabre o histórico para o usuário ver que os itens sumiram/atualizaram
-                abrirHistorico(clienteId); 
-                
-                console.log("Pagamento registrado!");
+        window.abrirResumoConta = (id) => {
+        sessionStorage.setItem('modalAberto', 'res-'+id);
+        clienteAbertoId = id;
+        document.getElementById('modalHistorico').style.display = 'none'; // Fecha o outro 
+        
+        const c = dbClientes.find(x => x.id === id);
+        document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
+        
+        // --- 1. MATEMÁTICA: SEPARA APENAS O QUE FOI PAGO (QUITADO) ---
+        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
+        const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
+        
+        let itensQuitados = [];
+        comprasApenas.forEach(item => { 
+            if (totalPagos >= item.valor_total) { 
+                // Item foi pago por completo
+                itensQuitados.push({...item, valor_pago: item.valor_total});
+                totalPagos -= item.valor_total; 
+            } else if (totalPagos > 0) {
+                // Item foi pago parcialmente (ex: devia 10, pagou 5)
+                itensQuitados.push({...item, valor_pago: totalPagos});
+                totalPagos = 0; 
             }
+        });
+
+        // --- 2. REGRA DOS 30 DIAS: Ocultar velhos da tela e PDF ---
+        const dataLimite = new Date();
+        dataLimite.setDate(dataLimite.getDate() - 30);
+        
+        const quitadosRecentes = itensQuitados.filter(i => new Date(i.data) >= dataLimite);
+
+        // --- 3. MONTA A TABELA COM HORA E ORGANIZAÇÃO ---
+        const corpo = document.getElementById('corpoExtrato');
+        // Espaçamento arrumado para caber a hora
+        corpo.innerHTML = '<div class="extrato-header" style="grid-template-columns: 85px 35px 1fr 70px;"><div>DATA/HORA</div><div>QTD</div><div>PRODUTO</div><div style="text-align:right">PAGO</div></div>';
+        
+        if (quitadosRecentes.length === 0) {
+            corpo.innerHTML += '<div style="text-align:center; padding: 20px; color: #999; font-size:12px;">Nenhum produto quitado ou recente (últimos 30 dias).</div>';
+        } else {
+            quitadosRecentes.forEach(i => {
+                const dataObj = new Date(i.data);
+                const dataFmt = dataObj.toLocaleDateString('pt-BR').substring(0,5);
+                // Extrai a hora exata
+                const horaFmt = dataObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                
+                corpo.innerHTML += `
+                <div class="extrato-item" style="grid-template-columns: 85px 35px 1fr 70px;">
+                    <div style="font-size:10px; opacity:0.8; font-weight:700;">${dataFmt}<br><span style="font-weight:400">${horaFmt}</span></div>
+                    <div class="qtd">${i.qtd}x</div>
+                    <div>${i.descricao}</div>
+                    <div class="valor">R$ ${i.valor_pago.toFixed(2)}</div>
+                </div>`;
+            });
         }
+        
+        document.getElementById('modalResumo').style.display = 'block';
     };
 
-
-    window.salvarVenda = async (id) => {
-    const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
-    const qt = parseInt(document.getElementById(`qt-${id}`).value) || 1;
-    const vl = parseFloat(document.getElementById(`vl-${id}`).value);
-
-    if(!vl) return alert("Insira o valor!");
-
-    // Adicionamos { error } para capturar falhas
-    const { error } = await _supabase.from('compras').insert([
-        { cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }
-    ]);
-
-    if (error) {
-        console.error("Erro ao salvar:", error.message);
-        alert("Erro no banco: " + error.message);
-    } else {
-        document.getElementById(`it-${id}`).value = ''; 
-        document.getElementById(`vl-${id}`).value = '';
-        carregarDados(); // Atualiza a lista na tela
-    }
-};
 
     window.prepararEdicao = (id) => {
         const c = dbClientes.find(x => x.id === id); clienteEmEdicao = id;
