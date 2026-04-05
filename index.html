@@ -468,6 +468,18 @@
     }
 
     async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
+        // Força o scroll inteligente e reabre as opções de produtos no celular
+    window.focarBotaoInteligente = (campo) => {
+        // Se for o campo de produto (id começa com it-), limpa ele para a lista forçar a abertura
+        if (campo.id.startsWith('it-')) {
+            campo.value = '';
+        }
+        // Espera 300ms (tempo do teclado subir) e move a tela para centralizar o bloco
+        setTimeout(() => {
+            campo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+    };
+
 
     function render() {
     try {
@@ -517,11 +529,12 @@
                     </div>
                 </div>
                 <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
-                <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
-                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
-                    <input type="number" id="qt-${c.id}" value="1">
-                    <input type="text" inputmode="decimal" id="vl-${c.id}" placeholder="R$" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
+                 <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
+                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" onfocus="focarBotaoInteligente(this)" oninput="atualizarPreco(this, ${c.id})">
+                    <input type="number" id="qt-${c.id}" value="1" onfocus="focarBotaoInteligente(this)">
+                    <input type="text" inputmode="decimal" id="vl-${c.id}" placeholder="R$" onfocus="focarBotaoInteligente(this)" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
                 </div>
+
                 <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                     <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
