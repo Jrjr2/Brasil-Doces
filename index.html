@@ -16,6 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
                 :root { 
@@ -141,6 +142,23 @@
         .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .dash-label { font-size: 10px; color: #999; text-transform: uppercase; display: block; margin-bottom: 5px; font-weight: 700; }
         .dash-val { font-size: 1.2em; font-weight: 800; color: var(--accent); }
+
+        .dashboard-details { margin-bottom: 25px; }
+        .dashboard-summary { background: var(--card); padding: 15px 20px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 800; color: var(--brown); font-size: 11px; text-transform: uppercase; list-style: none; user-select: none; transition: 0.2s; letter-spacing: 0.5px; }
+        .dashboard-summary::-webkit-details-marker { display: none; }
+        .dashboard-summary:hover { border-color: var(--primary); }
+        .dashboard-details[open] .dashboard-summary { margin-bottom: 15px; background: rgba(255, 92, 138, 0.05); }
+        .dashboard-details[open] .icon-arrow { transform: rotate(180deg); }
+        .icon-arrow { transition: transform 0.3s ease; color: var(--accent); font-size: 14px; }
+
+        .analytics-container { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .chart-box { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
+        .chart-title { font-weight: 800; color: var(--brown); font-size: 12px; text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .top-products-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+        .top-product-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 92, 138, 0.05); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(255, 92, 138, 0.1); }
+        .top-product-item .nome { font-weight: 700; font-size: 13px; color: var(--text); }
+        .top-product-item .qtd { font-weight: 800; color: var(--primary); font-size: 13px; background: rgba(255,255,255,0.5); padding: 2px 8px; border-radius: 10px; }
+        body.dark-mode .top-product-item .qtd { background: rgba(0,0,0,0.3); }
 
         .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 18px; border: 1px solid var(--border); border-left: 5px solid var(--primary); position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -412,6 +430,39 @@
         <div class="dash-box"><span class="dash-label">SALDO CLIENTES</span><div class="dash-val" id="totalGeral">R$ 0,00</div></div>
     </div>
 
+    <details class="dashboard-details">
+        <summary class="dashboard-summary">
+            <span><i class="fa-solid fa-chart-pie" style="margin-right: 6px;"></i> Visualizar Desempenho e Gráficos</span>
+            <i class="fa-solid fa-chevron-down icon-arrow"></i>
+        </summary>
+        <div class="analytics-container" id="analyticsDashboard">
+            <div class="chart-box">
+                <div class="chart-title"><i class="fa-solid fa-chart-line"></i> Faturamento (7 Dias)</div>
+                <canvas id="faturamentoChart" height="200"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title"><i class="fa-solid fa-star"></i> Top 3 - Mais Vendidos</div>
+                <ul class="top-products-list" id="topProductsList">
+                    <li style="text-align:center; font-size:12px; color:#999;">Carregando...</li>
+                </ul>
+            </div>
+        </div>
+    </details>
+
+    <div class="card" style="border-top: 3px solid var(--success); border-left: none; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.1);">
+        <div style="font-weight: 800; margin-bottom: 15px; color: var(--success); display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-bolt"></i> VENDA EXPRESSA (BALCÃO)
+        </div>
+        <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
+            <input type="text" id="avulsoIt" list="lista-prod" placeholder="Produto" onfocus="focarBotaoInteligente(this)" oninput="atualizarPrecoAvulso(this)">
+            <input type="number" id="avulsoQt" value="1" onfocus="focarBotaoInteligente(this)">
+            <input type="text" inputmode="decimal" id="avulsoVl" placeholder="R$" onfocus="focarBotaoInteligente(this)" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
+        </div>
+        <button class="btn-main" style="background: var(--success); color: white;" onclick="salvarVendaAvulsa()">
+            <i class="fa-solid fa-check-double"></i> REGISTRAR E RECEBER NA HORA
+        </button>
+    </div>
+
     <div class="card" style="border-top: 3px solid var(--accent); border-left: none;">
         <div id="tituloFormCliente" style="font-weight: 800; margin-bottom: 10px; color: var(--brown);">CADASTRAR NOVO CLIENTE</div>
         <input type="text" id="novoNome" placeholder="Nome Completo">
@@ -540,6 +591,7 @@
         const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
         dbClientes = c || [];
         render();
+        renderDashboard();
 
         // Truque Mágico: Se a página recarregar, abre automaticamente de onde estava!
         if (primeiraCarga) {
@@ -632,7 +684,9 @@
         const hoje = new Date().toLocaleDateString('pt-BR').substring(0, 5);
 
         const filtrados = dbClientes.filter(c => 
-            c.nome && c.nome.toLowerCase().trim().startsWith(busca)
+            c.nome && 
+            c.nome !== 'VENDA AVULSA (BALCÃO)' && 
+            c.nome.toLowerCase().trim().startsWith(busca)
         );
 
         filtrados.forEach(c => {
@@ -703,6 +757,124 @@
         console.error("Erro na renderização:", err);
     }
 }
+
+    let profitChart = null;
+
+    function renderDashboard() {
+        try {
+            // 1. Processar Top Produtos
+            const contagemProd = {};
+            let todasCompras = [];
+            
+            dbClientes.forEach(c => {
+                if(c.compras) todasCompras = todasCompras.concat(c.compras);
+            });
+
+            todasCompras.forEach(compra => {
+                // Considera apenas itens pagos (>0) e exclui a label de recarga interna
+                if (compra.valor_total > 0 && compra.descricao && compra.descricao !== "PAGAMENTO EFETUADO") {
+                    const desc = compra.descricao.toUpperCase();
+                    if (!contagemProd[desc]) contagemProd[desc] = 0;
+                    contagemProd[desc] += (compra.qtd || 1);
+                }
+            });
+
+            const arrayProd = Object.keys(contagemProd).map(nome => {
+                return { nome: nome, qtd: contagemProd[nome] };
+            });
+
+            arrayProd.sort((a, b) => b.qtd - a.qtd);
+            const top3 = arrayProd.slice(0, 3);
+
+            const ulTop = document.getElementById('topProductsList');
+            if (ulTop) {
+                if (top3.length === 0) {
+                    ulTop.innerHTML = '<li style="text-align:center; padding: 10px; font-size:12px; color:#999;">Ainda não há produtos registrados.</li>';
+                } else {
+                    ulTop.innerHTML = top3.map(p => `
+                        <li class="top-product-item">
+                            <span class="nome">${p.nome}</span>
+                            <span class="qtd">${p.qtd}x</span>
+                        </li>
+                    `).join('');
+                }
+            }
+
+            // 2. Processar Gráfico de Faturamento por Dia (Últimos 7 dias)
+            const faturamentoPorDia = {};
+            for(let i=6; i>=0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const rot = d.toLocaleDateString('pt-BR').substring(0,5);
+                faturamentoPorDia[rot] = 0;
+            }
+
+            todasCompras.forEach(compra => {
+                if (compra.valor_total < 0 && compra.data && compra.descricao === "PAGAMENTO EFETUADO") {
+                    const dataObj = new Date(compra.data);
+                    const limite = new Date();
+                    limite.setDate(limite.getDate() - 7);
+                    if (dataObj >= limite) {
+                        const rot = dataObj.toLocaleDateString('pt-BR').substring(0,5);
+                        if (faturamentoPorDia[rot] !== undefined) {
+                            faturamentoPorDia[rot] += Math.abs(compra.valor_total); // lucro q entrou
+                        }
+                    }
+                }
+            });
+
+            const labels = Object.keys(faturamentoPorDia);
+            const dataValues = Object.values(faturamentoPorDia);
+
+            const isDark = document.body.classList.contains('dark-mode');
+            const textColor = isDark ? '#f4e9ed' : '#5d4037';
+            const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+            const ctx = document.getElementById('faturamentoChart');
+            if (ctx) {
+                if (profitChart) profitChart.destroy();
+                
+                Chart.defaults.font.family = "'Inter', sans-serif";
+                
+                profitChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Recebido R$',
+                            data: dataValues,
+                            borderColor: '#ff5c8a',
+                            backgroundColor: 'rgba(255, 92, 138, 0.2)',
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#ff5c8a',
+                            pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: { ticks: { color: textColor }, grid: { display: false } },
+                            y: { ticks: { color: textColor }, grid: { color: gridColor }, beginAtZero: true }
+                        }
+                    }
+                });
+            }
+        } catch (e) {
+            console.error("Erro no Dashboard:", e);
+        }
+    }
+
+    // Hook para o botão de tema atualizar graficos
+    const originalToggle = toggleTheme;
+    window.toggleTheme = function() {
+        originalToggle();
+        setTimeout(renderDashboard, 100);
+    };
 
     window.abrirHistorico = (id) => {
     sessionStorage.setItem('modalAberto', 'hist-'+id);
@@ -905,7 +1077,53 @@
         }
     };
 
+    window.atualizarPrecoAvulso = (input) => {
+        const prod = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
+        if (prod) document.getElementById('avulsoVl').value = prod.preco;
+    };
 
+    window.salvarVendaAvulsa = async () => {
+        const it = document.getElementById('avulsoIt').value.toUpperCase() || "DOCE AVULSO";
+        const qt = parseInt(document.getElementById('avulsoQt').value) || 1;
+        const vl = parseFloat(document.getElementById('avulsoVl').value);
+
+        if(!vl) return alert("Insira o valor do produto!");
+
+        const total = qt * vl;
+        const nomeAvulso = "VENDA AVULSA (BALCÃO)";
+
+        try {
+            let idAvulso = null;
+            let cAvulso = dbClientes.find(x => x.nome === nomeAvulso);
+            
+            if (cAvulso) {
+                idAvulso = cAvulso.id;
+            } else {
+                const { data, error: errC } = await _supabase.from('clientes')
+                    .insert([{ nome: nomeAvulso, tel: '0000', limite: 9999 }])
+                    .select('id').single();
+                if (errC) throw errC;
+                idAvulso = data.id;
+            }
+
+            const { error: errVenda } = await _supabase.from('compras').insert([
+                { cliente_id: idAvulso, descricao: it, qtd: qt, valor_total: total },
+                { cliente_id: idAvulso, descricao: "PAGAMENTO EFETUADO", valor_total: -total }
+            ]);
+
+            if (errVenda) throw errVenda;
+
+            document.getElementById('avulsoIt').value = '';
+            document.getElementById('avulsoVl').value = '';
+            
+            alert("Venda Avulsa registrada e paga na hora com sucesso! ✨");
+            carregarDados();
+
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao registrar Venda Avulsa: " + e.message);
+        }
+    };
 
     window.prepararEdicao = (id) => {
         const c = dbClientes.find(x => x.id === id); clienteEmEdicao = id;
