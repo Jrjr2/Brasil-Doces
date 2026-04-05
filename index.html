@@ -726,6 +726,46 @@
     </div>
 </div>
 
+<!-- ========== BOTTOM SHEET: COMPROVANTE PÓS-PAGAMENTO ========== -->
+<div class="bottom-sheet-overlay" id="bsComprovanteOverlay" onclick="fecharComprovanteSheet()"></div>
+<div class="bottom-sheet" id="bsComprovanteSheet">
+    <div class="bs-handle"></div>
+
+    <!-- Cabeçalho de sucesso -->
+    <div style="text-align:center; margin-bottom: 18px;">
+        <div style="width:56px; height:56px; background: rgba(16,185,129,0.12); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:10px;">
+            <i class="fa-solid fa-circle-check" style="font-size:28px; color:var(--success);"></i>
+        </div>
+        <div style="font-weight:800; font-size:16px; color:var(--success);">PAGAMENTO CONFIRMADO! ✨</div>
+        <div id="bsComprovanteValor" style="font-size:22px; font-weight:900; color:var(--accent); margin-top:4px;">R$ 0,00</div>
+        <div id="bsComprovanteCliente" style="font-size:11px; color:#999; font-weight:700; margin-top:2px; text-transform:uppercase;"></div>
+    </div>
+
+    <div class="bs-title" style="margin-bottom:12px;">Deseja enviar o comprovante?</div>
+
+    <div class="bs-options">
+        <!-- Opção 1: WhatsApp com itens quitados -->
+        <button class="bs-btn bs-btn-pago" onclick="enviarComprovanteWap()">
+            <div class="bs-icon">📱</div>
+            <div class="bs-text">
+                <span>ENVIAR POR WHATSAPP</span>
+                <small>Manda os itens quitados e o total pago</small>
+            </div>
+        </button>
+
+        <!-- Opção 2: Abrir extrato (PDF) -->
+        <button class="bs-btn bs-btn-conta" onclick="abrirExtratoAposPagamento()">
+            <div class="bs-icon">📄</div>
+            <div class="bs-text">
+                <span>VER EXTRATO COMPLETO</span>
+                <small>Abre o histórico para salvar como PDF</small>
+            </div>
+        </button>
+
+        <button class="bs-btn-cancel" onclick="fecharComprovanteSheet()">Agora não, obrigada</button>
+    </div>
+</div>
+
 <script>
     const SUPABASE_URL = 'https://ebfkwuslmneswvovygwh.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViZmt3dXNsbW5lc3d2b3Z5Z3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzU3NzUsImV4cCI6MjA5MDc1MTc3NX0.ElCyWYPr330VLsY6LZIa41Fg9QR_VaHeBj36jQ8oVt0'; 
@@ -1107,7 +1147,7 @@
         
         itensPendentesGlobal.forEach(i => {
             const qT = i.qtd > 1 ? `${i.qtd}x ` : "";
-            listAbertos.innerHTML += `<label class="item-selecionavel"><input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}"><div class="item-detalhe"><div><small>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</small><br>${qT}${i.descricao}</div><b>R$ ${i.valor_exibir.toFixed(2)}</b></div></label>`;
+            listAbertos.innerHTML += `<label class="item-selecionavel"><input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" data-qtd="${i.qtd}"><div class="item-detalhe"><div><small>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</small><br>${qT}${i.descricao}</div><b>R$ ${i.valor_exibir.toFixed(2)}</b></div></label>`;
         });
 
         document.querySelectorAll('.chk-item').forEach(el => el.addEventListener('change', atualizarSoma));
@@ -1240,27 +1280,83 @@
         document.getElementById('containerSoma').style.display = soma > 0 ? 'block' : 'none';
     };
 
+    // ======= COMPROVANTE PÓS-PAGAMENTO =======
+    let _comprovanteData = null; // Guarda os dados do pagamento para o comprovante
+
     window.processarPagamento = async (clienteId) => {
         let soma = 0;
         const selecionados = document.querySelectorAll('.chk-item:checked');
         
         selecionados.forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
-        
         if (soma <= 0) return alert("Selecione pelo menos um item para pagar!");
 
-        if (confirm(`Confirmar pagamento de R$ ${soma.toFixed(2)}?`)) {
-            const { error } = await _supabase.from('compras').insert([
-                { cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma }
-            ]);
+        // Captura os itens selecionados ANTES de salvar (para o comprovante)
+        const itensSelecionados = Array.from(selecionados).map(cb => ({
+            desc : cb.getAttribute('data-desc') || '',
+            qtd  : parseInt(cb.getAttribute('data-qtd')) || 1,
+            valor: parseFloat(cb.getAttribute('data-valor'))
+        }));
 
-            if (error) {
-                alert("Erro: " + error.message);
-            } else { 
-                await carregarDados(); 
-                abrirHistorico(clienteId); 
-            }
+        if (!confirm(`Confirmar pagamento de R$ ${soma.toFixed(2)}?`)) return;
+
+        const { error } = await _supabase.from('compras').insert([
+            { cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma }
+        ]);
+
+        if (error) {
+            alert("Erro: " + error.message);
+        } else {
+            // Fecha o modal de histórico
+            fecharModais();
+
+            // Armazena para o comprovante
+            _comprovanteData = { clienteId, soma, itens: itensSelecionados };
+
+            const c = dbClientes.find(x => x.id === clienteId);
+            document.getElementById('bsComprovanteValor').innerText  = `R$ ${soma.toFixed(2)}`;
+            document.getElementById('bsComprovanteCliente').innerText = c ? c.nome : '';
+
+            // Exibe o bottom sheet de comprovante
+            document.getElementById('bsComprovanteOverlay').classList.add('active');
+            setTimeout(() => document.getElementById('bsComprovanteSheet').classList.add('active'), 10);
+
+            await carregarDados();
         }
     };
+
+    window.fecharComprovanteSheet = () => {
+        document.getElementById('bsComprovanteSheet').classList.remove('active');
+        document.getElementById('bsComprovanteOverlay').classList.remove('active');
+    };
+
+    window.enviarComprovanteWap = () => {
+        fecharComprovanteSheet();
+        if (!_comprovanteData) return;
+
+        const c = dbClientes.find(x => x.id === _comprovanteData.clienteId);
+        if (!c || !c.tel) return alert('Telefone do cliente não cadastrado!');
+
+        const dataHoje = new Date().toLocaleDateString('pt-BR');
+        let linhas = _comprovanteData.itens
+            .map(i => `✅ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.desc}: R$ ${i.valor.toFixed(2)}`)
+            .join('%0A');
+
+        let msg = `*Brasil Doces®* 🍰%0A%0A`;
+        msg += `Olá, *${c.nome}*! Tudo bem? ✨%0A`;
+        msg += `Segue o comprovante do seu pagamento de hoje (${dataHoje}):%0A%0A`;
+        msg += `${linhas}%0A%0A`;
+        msg += `💰 *TOTAL PAGO: R$ ${_comprovanteData.soma.toFixed(2)}*%0A%0A`;
+        msg += `Muito obrigada pela confiança! Feito com amor. ❤️`;
+
+        window.open(`https://wa.me/55${c.tel}?text=${msg}`, '_blank');
+    };
+
+    window.abrirExtratoAposPagamento = () => {
+        fecharComprovanteSheet();
+        if (!_comprovanteData) return;
+        abrirResumoConta(_comprovanteData.clienteId);
+    };
+    // ==========================================
 
     // =========== BOTTOM SHEET LOGIC ===========
     let _pendingVenda = null; // Guarda os dados enquanto o usuário escolhe o tipo
