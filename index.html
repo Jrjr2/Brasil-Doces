@@ -468,17 +468,20 @@
     }
 
     async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
-        // Força o scroll inteligente e reabre as opções de produtos no celular
+            // Força o scroll inteligente e lida com o "Lag" da primeira abertura na bateria
     window.focarBotaoInteligente = (campo) => {
-        // Se for o campo de produto (id começa com it-), limpa ele para a lista forçar a abertura
+        // Limpa o campo para reacender o datalist
         if (campo.id.startsWith('it-')) {
             campo.value = '';
         }
-        // Espera 300ms (tempo do teclado subir) e move a tela para centralizar o bloco
-        setTimeout(() => {
-            campo.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 300);
+        
+        // Pulsa a centralização 3 vezes para acompanhar a velocidade real que o teclado sobe!
+        const centralizar = () => campo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(centralizar, 150); // Para teclados rápidos
+        setTimeout(centralizar, 450); // Para a média
+        setTimeout(centralizar, 800); // Para o lag da primeira abertura
     };
+
 
 
     function render() {
