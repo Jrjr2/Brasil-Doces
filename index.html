@@ -106,7 +106,15 @@
         body.dark-mode .zn-slogan { color: #886a73; }
         body.dark-mode .price-tag, body.dark-mode .dash-val { color: var(--primary) !important; }
         
-        /* Ajustes dos Modais */
+        /* Ajustes dos Modais e Inputs Premium */
+        body.dark-mode input { 
+            background: rgba(0, 0, 0, 0.25) !important;
+            border-color: rgba(255, 255, 255, 0.05) !important;
+            color: #fff !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2) !important;
+        }
+        body.dark-mode input::placeholder { color: rgba(255,255,255,0.4) !important; }
+        
         body.dark-mode .item-selecionavel:hover { background: rgba(255, 255, 255, 0.05); }
         body.dark-mode .extrato-header { border-bottom-color: var(--border); color: #886a73; }
         body.dark-mode .extrato-item { border-bottom-color: var(--border); }
@@ -709,11 +717,27 @@
                         // PREPARAÇÃO DOS CHIPS DA VITRINE
             let chipsHtml = '';
             if (dbProdutos && dbProdutos.length > 0) {
-                const icones = ['🍬', '🍰', '🍪', '🍩', '🍫', '🍧'];
+                const getIconeDoce = (n) => {
+                    n = n.toLowerCase();
+                    if (n.includes('pote') || n.includes('copo') || n.includes('taça')) return '🧁';
+                    if (n.includes('bolo') || n.includes('torta')) return '🍰';
+                    if (n.includes('brigadeiro') || n.includes('beijinho')) return '🟤';
+                    if (n.includes('brownie')) return '🟫';
+                    if (n.includes('bombom') || n.includes('trufa')) return '🍬';
+                    if (n.includes('cookie') || n.includes('biscoito')) return '🍪';
+                    if (n.includes('donut')) return '🍩';
+                    if (n.includes('morango')) return '🍓';
+                    if (n.includes('uva')) return '🍇';
+                    if (n.includes('ninho')) return '🥛';
+                    if (n.includes('barra') || n.includes('chocolate')) return '🍫';
+                    const iconesGen = ['✨', '🍡', '🍧', '🍥', '🍨'];
+                    return iconesGen[n.length % iconesGen.length];
+                };
+                
                 chipsHtml += '<div class="quick-products-row">';
                 
-                dbProdutos.forEach((p, index) => {
-                    let ico = icones[index % icones.length]; 
+                dbProdutos.forEach((p) => {
+                    let ico = getIconeDoce(p.nome); 
                     // Garante que aspas nos nomes não quebrem o código
                     let nomeSeguro = p.nome.replace(/'/g, "\\'");
                     chipsHtml += `
@@ -731,8 +755,8 @@
             let niverHtml = '';
             if (c.aniversario && c.aniversario === hoje) {
                 niverHtml = `
-                <div style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: var(--brown); padding: 8px 12px; border-radius: 12px; font-weight: 800; font-size: 11px; margin-bottom: 15px; border: 1px solid rgba(255, 133, 162, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255, 133, 162, 0.2);">
-                    <i class="fa-solid fa-gift" style="color: var(--accent); font-size: 15px;"></i> 
+                <div style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #7a1f3d; padding: 8px 12px; border-radius: 12px; font-weight: 800; font-size: 11px; margin-bottom: 15px; border: 1px solid rgba(255, 133, 162, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255, 133, 162, 0.2);">
+                    <i class="fa-solid fa-gift" style="color: #d81b60; font-size: 15px;"></i> 
                     ESPECIAL: HOJE É ANIVERSÁRIO DO CLIENTE! 🎉
                 </div>`;
             }
