@@ -475,7 +475,8 @@ function configurarEventosPainel() {
         if(nomeTitular) texto += `👤 *NOME:* ${nomeTitular}%0A%0A`;
         texto += `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍰❤️`;
 
-    } else if (tipo === 'informar') {
+    } 
+    else if (tipo === 'informar') {
         // Se houver checks, envia só os selecionados. Se não, envia tudo que está no modal.
         const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
         const itensParaEnviar = checks.length > 0 
