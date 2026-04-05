@@ -319,6 +319,60 @@
         }
         .btn-theme { background: white !important; }
 
+                /* ----- VITRINE DE PRODUTOS RÁPIDOS (Pills) ----- */
+        .quick-products-row {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 5px 2px 15px 2px;
+            margin-bottom: 5px;
+            scrollbar-width: none; /* Esconde a barra feia no Firefox */
+        }
+        .quick-products-row::-webkit-scrollbar { display: none; } /* Esconde no Chrome/Safari */
+
+        .btn-pill {
+            flex: 0 0 auto;
+            background: rgba(255, 92, 138, 0.08); /* Fundo rosinha vidro */
+            border: 1px solid rgba(255, 92, 138, 0.15);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            text-transform: uppercase;
+        }
+        
+        .btn-pill:active {
+            transform: scale(0.92);
+            background: var(--primary);
+            color: white !important;
+            box-shadow: 0 10px 20px rgba(255, 92, 138, 0.4);
+        }
+        
+        .btn-pill small {
+            font-size: 9px;
+            font-weight: 800;
+            opacity: 0.8;
+            margin-top: 3px;
+            color: var(--success);
+        }
+        
+        /* Ajuste do botão brilhante para o Modo Escuro */
+        body.dark-mode .btn-pill {
+            background: rgba(255, 92, 138, 0.1);
+            border-color: rgba(255,255,255,0.06);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+
 
 
     </style>
@@ -594,6 +648,28 @@
 
             const card = document.createElement('div');
             card.className = 'card';
+                        // PREPARAÇÃO DOS CHIPS DA VITRINE
+            let chipsHtml = '';
+            if (dbProdutos && dbProdutos.length > 0) {
+                const icones = ['🍬', '🍰', '🍪', '🍩', '🍫', '🍧'];
+                chipsHtml += '<div class="quick-products-row">';
+                
+                dbProdutos.forEach((p, index) => {
+                    let ico = icones[index % icones.length]; 
+                    // Garante que aspas nos nomes não quebrem o código
+                    let nomeSeguro = p.nome.replace(/'/g, "\\'");
+                    chipsHtml += `
+                    <div class="btn-pill" onclick="preencherRapido(${c.id}, '${nomeSeguro}', ${p.preco})">
+                        <span style="font-size: 16px; margin-bottom: 2px;">${ico}</span>
+                        ${p.nome}
+                        <small>R$ ${p.preco.toFixed(2)}</small>
+                    </div>`;
+                });
+                
+                chipsHtml += '</div>';
+            }
+
+            // O HTML DO CARD COM A ADIÇÃO DA VITRINE:
             card.innerHTML = `
                 <div class="card-header">
                     <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
@@ -603,7 +679,11 @@
                     </div>
                 </div>
                 <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
+                
+                ${chipsHtml}
+
                  <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
+
                     <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" onfocus="focarBotaoInteligente(this)" oninput="atualizarPreco(this, ${c.id})">
                     <input type="number" id="qt-${c.id}" value="1" onfocus="focarBotaoInteligente(this)">
                     <input type="text" inputmode="decimal" id="vl-${c.id}" placeholder="R$" onfocus="focarBotaoInteligente(this)" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
@@ -880,6 +960,25 @@
         carregarDados(); // Recarrega a lista para o autocomplete funcionar
     }
 };
+
+        // A mágica que empurra o Doce tocado direto para os inputs!
+    window.preencherRapido = (cId, nomeProduto, precoProduto) => {
+        const campoIt = document.getElementById(`it-${cId}`);
+        const campoQt = document.getElementById(`qt-${cId}`);
+        const campoVl = document.getElementById(`vl-${cId}`);
+        
+        if(campoIt) campoIt.value = nomeProduto;
+        if(campoQt) campoQt.value = 1;
+        if(campoVl) campoVl.value = precoProduto;
+        
+        // Efeito de brilhinho verde na caixa para piscar que preencheu:
+        if(campoIt) {
+            campoIt.style.transition = "0.3s";
+            campoIt.style.boxShadow = "0 0 0 3px rgba(16, 185, 129, 0.4)";
+            setTimeout(() => campoIt.style.boxShadow = "inset 0 2px 4px rgba(0,0,0,0.02)", 500);
+        }
+    };
+
 
     checkUser();
 </script>
