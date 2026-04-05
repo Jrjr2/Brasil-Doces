@@ -221,9 +221,7 @@
     </button>
     
     <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
-</div>
-        
-<div id="modalResumo" class="modal">
+</div> </div> </div> <div id="modalResumo" class="modal">
     <div class="modal-content">
         <h3 id="nomeClienteResumo"></h3>
         <p style="text-align:center; font-size:11px; color:#999; margin-bottom:15px; font-weight:700;">HISTÓRICO DE PRODUTOS QUITADOS</p>
@@ -331,15 +329,24 @@ function configurarEventosPainel() {
 
         const busca = buscaInput.value.trim().toLowerCase();
         const listaDiv = document.getElementById('lista');
+        
+        // Limpa e recria o datalist de produtos para o autocomplete
+        let datalist = document.getElementById('lista-prod');
+        if (!datalist) {
+            datalist = document.createElement('datalist');
+            datalist.id = 'lista-prod';
+            document.body.appendChild(datalist);
+        }
+        datalist.innerHTML = dbProdutos.map(p => `<option value="${p.nome}">`).join('');
+
         listaDiv.innerHTML = '';
 
         let totalH = 0, totalG = 0;
         const hoje = new Date().toLocaleDateString('pt-BR').substring(0, 5);
 
-        // Filtra apenas nomes que COMEÇAM com o que foi digitado
-const filtrados = dbClientes.filter(c => 
-    c.nome && c.nome.toLowerCase().trim().startsWith(busca)
-);
+        const filtrados = dbClientes.filter(c => 
+            c.nome && c.nome.toLowerCase().trim().startsWith(busca)
+        );
 
         filtrados.forEach(c => {
             const comprasValidas = c.compras || [];
@@ -364,7 +371,7 @@ const filtrados = dbClientes.filter(c =>
                 </div>
                 <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
                 <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
-                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto">
+                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" oninput="atualizarPreco(this, ${c.id})">
                     <input type="number" id="qt-${c.id}" value="1">
                     <input type="text" inputmode="decimal" id="vl-${c.id}" placeholder="R$" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
                 </div>
@@ -384,8 +391,9 @@ const filtrados = dbClientes.filter(c =>
 }
 
     window.abrirHistorico = (id) => {
-        clienteAbertoId = id;
-        const c = dbClientes.find(x => x.id === id);
+    clienteAbertoId = id;
+    document.getElementById('modalResumo').style.display = 'none'; // Fecha o outro por segurança
+    const c = dbClientes.find(x => x.id === id);
         let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
         const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
         
@@ -460,15 +468,17 @@ const filtrados = dbClientes.filter(c =>
     document.getElementById('btnPixZap').onclick = () => enviarZapDoces('pix');
 
     window.abrirResumoConta = (id) => {
-        const c = dbClientes.find(x => x.id === id);
-        document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
-        const corpo = document.getElementById('corpoExtrato');
-        corpo.innerHTML = '<div class="extrato-header"><div>DATA</div><div>QTD</div><div>PRODUTO</div><div style="text-align:right">VALOR</div></div>';
-        c.compras.filter(i => i.valor_total > 0).forEach(i => {
-            corpo.innerHTML += `<div class="extrato-item"><div>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</div><div class="qtd">${i.qtd}x</div><div>${i.descricao}</div><div class="valor">R$ ${i.valor_total.toFixed(2)}</div></div>`;
-        });
-        document.getElementById('modalResumo').style.display = 'block';
-    };
+    clienteAbertoId = id;
+    document.getElementById('modalHistorico').style.display = 'none'; // Fecha o outro por segurança
+    const c = dbClientes.find(x => x.id === id);
+    document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
+    const corpo = document.getElementById('corpoExtrato');
+    corpo.innerHTML = '<div class="extrato-header"><div>DATA</div><div>QTD</div><div>PRODUTO</div><div style="text-align:right">VALOR</div></div>';
+    c.compras.filter(i => i.valor_total > 0).forEach(i => {
+        corpo.innerHTML += `<div class="extrato-item"><div>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</div><div class="qtd">${i.qtd}x</div><div>${i.descricao}</div><div class="valor">R$ ${i.valor_total.toFixed(2)}</div></div>`;
+    });
+    document.getElementById('modalResumo').style.display = 'block';
+};
 
     document.getElementById('btnMensagemCarinho').onclick = () => {
         const c = dbClientes.find(x => x.id === clienteAbertoId);
