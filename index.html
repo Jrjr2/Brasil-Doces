@@ -496,10 +496,7 @@ function configurarEventosPainel() {
 
         window.open(`https://wa.me/55${c.tel}?text=${texto}`, '_blank');
     }
-
-    document.getElementById('btnZapRapido').onclick = () => enviarZapDoces('informar');
-    document.getElementById('btnPixZap').onclick = () => enviarZapDoces('pix');
-
+    
     window.abrirResumoConta = (id) => {
     clienteAbertoId = id;
     document.getElementById('modalHistorico').style.display = 'none'; // Fecha o outro por segurança
@@ -512,12 +509,7 @@ function configurarEventosPainel() {
     });
     document.getElementById('modalResumo').style.display = 'block';
 };
-
-    document.getElementById('btnMensagemCarinho').onclick = () => {
-        const c = dbClientes.find(x => x.id === clienteAbertoId);
-        window.open(`https://wa.me/55${c.tel}?text=Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! ❤️`, '_blank');
-    };
-
+    
     window.atualizarSoma = () => {
         let soma = 0;
         document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
