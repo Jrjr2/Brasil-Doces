@@ -476,28 +476,27 @@ function configurarEventosPainel() {
         texto += `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍰❤️`;
 
     } 
-    else if (tipo === 'informar') {
-        // Se houver checks, envia só os selecionados. Se não, envia tudo que está no modal.
-        const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
-        const itensParaEnviar = checks.length > 0 
-            ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
-            : itensPendentesGlobal;
+            else if (tipo === 'informar') {
+            // Se houver checks, envia só os selecionados. Se não, envia tudo que está no modal.
+            const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
+            const itensParaEnviar = checks.length > 0 
+                ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
+                : itensPendentesGlobal;
 
-        if (itensParaEnviar.length === 0) return alert("Não há itens para informar!");
+            if (itensParaEnviar.length === 0) return alert("Não há itens para informar!");
 
-        let listaMsg = itensParaEnviar.map(i => `✨ ${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-        
-        texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:%0A%0A`;
-        texto += `${listaMsg}%0A%0A`;
-        texto += `É só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
+            let listaMsg = itensParaEnviar.map(i => `✨ ${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+            
+            texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:%0A%0A`;
+            texto += `${listaMsg}%0A%0A`;
+            texto += `É só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
+        } else if (tipo === 'obrigado') {
+            texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! ❤️`;
+        }
+
+        window.open(`https://wa.me/55${c.tel}?text=${texto}`, '_blank');
     }
 
-    } else if (tipo === 'obrigado')
-        texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! ❤️`;
-    }
-
-    window.open(`https://wa.me/55${c.tel}?text=${texto}`, '_blank');
-}
     document.getElementById('btnZapRapido').onclick = () => enviarZapDoces('informar');
     document.getElementById('btnPixZap').onclick = () => enviarZapDoces('pix');
 
@@ -534,25 +533,24 @@ function configurarEventosPainel() {
     
     if (soma <= 0) return alert("Selecione pelo menos um item para pagar!");
 
-    if (confirm(`Confirmar pagamento de R$ ${soma.toFixed(2)}?`)) {
-        const { error } = await _supabase.from('compras').insert([
-            { cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma }
-        ]);
+            if (confirm(`Confirmar pagamento de R$ ${soma.toFixed(2)}?`)) {
+            const { error } = await _supabase.from('compras').insert([
+                { cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma }
+            ]);
 
-        if (error) {
-    alert("Erro: " + error.message);
-} else { 
-    checkUser();
-}
-            // Em vez de fechar tudo, apenas atualizamos os dados
-            await carregarDados(); 
-            // Reabre o histórico para o usuário ver que os itens sumiram/atualizaram
-            abrirHistorico(clienteId); 
-            
-            // Opcional: Um aviso discreto de sucesso
-            console.log("Pagamento registrado!");
+            if (error) {
+                alert("Erro: " + error.message);
+            } else { 
+                // Em vez de fechar tudo, apenas atualizamos os dados
+                await carregarDados(); 
+                // Reabre o histórico para o usuário ver que os itens sumiram/atualizaram
+                abrirHistorico(clienteId); 
+                
+                console.log("Pagamento registrado!");
+            }
         }
-    }
+    };
+
 
     window.salvarVenda = async (id) => {
     const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
