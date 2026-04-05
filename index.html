@@ -18,16 +18,30 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        :root { 
-            --bg: #fff0f3; --card: #ffffff; --primary: #ff85a2; --accent: #d63384; 
-            --text: #4a4a4a; --danger: #e74c3c; --border: #ffd1dc; --success: #2ecc71;
-            --brown: #6d4c41; --info: #3498db;
+                :root { 
+            --bg: #FFF5F8; /* Rosa "algodão doce" muito suave e elegante para o fundo geral */
+            --card: #ffffff; /* Cartões brancos puros para saltarem do fundo */
+            --primary: #ff758c; /* O rosa base do nosso botão brilhante do PIX */
+            --accent: #ff477e;  /* O tom um pouco mais concentrado para os "R$ 52.00" */
+            --text: #4a4a4a; /* Cinza escuro elegante. Preto puro fica muito agressivo */
+            --danger: #ff4d4f; 
+            --border: #f4e6ea;  /* Borda levemente rosada quase invisível (remove o aspecto caixa) */
+            --success: #10b981; /* Verde Esmeralda premium, menos fluorescente */
+            --brown: #5d4037;   /* Marrom chocolate mais claro para as letras dos títulos */
+            --info: #3b82f6;
         }
 
         body.dark-mode {
-            --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #333333;
-            --primary: #ffb1c1; --accent: #ff85a2; --brown: #ffdadf; --success: #4cd137;
+            --bg: #1a1516; /* Fundo escuro com micro gota de "chocolate" para não ser só preto */
+            --card: #241d1f; 
+            --text: #f0f0f0; 
+            --border: #3d3134;
+            --primary: #ff85a2; 
+            --accent: #ffb3c6; 
+            --brown: #ffdadf; 
+            --success: #34d399;
         }
+
 
         body.dark-mode .zn-brand-text { color: var(--primary); }
         body.dark-mode .price-tag { color: var(--primary); }
@@ -215,6 +229,25 @@
             box-shadow: none !important;
             padding: 5px 0 15px 0 !important;
         }
+
+                /* ----- APLICA O VISUAL BOUTIQUE NA TELA INICIAL ----- */
+        /* Faz o botão principal ADICIONAR CLIENTE e ANOTAR PEDIDO ganhar o gradiente do PIX */
+        .btn-main { 
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); 
+            color: white; 
+            box-shadow: 0 6px 15px rgba(255, 117, 140, 0.25); /* Sombra elegante */
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Tira as bordas feias dos botõezinhos no topo e coloca sombreamento */
+        .header-actions button { 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+            border: none !important; 
+        }
+        .btn-theme { background: white !important; }
+
 
 
     </style>
