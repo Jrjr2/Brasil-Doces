@@ -323,25 +323,25 @@
 
 
     // Crie uma função para configurar os eventos após o login
-function configurarEventosPainel() {
-    const btnSalvarConfig = document.getElementById('btnSalvarConfig');
-    if (btnSalvarConfig) {
-        btnSalvarConfig.onclick = async () => {
-            const chave = document.getElementById('cfgChavePix').value;
-            const nome = document.getElementById('cfgNomePix').value;
-            if (!chave) return alert("Digite ao menos a chave PIX!");
-            const { error } = await _supabase.from('configuracoes').upsert({ id: 1, chave_pix: chave, nome_pix: nome });
-            if (error) alert("Erro ao salvar: " + error.message);
-            else alert("Configurações de PIX salvas! ✨");
-        };
-    }
+    async function carregarConfiguracoes() {
+        // Tenta puxar do banco pegando apenas o primeiro resultado
+        const { data, error } = await _supabase.from('configuracoes').select('*').limit(1).single();
+        
+        if (error && error.code !== 'PGRST116') {
+            alert("⚠️ Erro ao buscar Pìx do Banco: " + error.message);
+        }
+
+        if (data) {
+            pixConfig = data; // Salva globalmente
+            
+            // Preenche os campos se eles existirem na tela
+            const inputChave = document.getElementById('cfgChavePix');
+            const inputNome = document.getElementById('cfgNomePix');
+            if (inputChave) inputChave.value = data.chave_pix || '';
+            if (inputNome) inputNome.value = data.nome_pix || '';
+        }
+    }  
     
-    // Faça o mesmo para o botão de cadastrar produto, se ele existir
-    const btnProd = document.getElementById('btnSalvarProduto');
-    if (btnProd) {
-        btnProd.onclick = async () => { /* lógica de salvar produto */ };
-    }
-}
 
     function toggleTheme() {
         const body = document.body;
@@ -458,17 +458,25 @@ function configurarEventosPainel() {
         document.getElementById('containerSoma').style.display='none';
     };
 
-    async function enviarZapDoces(tipo) {
-    const c = dbClientes.find(x => x.id === clienteAbertoId);
-    if (!c) return;
+        async function enviarZapDoces(tipo) {
+        const c = dbClientes.find(x => x.id === clienteAbertoId);
+        if (!c) return;
 
-    const chave = document.getElementById('cfgChavePix').value;
-    const nomeTitular = document.getElementById('cfgNomePix').value;
+        // Pega do campo texto. Se não achar ou você tiver apagado as Tags, pega direto do banco!
+        const inputChave = document.getElementById('cfgChavePix');
+        const inputNome = document.getElementById('cfgNomePix');
+        
+        const chave = inputChave && inputChave.value ? inputChave.value : pixConfig.chave_pix;
+        const nomeTitular = inputNome && inputNome.value ? inputNome.value : pixConfig.nome_pix;
 
-            // Salva a configuração de PIX e tira o 'await' para o navegador não bloquear o pop-up do WhatsApp
+        // Salva a configuração de PIX e tira o 'await' para o navegador não bloquear o pop-up do WhatsApp
         if (chave && (tipo === 'pix')) {
             _supabase.from('configuracoes').upsert({ id: 1, chave_pix: chave, nome_pix: nomeTitular }).then();
         }
+
+        // ... o resto do seu código das checks continua normal a partir daqui ...
+        const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
+
 
 
     const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
