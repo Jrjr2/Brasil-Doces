@@ -1378,30 +1378,27 @@
         const { id, it, qt, vl } = _pendingVenda;
         _pendingVenda = null;
 
-        let valorTotal, pago, descricao;
+        let valorTotal, descricao;
 
         if (tipo === 'pago') {
-            // Pagou na hora: salva valor + quita automático
+            // Pagou na hora: salva valor positivo
             valorTotal = qt * vl;
-            pago       = true;
             descricao  = it;
         } else if (tipo === 'brinde') {
             // Brinde: sem cobrança
             valorTotal = 0;
-            pago       = true;
             descricao  = `🎁 ${it}`;
         } else {
-            // Anotar na conta: pendente
+            // Anotar na conta: pendente (valor positivo)
             valorTotal = qt * vl;
-            pago       = false;
             descricao  = it;
         }
 
-        const inserts = [{ cliente_id: id, descricao, qtd: qt, valor_total: valorTotal, pago }];
+        const inserts = [{ cliente_id: id, descricao, qtd: qt, valor_total: valorTotal }];
 
-        // Se pagou na hora, também insere o registro de baixa
+        // Se pagou na hora, também insere o registro de BAIXA (valor negativo)
         if (tipo === 'pago') {
-            inserts.push({ cliente_id: id, descricao: "PAGAMENTO EFETUADO", qtd: 1, valor_total: -valorTotal, pago: true });
+            inserts.push({ cliente_id: id, descricao: "PAGAMENTO EFETUADO (BALCÃO)", qtd: 1, valor_total: -valorTotal });
         }
 
         const { error } = await _supabase.from('compras').insert(inserts);
