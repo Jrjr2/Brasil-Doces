@@ -43,12 +43,74 @@
         }
 
 
-        body.dark-mode .zn-brand-text { color: var(--primary); }
-        body.dark-mode .price-tag { color: var(--primary); }
-        body.dark-mode .dash-val { color: var(--primary); }
-        body.dark-mode input { background: #252525; border-color: #444; }
-        body.dark-mode .btn-action { background: #2a2a2a; color: var(--primary); border-color: var(--border); }
-        body.dark-mode .zn-slogan { color: #b5a1a1; }
+                /* ==========================================================
+           🌑 LUXURY DARK MODE - TRUFFLE & NEON ROSE
+           ========================================================== */
+        body.dark-mode {
+            --bg: #110d0f;       /* Quase preto OLED, mas aquecido com um tom Cacao */
+            --card: #1c1518;     /* Superfícies luxuosas um tom acima do fundo */
+            --text: #f4e9ed;     /* Branco-rosado amigável para leitura no escuro */
+            --border: #2e2227;   /* Linhas bem finas em bordô escuro refinado */
+            --primary: #ff5c8a;  /* Rosa vibrante "Neon" (Para marca e botões) */
+            --accent: #ff85a2;   /* Rosa acetinado elegante (Para Valores em R$) */
+            --brown: #ffcad4;    /* O marrom vira um Rose Gold prateado nos títulos! */
+            --success: #2dd4bf;  /* Verde Menta / Cyan brilhante (Não agride o olho) */
+        }
+
+        /* Elevação e Profundidade (Em vez da cara chapada cinza, colocamos um abismo) */
+        body.dark-mode .card, 
+        body.dark-mode .dash-box, 
+        body.dark-mode .login-card, 
+        body.dark-mode .modal-content, 
+        body.dark-mode .extrato-container {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.04) !important;
+        }
+
+        /* A grande virada: Inputs estilo Vidro Negro Premium */
+        body.dark-mode input { 
+            background: rgba(0, 0, 0, 0.3) !important; 
+            border: 1px solid var(--border) !important; 
+            color: #fff !important;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+        }
+        body.dark-mode input:focus { 
+            border-color: var(--primary) !important; 
+            background: rgba(0, 0, 0, 0.5) !important;
+            box-shadow: 0 0 0 3px rgba(255, 92, 138, 0.2) !important; 
+        }
+
+        /* Botões secundários param de ser "Cinza" e ganham tom de Morango Diluído */
+        body.dark-mode .btn-action { 
+            background: rgba(255, 92, 138, 0.08) !important; 
+            color: var(--primary) !important; 
+            border: 1px solid rgba(255, 92, 138, 0.15) !important; 
+        }
+        body.dark-mode .btn-action:hover { background: rgba(255, 92, 138, 0.15) !important; }
+
+        /* Botões Redondos do Topo (Minimalistas) */
+        body.dark-mode .btn-theme {
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: #fff !important;
+            border: 1px solid rgba(255,255,255,0.08) !important;
+        }
+        body.dark-mode .btn-logout {
+            background: rgba(255, 77, 79, 0.1) !important;
+            color: var(--danger) !important;
+            border: 1px solid rgba(255, 77, 79, 0.2) !important;
+        }
+
+        /* Typography "Glow" - Deixa a Topbar Brilhando no Escuro */
+        body.dark-mode .zn-brand-text { color: #fff !important; text-shadow: 0 2px 20px rgba(255, 92, 138, 0.5); }
+        body.dark-mode .zn-slogan { color: #886a73; }
+        body.dark-mode .price-tag, body.dark-mode .dash-val { color: var(--primary) !important; }
+        
+        /* Ajustes dos Modais */
+        body.dark-mode .item-selecionavel:hover { background: rgba(255, 255, 255, 0.05); }
+        body.dark-mode .extrato-header { border-bottom-color: var(--border); color: #886a73; }
+        body.dark-mode .extrato-item { border-bottom-color: var(--border); }
+        body.dark-mode #containerSoma { background: rgba(0, 0, 0, 0.3) !important; border-color: transparent !important; }
+
 
         body { 
     font-family: 'Inter', sans-serif; 
