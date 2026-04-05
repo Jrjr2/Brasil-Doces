@@ -398,7 +398,129 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
+        /* ============================================
+           BOTTOM SHEET - TIPO DE VENDA
+           ============================================ */
+        .bottom-sheet-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+        }
+        .bottom-sheet-overlay.active { display: block; }
 
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card);
+            border-radius: 28px 28px 0 0;
+            padding: 10px 24px 36px 24px;
+            z-index: 2001;
+            box-shadow: 0 -10px 50px rgba(0,0,0,0.25);
+            transform: translateY(100%);
+            transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .bottom-sheet.active { transform: translateY(0); }
+
+        .bs-handle {
+            width: 40px; height: 4px;
+            background: var(--border);
+            border-radius: 4px;
+            margin: 0 auto 20px auto;
+        }
+        .bs-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .bs-product-preview {
+            background: var(--bg);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+        .bs-product-name { font-weight: 800; font-size: 14px; color: var(--brown); }
+        .bs-product-val  { font-weight: 800; font-size: 16px; color: var(--accent); }
+
+        .bs-options { display: flex; flex-direction: column; gap: 10px; }
+
+        .bs-btn {
+            width: 100%; padding: 16px 18px;
+            border-radius: 16px; border: none;
+            font-size: 14px; font-weight: 800;
+            cursor: pointer;
+            display: flex; align-items: center; gap: 14px;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .bs-btn:active { transform: scale(0.97); }
+        .bs-btn .bs-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; flex-shrink: 0;
+        }
+        .bs-btn .bs-text { display: flex; flex-direction: column; gap: 3px; }
+        .bs-btn .bs-text small { font-size: 10px; font-weight: 600; opacity: 0.7; text-transform: none; }
+
+        /* Pagou - Verde */
+        .bs-btn-pago {
+            background: rgba(16, 185, 129, 0.1);
+            color: #0a7a56;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .bs-btn-pago:active { background: rgba(16, 185, 129, 0.2); }
+        .bs-btn-pago .bs-icon { background: rgba(16, 185, 129, 0.15); }
+
+        /* Brinde - Dourado */
+        .bs-btn-brinde {
+            background: rgba(255, 165, 0, 0.1);
+            color: #b45309;
+            border: 1px solid rgba(255, 165, 0, 0.22);
+        }
+        .bs-btn-brinde:active { background: rgba(255, 165, 0, 0.2); }
+        .bs-btn-brinde .bs-icon { background: rgba(255, 165, 0, 0.15); }
+
+        /* Conta - Rosa */
+        .bs-btn-conta {
+            background: rgba(255, 92, 138, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(255, 92, 138, 0.2);
+        }
+        .bs-btn-conta:active { background: rgba(255, 92, 138, 0.2); }
+        .bs-btn-conta .bs-icon { background: rgba(255, 92, 138, 0.15); }
+
+        /* Cancelar */
+        .bs-btn-cancel {
+            background: transparent;
+            color: #aaa;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+            border: none;
+            margin-top: 4px;
+            cursor: pointer;
+            width: 100%;
+            padding: 10px;
+        }
+
+        /* Dark mode adaptations */
+        body.dark-mode .bs-btn-pago   { color: #34d399; background: rgba(16,185,129,0.12); }
+        body.dark-mode .bs-btn-brinde { color: #fbbf24; background: rgba(255,165,0,0.12); }
+        body.dark-mode .bs-btn-conta  { color: var(--accent); background: rgba(255,92,138,0.12); }
 
 
     </style>
@@ -560,6 +682,49 @@
     </div>
 </div>
 
+<!-- ========== BOTTOM SHEET: TIPO DE VENDA ========== -->
+<div class="bottom-sheet-overlay" id="bsOverlay" onclick="fecharBottomSheet()"></div>
+<div class="bottom-sheet" id="bottomSheet">
+    <div class="bs-handle"></div>
+    <div class="bs-title">Como foi esse pedido?</div>
+
+    <!-- Preview do produto/valor -->
+    <div class="bs-product-preview">
+        <span class="bs-product-name" id="bsProductName">—</span>
+        <span class="bs-product-val" id="bsProductVal">R$ 0,00</span>
+    </div>
+
+    <div class="bs-options">
+        <!-- Opção 1: Pagou na hora -->
+        <button class="bs-btn bs-btn-pago" onclick="confirmarVenda('pago')">
+            <div class="bs-icon">💰</div>
+            <div class="bs-text">
+                <span>PAGOU AGORA</span>
+                <small>Registra e dá baixa automática</small>
+            </div>
+        </button>
+
+        <!-- Opção 2: Brinde de aniversário -->
+        <button class="bs-btn bs-btn-brinde" onclick="confirmarVenda('brinde')">
+            <div class="bs-icon">🎁</div>
+            <div class="bs-text">
+                <span>BRINDE / CORTESIA</span>
+                <small>Sem cobrança, marca como presenteado</small>
+            </div>
+        </button>
+
+        <!-- Opção 3: Anotar na conta -->
+        <button class="bs-btn bs-btn-conta" onclick="confirmarVenda('conta')">
+            <div class="bs-icon">📒</div>
+            <div class="bs-text">
+                <span>ANOTAR NA CONTA</span>
+                <small>Fica pendente para cobrar depois</small>
+            </div>
+        </button>
+
+        <button class="bs-btn-cancel" onclick="fecharBottomSheet()">✕ Cancelar</button>
+    </div>
+</div>
 
 <script>
     const SUPABASE_URL = 'https://ebfkwuslmneswvovygwh.supabase.co'; 
@@ -1097,26 +1262,79 @@
         }
     };
 
-    window.salvarVenda = async (id) => {
-        const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
+    // =========== BOTTOM SHEET LOGIC ===========
+    let _pendingVenda = null; // Guarda os dados enquanto o usuário escolhe o tipo
+
+    window.salvarVenda = (id) => {
+        const it = document.getElementById(`it-${id}`).value.trim().toUpperCase() || "DOCES";
         const qt = parseInt(document.getElementById(`qt-${id}`).value) || 1;
         const vl = parseFloat(document.getElementById(`vl-${id}`).value);
 
-        if(!vl) return alert("Insira o valor!");
+        if (!vl || vl <= 0) return alert("Insira o valor do produto!");
 
-        const { error } = await _supabase.from('compras').insert([
-            { cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }
-        ]);
+        // Armazena de forma temporária
+        _pendingVenda = { id, it, qt, vl };
+
+        // Preenche o preview no bottom sheet
+        const total = qt * vl;
+        document.getElementById('bsProductName').innerText = `${qt}x ${it}`;
+        document.getElementById('bsProductVal').innerText  = `R$ ${total.toFixed(2)}`;
+
+        // Abre o bottom sheet
+        document.getElementById('bsOverlay').classList.add('active');
+        setTimeout(() => document.getElementById('bottomSheet').classList.add('active'), 10);
+    };
+
+    window.fecharBottomSheet = () => {
+        document.getElementById('bottomSheet').classList.remove('active');
+        document.getElementById('bsOverlay').classList.remove('active');
+    };
+
+    window.confirmarVenda = async (tipo) => {
+        fecharBottomSheet();
+        if (!_pendingVenda) return;
+
+        const { id, it, qt, vl } = _pendingVenda;
+        _pendingVenda = null;
+
+        let valorTotal, pago, descricao;
+
+        if (tipo === 'pago') {
+            // Pagou na hora: salva valor + quita automático
+            valorTotal = qt * vl;
+            pago       = true;
+            descricao  = it;
+        } else if (tipo === 'brinde') {
+            // Brinde: sem cobrança
+            valorTotal = 0;
+            pago       = true;
+            descricao  = `🎁 ${it}`;
+        } else {
+            // Anotar na conta: pendente
+            valorTotal = qt * vl;
+            pago       = false;
+            descricao  = it;
+        }
+
+        const inserts = [{ cliente_id: id, descricao, qtd: qt, valor_total: valorTotal, pago }];
+
+        // Se pagou na hora, também insere o registro de baixa
+        if (tipo === 'pago') {
+            inserts.push({ cliente_id: id, descricao: "PAGAMENTO EFETUADO", qtd: 1, valor_total: -valorTotal, pago: true });
+        }
+
+        const { error } = await _supabase.from('compras').insert(inserts);
 
         if (error) {
             console.error("Erro ao salvar:", error.message);
             alert("Erro no banco: " + error.message);
         } else {
-            document.getElementById(`it-${id}`).value = ''; 
+            document.getElementById(`it-${id}`).value = '';
             document.getElementById(`vl-${id}`).value = '';
-            carregarDados(); 
+            carregarDados();
         }
     };
+    // ===========================================
 
     window.atualizarPrecoAvulso = (input) => {
         const prod = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
