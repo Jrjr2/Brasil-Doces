@@ -66,6 +66,28 @@
         .btn-main { background: var(--accent); color: white; transition: 0.3s; }
         .btn-action { background: var(--card); color: var(--brown); border: 1px solid var(--border); }
         .btn-zap { background: #25D366; color: white; }
+        .btn-informar-modal {
+        background: rgba(255, 133, 162, 0.1);
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 800;
+        padding: 6px 14px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid rgba(255, 133, 162, 0.2);
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: 15px;
+        margin-top: 5px; /* Adicionei um espacinho em cima também */
+    }
+    
+        .btn-informar-modal:hover {
+        background: var(--accent);
+        color: white;
+    }
         
         .btn-delete { color: #ddd; background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
         .btn-edit { color: var(--info); background: transparent; width: auto !important; margin: 0 !important; padding: 5px; }
@@ -189,10 +211,18 @@
 
 <div id="modalHistorico" class="modal">
     <div class="modal-content">
-        <h3 id="nomeClienteModal"></h3>
+        <h3 id="nomeClienteModal" style="margin-bottom: 5px; border-bottom: none;"></h3>
+        
+        <div style="text-align: center; margin-bottom: 15px;">
+            <div class="btn-informar-modal" onclick="enviarZapDoces('informar')" style="background: rgba(255, 133, 162, 0.1); color: var(--accent); font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 20px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(255, 133, 162, 0.2); cursor: pointer;">
+                <i class="fa-brands fa-whatsapp"></i> APENAS INFORMAR CONSUMO
+            </div>
+        </div>
+
         <span class="modal-section-title">Itens Pendentes</span>
         <div id="listaItensModal"></div>
-        <div id="containerSoma">
+
+        <div id="containerSoma" style="display: none; background: var(--bg); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border);">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-size: 12px; font-weight: bold; color: var(--brown);">TOTAL SELECIONADO:</span>
                 <span id="txtSoma" style="font-size: 18px; font-weight: 800; color: var(--accent);">R$ 0,00</span>
@@ -201,34 +231,34 @@
                 <i class="fa-solid fa-check-double"></i> PAGAR SELECIONADOS
             </button>
         </div>
+
         <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
-    
-    <div style="background: var(--bg); padding: 10px; border-radius: 12px; border: 1px dashed var(--border);">
-        <input type="text" id="cfgChavePix" placeholder="Chave PIX (Celular/CPF)" style="font-size: 13px; padding: 8px;">
-        <input type="text" id="cfgNomePix" placeholder="Nome do Titular" style="font-size: 13px; padding: 8px;">
-    </div>
+            <div style="background: var(--bg); padding: 10px; border-radius: 12px; border: 1px dashed var(--border);">
+                <input type="text" id="cfgChavePix" placeholder="Chave PIX (Celular/CPF)" style="font-size: 13px; padding: 8px;">
+                <input type="text" id="cfgNomePix" placeholder="Nome do Titular" style="font-size: 13px; padding: 8px;">
+            </div>
 
-    <button id="btnPixZap" class="btn-zap" style="background:#3498db;">
-        <i class="fa-solid fa-paper-plane"></i> COBRAR E ENVIAR CHAVE PIX
-    </button>
+            <button id="btnPixZap" class="btn-zap" style="background:#3498db;" onclick="enviarZapDoces('pix')">
+                <i class="fa-solid fa-paper-plane"></i> COBRAR E ENVIAR CHAVE PIX
+            </button>
 
-    <button id="btnZapRapido" class="btn-action">
-        <i class="fa-brands fa-whatsapp"></i> APENAS INFORMAR CONSUMO
-    </button>
-
-    <button id="btnMensagemCarinho" class="btn-action" style="background:#e8f8f5; border:1px solid var(--success); color:#1a1a1a">
-        <i class="fa-solid fa-heart" style="color:var(--success);"></i> AGRADECER PAGAMENTO
-    </button>
-    
-    <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
-</div> </div> </div> <div id="modalResumo" class="modal">
+            <button id="btnMensagemCarinho" class="btn-action" style="background:#e8f8f5; border:1px solid var(--success); color:#1a1a1a" onclick="enviarZapDoces('obrigado')">
+                <i class="fa-solid fa-heart" style="color:var(--success);"></i> AGRADECER PAGAMENTO
+            </button>
+            
+            <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
+        </div>
+    </div> </div> <div id="modalResumo" class="modal">
     <div class="modal-content">
         <h3 id="nomeClienteResumo"></h3>
         <p style="text-align:center; font-size:11px; color:#999; margin-bottom:15px; font-weight:700;">HISTÓRICO DE PRODUTOS QUITADOS</p>
+        
         <div class="extrato-container" id="corpoExtrato"></div>
+        
         <button onclick="window.print()" class="btn-action no-print" style="margin-top: 15px; background: #f8f9fa; color:#333">
             <i class="fa-solid fa-file-pdf" style="color: #e74c3c;"></i> SALVAR EXTRATO (PDF)
         </button>
+        
         <button onclick="document.getElementById('modalResumo').style.display='none'" class="btn-main no-print" style="margin-top:10px;">FECHAR</button>
     </div>
 </div>
@@ -451,12 +481,20 @@ function configurarEventosPainel() {
         texto += `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍰❤️`;
 
     } else if (tipo === 'informar') {
-        if (itensParaEnviar.length === 0) return alert("Selecione os itens para informar!");
+        // Se houver checks, envia só os selecionados. Se não, envia tudo que está no modal.
+        const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
+        const itensParaEnviar = checks.length > 0 
+            ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
+            : itensPendentesGlobal;
+
+        if (itensParaEnviar.length === 0) return alert("Não há itens para informar!");
+
         let listaMsg = itensParaEnviar.map(i => `✨ ${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
         
         texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:%0A%0A`;
         texto += `${listaMsg}%0A%0A`;
         texto += `É só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
+    }
 
     } else if (tipo === 'obrigado') {
         texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! ❤️`;
