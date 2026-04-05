@@ -241,13 +241,16 @@
                 <i class="fa-solid fa-paper-plane"></i> COBRAR E ENVIAR CHAVE PIX
             </button>
 
-            <button id="btnMensagemCarinho" class="btn-action" style="background:#e8f8f5; border:1px solid var(--success); color:#1a1a1a" onclick="enviarZapDoces('obrigado')">
+                       <button id="btnMensagemCarinho" class="btn-action" style="background:#e8f8f5; border:1px solid var(--success); color:#1a1a1a" onclick="enviarZapDoces('obrigado')">
                 <i class="fa-solid fa-heart" style="color:var(--success);"></i> AGRADECER PAGAMENTO
             </button>
             
-            <button onclick="document.getElementById('modalHistorico').style.display='none'" class="btn-action">FECHAR</button>
+            <button onclick="fecharModais()" class="btn-action">FECHAR</button>
         </div>
-    </div> </div> <div id="modalResumo" class="modal">
+    </div> 
+</div> 
+
+<div id="modalResumo" class="modal">
     <div class="modal-content">
         <h3 id="nomeClienteResumo"></h3>
         <p style="text-align:center; font-size:11px; color:#999; margin-bottom:15px; font-weight:700;">HISTÓRICO DE PRODUTOS QUITADOS</p>
@@ -256,11 +259,12 @@
         
         <button onclick="window.print()" class="btn-action no-print" style="margin-top: 15px; background: #f8f9fa; color:#333">
             <i class="fa-solid fa-file-pdf" style="color: #e74c3c;"></i> SALVAR EXTRATO (PDF)
-        </button>
+        </button>        
         
-        <button onclick="document.getElementById('modalResumo').style.display='none'" class="btn-main no-print" style="margin-top:10px;">FECHAR</button>
+        <button onclick="fecharModais()" class="btn-main no-print" style="margin-top:10px;">FECHAR</button>
     </div>
 </div>
+
 
 <script>
     const SUPABASE_URL = 'https://ebfkwuslmneswvovygwh.supabase.co'; 
@@ -270,6 +274,14 @@
     let dbClientes = [], dbProdutos = [], clienteEmEdicao = null;
     let pixConfig = { chave_pix: '', nome_pix: '' }; 
     let clienteAbertoId = null; 
+        let primeiraCarga = true;
+
+    window.fecharModais = () => {
+        document.getElementById('modalHistorico').style.display = 'none';
+        document.getElementById('modalResumo').style.display = 'none';
+        sessionStorage.removeItem('modalAberto'); // Limpa a memória de reabertura ao fechar
+    };
+
     let itensPendentesGlobal = []; 
 
     async function checkUser() {
@@ -290,22 +302,25 @@
     }
 }
 
-    async function carregarDados() {
+        async function carregarDados() {
         const { data: p } = await _supabase.from('produtos').select('*').order('nome');
         dbProdutos = p || [];
         const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
         dbClientes = c || [];
         render();
-    }
 
-    async function carregarConfiguracoes() {
-        const { data, error } = await _supabase.from('configuracoes').select('*').maybeSingle();
-        if (data) {
-            pixConfig = data;
-            document.getElementById('cfgChavePix').value = data.chave_pix || '';
-            document.getElementById('cfgNomePix').value = data.nome_pix || '';
+        // Truque Mágico: Se a página recarregar, abre automaticamente de onde estava!
+        if (primeiraCarga) {
+            primeiraCarga = false;
+            const estadoModal = sessionStorage.getItem('modalAberto');
+            if (estadoModal) {
+                const partes = estadoModal.split('-');
+                if (partes[0] === 'hist') abrirHistorico(parseInt(partes[1]));
+                if (partes[0] === 'res') abrirResumoConta(parseInt(partes[1]));
+            }
         }
     }
+
 
     // Crie uma função para configurar os eventos após o login
 function configurarEventosPainel() {
@@ -416,6 +431,7 @@ function configurarEventosPainel() {
 }
 
     window.abrirHistorico = (id) => {
+    sessionStorage.setItem('modalAberto', 'hist-'+id);
     clienteAbertoId = id;
     document.getElementById('modalResumo').style.display = 'none'; // Fecha o outro por segurança
     const c = dbClientes.find(x => x.id === id);
@@ -449,10 +465,11 @@ function configurarEventosPainel() {
     const chave = document.getElementById('cfgChavePix').value;
     const nomeTitular = document.getElementById('cfgNomePix').value;
 
-    // Salva a configuração do PIX no banco se for uma cobrança
-    if (chave && (tipo === 'pix')) {
-        await _supabase.from('configuracoes').upsert({ id: 1, chave_pix: chave, nome_pix: nomeTitular });
-    }
+            // Salva a configuração de PIX e tira o 'await' para o navegador não bloquear o pop-up do WhatsApp
+        if (chave && (tipo === 'pix')) {
+            _supabase.from('configuracoes').upsert({ id: 1, chave_pix: chave, nome_pix: nomeTitular }).then();
+        }
+
 
     const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
     const itensParaEnviar = checks.length > 0 
@@ -465,8 +482,7 @@ function configurarEventosPainel() {
 
     if (tipo === 'pix') {
         if (itensParaEnviar.length === 0) return alert("Selecione os itens para cobrar!");
-        let listaMsg = itensParaEnviar.map(i => `▫️ ${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-        
+        let listaMsg = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');        
         texto = `Olá! Tudo bem? ✨%0A%0A`;
         texto += `Estou passando para fecharmos o seu resumo de *${mesAtual}* aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:%0A%0A`;
         texto += `${listaMsg}%0A%0A`;
@@ -485,7 +501,7 @@ function configurarEventosPainel() {
 
             if (itensParaEnviar.length === 0) return alert("Não há itens para informar!");
 
-            let listaMsg = itensParaEnviar.map(i => `✨ ${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+          let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
             
             texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:%0A%0A`;
             texto += `${listaMsg}%0A%0A`;
@@ -498,6 +514,7 @@ function configurarEventosPainel() {
     }
     
     window.abrirResumoConta = (id) => {
+    sessionStorage.setItem('modalAberto', 'res-'+id);
     clienteAbertoId = id;
     document.getElementById('modalHistorico').style.display = 'none'; // Fecha o outro por segurança
     const c = dbClientes.find(x => x.id === id);
