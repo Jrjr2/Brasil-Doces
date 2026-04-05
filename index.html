@@ -591,7 +591,7 @@
     }
 
     
-        window.abrirResumoConta = (id) => {
+            window.abrirResumoConta = (id) => {
         sessionStorage.setItem('modalAberto', 'res-'+id);
         clienteAbertoId = id;
         document.getElementById('modalHistorico').style.display = 'none'; // Fecha o outro 
@@ -606,25 +606,22 @@
         let itensQuitados = [];
         comprasApenas.forEach(item => { 
             if (totalPagos >= item.valor_total) { 
-                // Item foi pago por completo
                 itensQuitados.push({...item, valor_pago: item.valor_total});
                 totalPagos -= item.valor_total; 
             } else if (totalPagos > 0) {
-                // Item foi pago parcialmente (ex: devia 10, pagou 5)
                 itensQuitados.push({...item, valor_pago: totalPagos});
                 totalPagos = 0; 
             }
         });
 
-        // --- 2. REGRA DOS 30 DIAS: Ocultar velhos da tela e PDF ---
+        // --- 2. REGRA DOS 30 DIAS ---
         const dataLimite = new Date();
         dataLimite.setDate(dataLimite.getDate() - 30);
         
         const quitadosRecentes = itensQuitados.filter(i => new Date(i.data) >= dataLimite);
 
-        // --- 3. MONTA A TABELA COM HORA E ORGANIZAÇÃO ---
+        // --- 3. MONTA A TABELA ---
         const corpo = document.getElementById('corpoExtrato');
-        // Espaçamento arrumado para caber a hora
         corpo.innerHTML = '<div class="extrato-header" style="grid-template-columns: 85px 35px 1fr 70px;"><div>DATA/HORA</div><div>QTD</div><div>PRODUTO</div><div style="text-align:right">PAGO</div></div>';
         
         if (quitadosRecentes.length === 0) {
@@ -633,7 +630,6 @@
             quitadosRecentes.forEach(i => {
                 const dataObj = new Date(i.data);
                 const dataFmt = dataObj.toLocaleDateString('pt-BR').substring(0,5);
-                // Extrai a hora exata
                 const horaFmt = dataObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
                 
                 corpo.innerHTML += `
@@ -648,6 +644,60 @@
         
         document.getElementById('modalResumo').style.display = 'block';
     };
+
+
+    // ======== AS FUNÇÕES QUE TINHAM SUMIDO VOLTARAM ABAIXO ========
+    
+    window.atualizarSoma = () => {
+        let soma = 0;
+        document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
+        document.getElementById('txtSoma').innerText = `R$ ${soma.toFixed(2)}`;
+        document.getElementById('containerSoma').style.display = soma > 0 ? 'block' : 'none';
+    };
+
+    window.processarPagamento = async (clienteId) => {
+        let soma = 0;
+        const selecionados = document.querySelectorAll('.chk-item:checked');
+        
+        selecionados.forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
+        
+        if (soma <= 0) return alert("Selecione pelo menos um item para pagar!");
+
+        if (confirm(`Confirmar pagamento de R$ ${soma.toFixed(2)}?`)) {
+            const { error } = await _supabase.from('compras').insert([
+                { cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma }
+            ]);
+
+            if (error) {
+                alert("Erro: " + error.message);
+            } else { 
+                await carregarDados(); 
+                abrirHistorico(clienteId); 
+            }
+        }
+    };
+
+    window.salvarVenda = async (id) => {
+        const it = document.getElementById(`it-${id}`).value.toUpperCase() || "DOCES";
+        const qt = parseInt(document.getElementById(`qt-${id}`).value) || 1;
+        const vl = parseFloat(document.getElementById(`vl-${id}`).value);
+
+        if(!vl) return alert("Insira o valor!");
+
+        const { error } = await _supabase.from('compras').insert([
+            { cliente_id: id, descricao: it, qtd: qt, valor_total: (qt * vl) }
+        ]);
+
+        if (error) {
+            console.error("Erro ao salvar:", error.message);
+            alert("Erro no banco: " + error.message);
+        } else {
+            document.getElementById(`it-${id}`).value = ''; 
+            document.getElementById(`vl-${id}`).value = '';
+            carregarDados(); 
+        }
+    };
+
 
 
     window.prepararEdicao = (id) => {
