@@ -579,28 +579,22 @@
         </div>
     </details>
 
-    <div class="card" style="border-top: 3px solid var(--success); border-left: none; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.1);">
-        <div style="font-weight: 800; margin-bottom: 15px; color: var(--success); display:flex; align-items:center; gap:8px;">
-            <i class="fa-solid fa-bolt"></i> VENDA EXPRESSA (BALCÃO)
-        </div>
-        <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
-            <input type="text" id="avulsoIt" list="lista-prod" placeholder="Produto" onfocus="focarBotaoInteligente(this)" oninput="atualizarPrecoAvulso(this)">
-            <input type="number" id="avulsoQt" value="1" onfocus="focarBotaoInteligente(this)">
-            <input type="text" inputmode="decimal" id="avulsoVl" placeholder="R$" onfocus="focarBotaoInteligente(this)" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
-        </div>
-        <button class="btn-main" style="background: var(--success); color: white;" onclick="salvarVendaAvulsa()">
-            <i class="fa-solid fa-check-double"></i> REGISTRAR E RECEBER NA HORA
-        </button>
-    </div>
 
-    <div class="card" style="border-top: 3px solid var(--accent); border-left: none;">
-        <div id="tituloFormCliente" style="font-weight: 800; margin-bottom: 10px; color: var(--brown);">CADASTRAR NOVO CLIENTE</div>
-        <input type="text" id="novoNome" placeholder="Nome Completo">
-        <input type="tel" id="novoTel" placeholder="WhatsApp">
-        <input type="tel" id="novoNiver" placeholder="Aniversário (Ex: 15/04)" maxlength="5" oninput="mascaraData(this)">
-        <input type="number" id="novoLimite" placeholder="Limite de Crédito" value="1000">
-        <button id="btnCadastrar" class="btn-main">ADICIONAR CLIENTE</button>
-    </div>
+    <details class="dashboard-details" id="formClienteCollapse">
+        <summary class="dashboard-summary" style="border-radius: 16px;">
+            <span><i class="fa-solid fa-user-plus" style="margin-right: 6px;"></i> Cadastrar Novo Cliente</span>
+            <i class="fa-solid fa-chevron-down icon-arrow"></i>
+        </summary>
+        <div class="card" style="border-top: 3px solid var(--accent); border-left: none; margin-top: 0; border-radius: 0 0 20px 20px;">
+            <div id="tituloFormCliente" style="font-weight: 800; margin-bottom: 10px; color: var(--brown);">CADASTRAR NOVO CLIENTE</div>
+            <input type="text" id="novoNome" placeholder="Nome Completo">
+            <input type="tel" id="novoTel" placeholder="WhatsApp">
+            <input type="tel" id="novoNiver" placeholder="Aniversário (Ex: 15/04)" maxlength="5" oninput="mascaraData(this)">
+            <input type="number" id="novoLimite" placeholder="Limite de Crédito" value="1000">
+            <button id="btnCadastrar" class="btn-main">ADICIONAR CLIENTE</button>
+        </div>
+    </details>
+
     <div class="card" style="border-top: 3px solid var(--success); border-left: none; margin-bottom: 25px;">
     <div style="font-weight: 800; margin-bottom: 10px; color: var(--brown);">
         <i class="fa-solid fa-cookie-bite"></i> CADASTRAR NOVO PRODUTO
@@ -750,15 +744,6 @@
             <div class="bs-text">
                 <span>ENVIAR POR WHATSAPP</span>
                 <small>Manda os itens quitados e o total pago</small>
-            </div>
-        </button>
-
-        <!-- Opção 2: Abrir extrato (PDF) -->
-        <button class="bs-btn bs-btn-conta" onclick="abrirExtratoAposPagamento()">
-            <div class="bs-icon">📄</div>
-            <div class="bs-text">
-                <span>VER EXTRATO COMPLETO</span>
-                <small>Abre o histórico para salvar como PDF</small>
             </div>
         </button>
 
@@ -1432,59 +1417,16 @@
     };
     // ===========================================
 
-    window.atualizarPrecoAvulso = (input) => {
-        const prod = dbProdutos.find(x => x.nome.toUpperCase() === input.value.toUpperCase());
-        if (prod) document.getElementById('avulsoVl').value = prod.preco;
-    };
-
-    window.salvarVendaAvulsa = async () => {
-        const it = document.getElementById('avulsoIt').value.toUpperCase() || "DOCE AVULSO";
-        const qt = parseInt(document.getElementById('avulsoQt').value) || 1;
-        const vl = parseFloat(document.getElementById('avulsoVl').value);
-
-        if(!vl) return alert("Insira o valor do produto!");
-
-        const total = qt * vl;
-        const nomeAvulso = "VENDA AVULSA (BALCÃO)";
-
-        try {
-            let idAvulso = null;
-            let cAvulso = dbClientes.find(x => x.nome === nomeAvulso);
-            
-            if (cAvulso) {
-                idAvulso = cAvulso.id;
-            } else {
-                const { data, error: errC } = await _supabase.from('clientes')
-                    .insert([{ nome: nomeAvulso, tel: '0000', limite: 9999 }])
-                    .select('id').single();
-                if (errC) throw errC;
-                idAvulso = data.id;
-            }
-
-            const { error: errVenda } = await _supabase.from('compras').insert([
-                { cliente_id: idAvulso, descricao: it, qtd: qt, valor_total: total },
-                { cliente_id: idAvulso, descricao: "PAGAMENTO EFETUADO", valor_total: -total }
-            ]);
-
-            if (errVenda) throw errVenda;
-
-            document.getElementById('avulsoIt').value = '';
-            document.getElementById('avulsoVl').value = '';
-            
-            alert("Venda Avulsa registrada e paga na hora com sucesso! ✨");
-            carregarDados();
-
-        } catch (e) {
-            console.error(e);
-            alert("Erro ao registrar Venda Avulsa: " + e.message);
-        }
-    };
 
     window.prepararEdicao = (id) => {
         const c = dbClientes.find(x => x.id === id); clienteEmEdicao = id;
         document.getElementById('novoNome').value = c.nome; document.getElementById('novoTel').value = c.tel;
         document.getElementById('novoLimite').value = c.limite; document.getElementById('novoNiver').value = c.aniversario || '';
-        document.getElementById('btnCadastrar').innerText = "SALVAR ALTERAÇÕES"; window.scrollTo({ top: 0, behavior: 'smooth' });
+        document.getElementById('btnCadastrar').innerText = "SALVAR ALTERAÇÕES"; 
+        
+        // Abre o formulário automaticamente ao editar
+        document.getElementById('formClienteCollapse').open = true;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     window.excluir = async (id) => { if(confirm("Excluir cliente?")) await _supabase.from('clientes').delete().eq('id', id); };
@@ -1500,7 +1442,11 @@
         if(clienteEmEdicao) await _supabase.from('clientes').update(payload).eq('id', clienteEmEdicao);
         else await _supabase.from('clientes').insert([payload]);
         clienteEmEdicao = null; document.getElementById('novoNome').value = ''; document.getElementById('novoTel').value = '';
-        document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE"; carregarDados();
+        document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE"; 
+        
+        // Fecha o formulário após salvar
+        document.getElementById('formClienteCollapse').open = false;
+        carregarDados();
     };
 
     document.getElementById('btnLogin').onclick = async () => {
