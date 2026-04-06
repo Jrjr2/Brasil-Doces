@@ -911,25 +911,14 @@
         filtrados.forEach(c => {
             const comprasValidas = c.compras || [];
             
-            // Calcula saldo: itens pendentes menos os pagamentos já realizados
-            let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
-            
-            const pendentes = comprasValidas.filter(i => i.valor_total > 0 && i.status !== 'pago' && i.status !== 'brinde');
-            let saldo = 0;
-            
-            pendentes.forEach(item => {
-                if (totalPagos >= item.valor_total) {
-                    totalPagos -= item.valor_total;
-                } else {
-                    saldo += (item.valor_total - totalPagos);
-                    totalPagos = 0;
-                }
-            });
-            
+            // Calcula saldo: apenas itens pendentes (não pagos, não brindes, não quitados)
+            const saldo = comprasValidas
+                .filter(i => i.valor_total > 0 && i.status !== 'pago' && i.status !== 'brinde' && i.status !== 'quitado')
+                .reduce((acc, i) => acc + (i.valor_total || 0), 0);
             totalG += saldo;
 
             comprasValidas.forEach(cp => {
-                if (cp.data && new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0 && cp.status !== 'pago' && cp.status !== 'brinde') {
+                if (cp.data && new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0 && cp.status !== 'pago' && cp.status !== 'brinde' && cp.status !== 'quitado') {
                     totalH += cp.valor_total;
                 }
             });
@@ -1142,7 +1131,7 @@
         let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
         const comprasApenas = c.compras
             .filter(i => i.valor_total > 0)
-            .filter(i => i.status !== 'pago' && i.status !== 'brinde')
+            .filter(i => i.status !== 'pago' && i.status !== 'brinde' && i.status !== 'quitado')
             .sort((a,b) => new Date(a.data) - new Date(b.data));
         
         itensPendentesGlobal = [];
@@ -1164,7 +1153,7 @@
         
         itensPendentesGlobal.forEach(i => {
             const qT = i.qtd > 1 ? `${i.qtd}x ` : "";
-            listAbertos.innerHTML += `<label class="item-selecionavel"><input type="checkbox" class="chk-item" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" data-qtd="${i.qtd}"><div class="item-detalhe"><div><small>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</small><br>${qT}${i.descricao}</div><b>R$ ${i.valor_exibir.toFixed(2)}</b></div></label>`;
+            listAbertos.innerHTML += `<label class="item-selecionavel"><input type="checkbox" class="chk-item" data-id="${i.id}" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" data-qtd="${i.qtd}"><div class="item-detalhe"><div><small>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</small><br>${qT}${i.descricao}</div><b>R$ ${i.valor_exibir.toFixed(2)}</b></div></label>`;
         });
 
         document.querySelectorAll('.chk-item').forEach(el => el.addEventListener('change', atualizarSoma));
@@ -1308,17 +1297,11 @@
         // Itens brindes
         const itensBrindes = c.compras.filter(i => i.status === 'brinde').map(i => ({...i, valor_pago: 0}));
         
-        // Itens pendentes que foram quitados via pagamento
-        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
-        const itensPendentes = c.compras.filter(i => i.status === 'pendente').sort((a,b) => new Date(a.data) - new Date(b.data));
+        // Itens quitados via pagamento
+        const itensQuitados = c.compras.filter(i => i.status === 'quitado').map(i => ({...i, valor_pago: i.valor_total}));
         
-        let itensQuitados = [];
-        itensPendentes.forEach(item => { 
-            if (totalPagos >= item.valor_total) { 
-                itensQuitados.push({...item, valor_pago: item.valor_total});
-                totalPagos -= item.valor_total; 
-            } else if (totalPagos > 0) {
-                itensQuitados.push({...item, valor_pago: totalPagos});
+        // Junta todos os quitados
+        let todosQuitados = [...itensPagos, ...itensBrindes, ...itensQuitados].sort((a,b) => new Date(a.data) - new Date(b.data));
                 totalPagos = 0; 
             }
         });
@@ -1378,8 +1361,8 @@
         selecionados.forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
         if (soma <= 0) return alert("Selecione pelo menos um item para pagar!");
 
-        // Captura os itens selecionados ANTES de salvar (para o comprovante)
         const itensSelecionados = Array.from(selecionados).map(cb => ({
+            id: parseInt(cb.getAttribute('data-id')),
             desc : cb.getAttribute('data-desc') || '',
             qtd  : parseInt(cb.getAttribute('data-qtd')) || 1,
             valor: parseFloat(cb.getAttribute('data-valor'))
@@ -1387,24 +1370,28 @@
 
         if (!confirm(`Confirmar pagamento de R$ ${soma.toFixed(2)}?`)) return;
 
+        // Primeiro: atualiza o status dos itens selecionados para 'quitado'
+        for (const item of itensSelecionados) {
+            if (item.id) {
+                await _supabase.from('compras').update({ status: 'quitado' }).eq('id', item.id);
+            }
+        }
+
+        // Segundo: insere o registro de pagamento negativo
         const { error } = await _supabase.from('compras').insert([
-            { cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma }
+            { cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma, status: 'pagamento' }
         ]);
 
         if (error) {
             alert("Erro: " + error.message);
         } else {
-            // Fecha o modal de histórico
             fecharModais();
-
-            // Armazena para o comprovante
             _comprovanteData = { clienteId, soma, itens: itensSelecionados };
 
             const c = dbClientes.find(x => x.id === clienteId);
             document.getElementById('bsComprovanteValor').innerText  = `R$ ${soma.toFixed(2)}`;
             document.getElementById('bsComprovanteCliente').innerText = c ? c.nome : '';
 
-            // Exibe o bottom sheet de comprovante
             document.getElementById('bsComprovanteOverlay').classList.add('active');
             setTimeout(() => document.getElementById('bsComprovanteSheet').classList.add('active'), 10);
 
