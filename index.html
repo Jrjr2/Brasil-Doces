@@ -1674,16 +1674,6 @@
             render();
         }
     };
-        if(campoVl) campoVl.value = precoProduto;
-        
-        // Efeito de brilhinho verde na caixa para piscar que preencheu:
-        if(campoIt) {
-            campoIt.style.transition = "0.3s";
-            campoIt.style.boxShadow = "0 0 0 3px rgba(16, 185, 129, 0.4)";
-            setTimeout(() => campoIt.style.boxShadow = "inset 0 2px 4px rgba(0,0,0,0.02)", 500);
-        }
-    };
-
 
     checkUser();
 </script>
