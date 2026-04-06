@@ -893,11 +893,15 @@
 
         filtrados.forEach(c => {
             const comprasValidas = c.compras || [];
-            const saldo = comprasValidas.reduce((acc, i) => acc + (i.valor_total || 0), 0);
+            
+            // Calcula saldo: soma apenas itens pendentes (não pagos, não brindes)
+            const saldo = comprasValidas
+                .filter(i => i.valor_total > 0 && i.status !== 'pago' && i.status !== 'brinde')
+                .reduce((acc, i) => acc + (i.valor_total || 0), 0);
             totalG += saldo;
 
             comprasValidas.forEach(cp => {
-                if (cp.data && new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0) {
+                if (cp.data && new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0 && cp.status !== 'pago' && cp.status !== 'brinde') {
                     totalH += cp.valor_total;
                 }
             });
@@ -1111,7 +1115,10 @@
     document.getElementById('modalResumo').style.display = 'none'; // Fecha o outro por segurança
     const c = dbClientes.find(x => x.id === id);
         let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
-        const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
+        const comprasApenas = c.compras
+            .filter(i => i.valor_total > 0)
+            .filter(i => i.status !== 'pago' && i.status !== 'brinde')
+            .sort((a,b) => new Date(a.data) - new Date(b.data));
         
         itensPendentesGlobal = [];
         comprasApenas.forEach(item => { 
@@ -1209,12 +1216,18 @@
         const c = dbClientes.find(x => x.id === id);
         document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
         
-        // --- 1. MATEMÁTICA: SEPARA APENAS O QUE FOI PAGO (QUITADO) ---
+        // Itens pagos diretamente (sem necessidade de pagamento adicional)
+        const itensPagos = c.compras.filter(i => i.status === 'pago').map(i => ({...i, valor_pago: i.valor_total}));
+        
+        // Itens brindes
+        const itensBrindes = c.compras.filter(i => i.status === 'brinde').map(i => ({...i, valor_pago: 0}));
+        
+        // Itens pendentes que foram quitados via pagamento
         let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
-        const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
+        const itensPendentes = c.compras.filter(i => i.status === 'pendente').sort((a,b) => new Date(a.data) - new Date(b.data));
         
         let itensQuitados = [];
-        comprasApenas.forEach(item => { 
+        itensPendentes.forEach(item => { 
             if (totalPagos >= item.valor_total) { 
                 itensQuitados.push({...item, valor_pago: item.valor_total});
                 totalPagos -= item.valor_total; 
@@ -1223,12 +1236,15 @@
                 totalPagos = 0; 
             }
         });
+        
+        // Junta todos os quitados
+        let todosQuitados = [...itensPagos, ...itensBrindes, ...itensQuitados].sort((a,b) => new Date(a.data) - new Date(b.data));
 
         // --- 2. REGRA DOS 30 DIAS ---
         const dataLimite = new Date();
         dataLimite.setDate(dataLimite.getDate() - 30);
         
-        const quitadosRecentes = itensQuitados.filter(i => new Date(i.data) >= dataLimite);
+        const quitadosRecentes = todosQuitados.filter(i => new Date(i.data) >= dataLimite);
 
         // --- 3. MONTA A TABELA ---
         const corpo = document.getElementById('corpoExtrato');
@@ -1241,12 +1257,13 @@
                 const dataObj = new Date(i.data);
                 const dataFmt = dataObj.toLocaleDateString('pt-BR').substring(0,5);
                 const horaFmt = dataObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                const isBrinde = i.status === 'brinde';
                 
                 corpo.innerHTML += `
                 <div class="extrato-item" style="grid-template-columns: 85px 35px 1fr 70px;">
                     <div style="font-size:10px; opacity:0.8; font-weight:700;">${dataFmt}<br><span style="font-weight:400">${horaFmt}</span></div>
                     <div class="qtd">${i.qtd}x</div>
-                    <div>${i.descricao}</div>
+                    <div>${i.descricao} ${isBrinde ? '<span style="font-size:9px; background:var(--accent); color:#fff; padding:2px 4px; border-radius:4px; margin-left:4px;">BRINDE</span>' : ''}</div>
                     <div class="valor">R$ ${i.valor_pago.toFixed(2)}</div>
                 </div>`;
             });
@@ -1384,27 +1401,26 @@
         const { id, it, qt, vl } = _pendingVenda;
         _pendingVenda = null;
 
-        let valorTotal, descricao;
+        let valorTotal, descricao, status;
 
         if (tipo === 'pago') {
-            // Pagou na hora: salva valor positivo
             valorTotal = qt * vl;
             descricao  = it;
+            status = 'pago';
         } else if (tipo === 'brinde') {
-            // Brinde: sem cobrança
             valorTotal = 0;
             descricao  = `🎁 ${it}`;
+            status = 'brinde';
         } else {
-            // Anotar na conta: pendente (valor positivo)
             valorTotal = qt * vl;
             descricao  = it;
+            status = 'pendente';
         }
 
-        const inserts = [{ cliente_id: id, descricao, qtd: qt, valor_total: valorTotal }];
+        const inserts = [{ cliente_id: id, descricao, qtd: qt, valor_total: valorTotal, status }];
 
-        // Se pagou na hora, também insere o registro de BAIXA (valor negativo)
         if (tipo === 'pago') {
-            inserts.push({ cliente_id: id, descricao: "PAGAMENTO EFETUADO (BALCÃO)", qtd: 1, valor_total: -valorTotal });
+            inserts.push({ cliente_id: id, descricao: "PAGAMENTO EFETUADO (BALCÃO)", qtd: 1, valor_total: -valorTotal, status: 'pagamento' });
         }
 
         const { error } = await _supabase.from('compras').insert(inserts);
