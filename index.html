@@ -1138,13 +1138,22 @@
         setTimeout(renderDashboard, 100);
     };
 
-    window.abrirHistorico = (id) => {
-    sessionStorage.setItem('modalAberto', 'hist-'+id);
-    clienteAbertoId = id;
-    document.getElementById('modalResumo').style.display = 'none'; // Fecha o outro por segurança
-    const c = dbClientes.find(x => x.id === id);
-        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
+    window.abrirHistorico = async (id) => {
+        const modal = document.getElementById('modalHistorico');
+        sessionStorage.setItem('modalAberto', 'hist-'+id);
+        clienteAbertoId = id;
+        document.getElementById('modalResumo').style.display = 'none'; 
+        
+        // Limpa a lista pra dar o efeito de carregando novidade
+        document.getElementById('listaItensModal').innerHTML = '<div style="text-align:center; padding:20px; color:#999;">🔄 Atualizando histórico...</div>';
+        modal.style.display = 'block';
+
+        // Puxa do banco direto para garantir que não tem lag
+        const { data: cData } = await _supabase.from('clientes').select('*, compras(*)').eq('id', id).single();
+        const c = cData || dbClientes.find(x => x.id === id);
+        
         const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
+        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
         
         itensPendentesGlobal = [];
         comprasApenas.forEach(item => { 
@@ -1407,8 +1416,24 @@
     let _pendingClienteId = null;
 
     window.salvarVenda = (id) => {
-        const itensCart = carrinhos[id] || [];
-        if (itensCart.length === 0) return alert("Adicione pelo menos um produto à cesta primeiro!");
+        let itensCart = carrinhos[id] || [];
+        
+        // --- NOVO: AUTO-ADICIONAR SE ESTIVER SÓ NO CAMPO DE BUSCA ---
+        const inputBusca = document.getElementById(`it-${id}`);
+        if (itensCart.length === 0 && inputBusca && inputBusca.value.trim() !== "") {
+            const nomeProc = inputBusca.value.trim().toUpperCase();
+            // Tenta achar o preço se for um produto da lista
+            const prodExistente = dbProdutos.find(p => p.nome.toUpperCase() === nomeProc);
+            const preco = prodExistente ? prodExistente.preco : 0;
+            
+            if (preco === 0) {
+                return alert("Para produtos manuais, insira o valor primeiro. Use um produto da vitrine ou clique no botão colorido.");
+            }
+
+            itensCart = [{ it: nomeProc, qt: 1, vl: preco }];
+        }
+
+        if (itensCart.length === 0) return alert("Adicione pelo menos um produto à cesta (clicando no botão do doce) primeiro!");
 
         _pendingClienteId = id;
         _vendaQueue = [...itensCart];
@@ -1416,6 +1441,9 @@
         _vendaResults = [];
         
         abrirFilaNoModal();
+        
+        // Limpa o campo de busca se houver
+        if (inputBusca) inputBusca.value = "";
     };
 
     function abrirFilaNoModal() {
