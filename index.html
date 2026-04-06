@@ -1302,12 +1302,6 @@
         
         // Junta todos os quitados
         let todosQuitados = [...itensPagos, ...itensBrindes, ...itensQuitados].sort((a,b) => new Date(a.data) - new Date(b.data));
-                totalPagos = 0; 
-            }
-        });
-        
-        // Junta todos os quitados
-        let todosQuitados = [...itensPagos, ...itensBrindes, ...itensQuitados].sort((a,b) => new Date(a.data) - new Date(b.data));
 
         // --- 2. REGRA DOS 30 DIAS ---
         const dataLimite = new Date();
