@@ -1315,11 +1315,13 @@
     };
 
     window.enviarComprovanteWap = () => {
-        fecharComprovanteSheet();
         if (!_comprovanteData) return;
 
         const c = dbClientes.find(x => x.id === _comprovanteData.clienteId);
         if (!c || !c.tel) return alert('Telefone do cliente não cadastrado!');
+
+        // Limpa o telefone para garantir que só tenha números (regra do wa.me)
+        const telLimpo = c.tel.replace(/\D/g, '');
 
         const dataHoje = new Date().toLocaleDateString('pt-BR');
         let linhas = _comprovanteData.itens
@@ -1333,7 +1335,11 @@
         msg += `💰 *TOTAL PAGO: R$ ${_comprovanteData.soma.toFixed(2)}*%0A%0A`;
         msg += `Muito obrigada pela confiança! Feito com amor. ❤️`;
 
-        window.open(`https://wa.me/55${c.tel}?text=${msg}`, '_blank');
+        const url = `https://wa.me/55${telLimpo}?text=${msg}`;
+        window.open(url, '_blank');
+
+        // Fecha o sheet com um pequeno atraso para não interferir no window.open
+        setTimeout(fecharComprovanteSheet, 500);
     };
 
     window.abrirExtratoAposPagamento = () => {
