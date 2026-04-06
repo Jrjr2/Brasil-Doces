@@ -1151,40 +1151,101 @@
         const c = dbClientes.find(x => x.id === clienteAbertoId);
         if (!c) return;
 
-        // Pega do campo texto. Se não achar, pega direto da memória do banco!
         const inputChave = document.getElementById('cfgChavePix');
         const inputNome = document.getElementById('cfgNomePix');
         
         const chave = inputChave && inputChave.value ? inputChave.value : (pixConfig ? pixConfig.chave_pix : '');
         const nomeTitular = inputNome && inputNome.value ? inputNome.value : (pixConfig ? pixConfig.nome_pix : '');
 
-        // Salva a configuração de PIX e tira o 'await' para funcionar o WhatsApp Web
         if (chave && (tipo === 'pix')) {
             _supabase.from('configuracoes').upsert({ id: 1, chave_pix: chave, nome_pix: nomeTitular }).then();
         }
 
-        // Checa se o usuário selecionou coisas
         const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
         const itensParaEnviar = checks.length > 0 
             ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
             : itensPendentesGlobal;
 
         const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
-        let total = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
+        
+        // pega mês atual para filtrar
+        const dataAgora = new Date();
+        const mesAtualNum = dataAgora.getMonth();
+        const anoAtual = dataAgora.getFullYear();
+
+        // SEPARA ITENS DO MÊS ATUAL POR CATEGORIA
+        const comprasDoMes = c.compras.filter(i => {
+            const dataItem = new Date(i.data);
+            return dataItem.getMonth() === mesAtualNum && dataItem.getFullYear() === anoAtual;
+        });
+
+        const itensPagosDoMes = comprasDoMes.filter(i => i.status === 'pago' || (i.valor_total > 0 && !i.status));
+        const itensBrindesDoMes = comprasDoMes.filter(i => i.status === 'brinde');
+        
+        // Calcula quitados via pagamento
+        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
+        const pendentesDoMes = comprasDoMes.filter(i => !i.status || i.status === 'pendente');
+        let quitadosDoMes = [];
+        pendentesDoMes.forEach(item => {
+            if (totalPagos >= item.valor_total) {
+                quitadosDoMes.push({...item});
+                totalPagos -= item.valor_total;
+            }
+        });
+
         let texto = "";
 
         if (tipo === 'pix') {
             if (itensParaEnviar.length === 0) return alert("Selecione os itens para cobrar!");
             
-            // Aqui já tem a nossa correção para enviar a Qtd 
-            let listaMsg = itensParaEnviar.map(i => `▫️ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+            // Calcula total pendente
+            let totalPendente = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
             
+            // Calcula totais do mês
+            const totalPagoDoMes = itensPagosDoMes.reduce((acc, i) => acc + (i.valor_total || 0), 0);
+            const totalBrindeDoMes = itensBrindesDoMes.length;
+            const totalQuitadoDoMes = quitadosDoMes.reduce((acc, i) => acc + (i.valor_total || 0), 0);
+
             texto = `Olá! Tudo bem? ✨%0A%0A`;
-            texto += `Estou passando para fecharmos o seu resumo de *${mesAtual}* aqui na Brasil Doces. Segue o detalhamento dos seus pedidos:%0A%0A`;
-            texto += `${listaMsg}%0A%0A`;
-            texto += `💰 *TOTAL: R$ ${total.toFixed(2)}*%0A`;
-            texto += `🔑 *PIX:* ${chave}%0A`;
-            if(nomeTitular) texto += `👤 *NOME:* ${nomeTitular}%0A%0A`;
+            texto += `Aqui é da Brasil Doces Passando o resumo do mês de *${mesAtual}*:%0A%0A`;
+
+            // Lista pagos
+            if (itensPagosDoMes.length > 0) {
+                texto += `✅ *PAGOS:*%0A`;
+                texto += itensPagosDoMes.map(i => `   ✓ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${(i.valor_total || 0).toFixed(2)}`).join('%0A') + '%0A%0A';
+            }
+
+            // Lista brindes
+            if (itensBrindesDoMes.length > 0) {
+                texto += `🎁 *BRINDES:*%0A`;
+                texto += itensBrindesDoMes.map(i => `   🎉 ${i.descricao}`).join('%0A') + '%0A%0A';
+            }
+
+            // Lista quitados do mês
+            if (quitadosDoMes.length > 0) {
+                texto += `💚 *QUITADOS ESTE MÊS:*%0A`;
+                texto += quitadosDoMes.map(i => `   ✓ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${(i.valor_total || 0).toFixed(2)}`).join('%0A') + '%0A%0A';
+            }
+
+            // Lista pendentes (o que vai cobrar)
+            if (itensParaEnviar.length > 0) {
+                texto += `📒 *PENDENTE:*%0A`;
+                texto += itensParaEnviar.map(i => `   ⏳ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A') + '%0A%0A';
+            }
+
+            // Total geral
+            const totalGeral = totalPagoDoMes + totalBrindeDoMes + totalQuitadoDoMes + totalPendente;
+            texto += `━━━━━━━━━━━━━━━━━━━━%0A`;
+            texto += `💰 *TOTAL DO MÊS: R$ ${totalGeral.toFixed(2)}*%0A`;
+            if (totalPendente > 0) {
+                texto += `📒 *PENDENTE: R$ ${totalPendente.toFixed(2)}*%0A`;
+            }
+            texto += `%0A`;
+            
+            if (chave) {
+                texto += `🔑 *PIX:* ${chave}%0A`;
+                if(nomeTitular) texto += `👤 *NOME:* ${nomeTitular}%0A%0A`;
+            }
             texto += `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍰❤️`;
 
         } else if (tipo === 'informar') {
