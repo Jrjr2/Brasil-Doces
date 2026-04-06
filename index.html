@@ -765,7 +765,8 @@
     let dbClientes = [], dbProdutos = [], clienteEmEdicao = null;
     let pixConfig = { chave_pix: '', nome_pix: '' }; 
     let clienteAbertoId = null; 
-        let primeiraCarga = true;
+    let carrinhos = {}; // Formato: { idCliente: [{ it, qt, vl }] }
+    let primeiraCarga = true;
 
     window.fecharModais = () => {
         document.getElementById('modalHistorico').style.display = 'none';
@@ -774,6 +775,11 @@
     };
 
     let itensPendentesGlobal = []; 
+    let _pendingVenda = null;
+    let _vendaQueue = [];
+    let _queueIndex = 0;
+    let _vendaResults = [];
+    let _pendingClienteId = null; 
 
     async function checkUser() {
     carregarTema();
@@ -978,6 +984,30 @@
             }
 
             // O HTML DO CARD COM A ADIÇÃO DA VITRINE:
+            let cartHtml = '';
+            const itemsCart = carrinhos[c.id] || [];
+            if (itemsCart.length > 0) {
+                let totalCart = itemsCart.reduce((sum, i) => sum + (i.qt * i.vl), 0);
+                cartHtml = `
+                <div style="background: rgba(255, 92, 138, 0.05); border: 1px dashed var(--accent); border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+                    <span style="font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase;">🛒 CESTA DE COMPRAS</span>
+                    <div style="margin-top: 8px;">
+                        ${itemsCart.map((it, idx) => `
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                            <span>${it.qt}x ${it.it}</span>
+                            <span style="display: flex; align-items: center; gap: 8px;">
+                                R$ ${(it.qt * it.vl).toFixed(2)}
+                                <i class="fa-solid fa-circle-xmark" style="color: var(--danger); cursor: pointer;" onclick="removerDoCarrinho(${c.id}, ${idx})"></i>
+                            </span>
+                        </div>`).join('')}
+                    </div>
+                    <div style="border-top: 1px solid var(--accent); margin-top: 8px; padding-top: 8px; display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; color: var(--accent);">
+                        <span>TOTAL CESTA:</span>
+                        <span>R$ ${totalCart.toFixed(2)}</span>
+                    </div>
+                </div>`;
+            }
+
             card.innerHTML = `
                 <div class="card-header">
                     <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
@@ -990,12 +1020,13 @@
                 <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
                 
                 ${chipsHtml}
+                ${cartHtml}
 
                 <div style="margin-bottom: 10px;">
                     <input type="text" id="it-${c.id}" list="lista-prod" placeholder="🔍 Pesquisar Doce..." onfocus="focarBotaoInteligente(this)" oninput="window.filtrarDocesCard(this, ${c.id})">
                 </div>
 
-                <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
+                <button class="btn-main" onclick="salvarVenda(${c.id})">${itemsCart.length > 0 ? 'CONFIRMAR VENDA' : 'ANOTAR PEDIDO'}</button>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                     <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
                     <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO DA CONTA</button>
@@ -1445,70 +1476,90 @@
     let _pendingVenda = null; // Guarda os dados enquanto o usuário escolhe o tipo
 
     window.salvarVenda = (id) => {
-        const nomeDigitado = document.getElementById(`it-${id}`).value.trim().toUpperCase() || "DOCES";
+        let itensCart = carrinhos[id] || [];
         
-        // Busca o produto no banco de produtos
-        const prod = dbProdutos.find(p => p.nome.toUpperCase() === nomeDigitado);
-        
-        let qt = 1;
-        let vl = 0;
-        
-        if (prod) {
-            vl = prod.preco;
-        } else {
-            // Se não encontrou, pergunta o valor
-            const valorStr = prompt(`Produto "${nomeDigitado}" não cadastrado. Digite o valor:`);
-            vl = parseFloat(valorStr?.replace(',', '.'));
-            if (!vl || vl <= 0) return alert("Valor inválido!");
+        // Se tem item digitado manualmente (sem ser do carrinho), adiciona ao carrinho
+        const inputBusca = document.getElementById(`it-${id}`);
+        if (itensCart.length === 0 && inputBusca && inputBusca.value.trim() !== "") {
+            const nomeProc = inputBusca.value.trim().toUpperCase();
+            const prodExistente = dbProdutos.find(p => p.nome.toUpperCase() === nomeProc);
+            const preco = prodExistente ? prodExistente.preco : 0;
+            
+            if (preco === 0) {
+                return alert("Para produtos manuais, insira o valor primeiro. Use um produto da vitrine ou clique no botão colorido.");
+            }
+
+            itensCart = [{ it: nomeProc, qt: 1, vl: preco }];
         }
 
-        if (!vl || vl <= 0) return alert("Insira o valor do produto!");
+        if (itensCart.length === 0) return alert("Adicione pelo menos um produto à cesta (clicando no botão do doce) primeiro!");
 
-        // Armazena de forma temporária
-        _pendingVenda = { id, it: nomeDigitado, qt, vl };
+        _pendingClienteId = id;
+        _vendaQueue = [...itensCart];
+        _queueIndex = 0;
+        _vendaResults = [];
+        
+        abrirFilaNoModal();
+        
+        // Limpa o campo de busca se houver
+        if (inputBusca) inputBusca.value = "";
+    };
 
-        // Preenche o preview no bottom sheet
-        const total = qt * vl;
-        document.getElementById('bsProductName').innerText = `${qt}x ${nomeDigitado}`;
-        document.getElementById('bsProductVal').innerText  = `R$ ${total.toFixed(2)}`;
+    function abrirFilaNoModal() {
+        if (_queueIndex >= _vendaQueue.length) {
+            finalizarVendaEmLote();
+            return;
+        }
 
-        // Abre o bottom sheet
+        const item = _vendaQueue[_queueIndex];
+        const progresso = `(${_queueIndex + 1} de ${_vendaQueue.length})`;
+        
+        document.getElementById('bsProductName').innerText = `${progresso} ${item.it}`;
+        document.getElementById('bsProductVal').innerText  = `R$ ${(item.qt * item.vl).toFixed(2)}`;
+
         document.getElementById('bsOverlay').classList.add('active');
-        setTimeout(() => document.getElementById('bottomSheet').classList.add('active'), 10);
-    };
+        document.getElementById('bottomSheet').classList.add('active');
+    }
 
-    window.fecharBottomSheet = () => {
-        document.getElementById('bottomSheet').classList.remove('active');
-        document.getElementById('bsOverlay').classList.remove('active');
-    };
+    window.confirmarVenda = (tipo) => {
+        const item = _vendaQueue[_queueIndex];
+        _vendaResults.push({ ...item, tipo });
 
-    window.confirmarVenda = async (tipo) => {
-        fecharBottomSheet();
-        if (!_pendingVenda) return;
-
-        const { id, it, qt, vl } = _pendingVenda;
-        _pendingVenda = null;
-
-        let valorTotal, descricao, status;
-
-        if (tipo === 'pago') {
-            valorTotal = qt * vl;
-            descricao  = it;
-            status = 'pago';
-        } else if (tipo === 'brinde') {
-            valorTotal = 0;
-            descricao  = `🎁 ${it}`;
-            status = 'brinde';
+        _queueIndex++;
+        if (_queueIndex < _vendaQueue.length) {
+            abrirFilaNoModal(); 
         } else {
-            valorTotal = qt * vl;
-            descricao  = it;
-            status = 'pendente';
+            fecharBottomSheet();
+            finalizarVendaEmLote();
         }
+    };
 
-        const inserts = [{ cliente_id: id, descricao, qtd: qt, valor_total: valorTotal, status }];
+    async function finalizarVendaEmLote() {
+        const id = _pendingClienteId;
+        const inserts = [];
+        let totalPagoAgora = 0;
 
-        if (tipo === 'pago') {
-            inserts.push({ cliente_id: id, descricao: "PAGAMENTO EFETUADO (BALCÃO)", qtd: 1, valor_total: -valorTotal, status: 'pagamento' });
+        _vendaResults.forEach(res => {
+            let valorTotal, descricao, status;
+            if (res.tipo === 'pago') {
+                valorTotal = res.qt * res.vl;
+                descricao  = res.it;
+                status = 'pago';
+                totalPagoAgora += valorTotal;
+            } else if (res.tipo === 'brinde') {
+                valorTotal = 0;
+                descricao  = `🎁 ${res.it}`;
+                status = 'brinde';
+            } else {
+                valorTotal = res.qt * res.vl;
+                descricao  = res.it;
+                status = 'pendente';
+            }
+            inserts.push({ cliente_id: id, descricao, qtd: res.qt, valor_total: valorTotal, status });
+        });
+
+        if (totalPagoAgora > 0) {
+            inserts.push({ cliente_id: id, descricao: "PAGAMENTO EFETUADO (BALCÃO)", qtd: 1, valor_total: -totalPagoAgora, status: 'pagamento' });
         }
 
         const { error } = await _supabase.from('compras').insert(inserts);
@@ -1517,11 +1568,34 @@
             console.error("Erro ao salvar:", error.message);
             alert("Erro no banco: " + error.message);
         } else {
-            document.getElementById(`it-${id}`).value = '';
-            document.getElementById(`vl-${id}`).value = '';
-            carregarDados();
+            carrinhos[id] = []; 
+            if (totalPagoAgora > 0) {
+                _comprovanteData = {
+                    clienteId: id,
+                    soma: totalPagoAgora,
+                    itens: _vendaResults.filter(r => r.tipo === 'pago').map(r => ({ desc: r.it, qtd: r.qt, valor: r.vl }))
+                };
+                const c = dbClientes.find(x => x.id === id);
+                document.getElementById('bsComprovanteValor').innerText = `R$ ${totalPagoAgora.toFixed(2)}`;
+                document.getElementById('bsComprovanteCliente').innerText = c ? c.nome : '';
+                
+                document.getElementById('bsComprovanteOverlay').classList.add('active');
+                document.getElementById('bsComprovanteSheet').classList.add('active');
+            }
+            await carregarDados();
         }
+
+        _vendaQueue = [];
+        _queueIndex = 0;
+        _vendaResults = [];
+        _pendingClienteId = null;
+    }
+
+    window.fecharBottomSheet = () => {
+        document.getElementById('bottomSheet').classList.remove('active');
+        document.getElementById('bsOverlay').classList.remove('active');
     };
+
     // ===========================================
 
 
@@ -1587,14 +1661,20 @@
     }
 };
 
-        // A mágica que empurra o Doce tocado direto para os inputs!
+        // Adiciona o doce ao carrinho do cliente
     window.preencherRapido = (cId, nomeProduto, precoProduto) => {
-        const campoIt = document.getElementById(`it-${cId}`);
-        const campoQt = document.getElementById(`qt-${cId}`);
-        const campoVl = document.getElementById(`vl-${cId}`);
-        
-        if(campoIt) campoIt.value = nomeProduto;
-        if(campoQt) campoQt.value = 1;
+        if (!carrinhos[cId]) carrinhos[cId] = [];
+        carrinhos[cId].push({ it: nomeProduto, qt: 1, vl: precoProduto });
+        render();
+    };
+
+    // Remove item do carrinho
+    window.removerDoCarrinho = (cId, index) => {
+        if (carrinhos[cId] && carrinhos[cId][index]) {
+            carrinhos[cId].splice(index, 1);
+            render();
+        }
+    };
         if(campoVl) campoVl.value = precoProduto;
         
         // Efeito de brilhinho verde na caixa para piscar que preencheu:
