@@ -912,13 +912,18 @@
             const comprasValidas = c.compras || [];
             
             // Calcula saldo: apenas itens pendentes (não pagos, não brindes, não quitados)
+            // Trata null/undefined como 'pago' (para registros antigos)
             const saldo = comprasValidas
-                .filter(i => i.valor_total > 0 && i.status !== 'pago' && i.status !== 'brinde' && i.status !== 'quitado')
+                .filter(i => {
+                    const status = i.status || 'pago'; // Registros sem status são tratados como pagos
+                    return i.valor_total > 0 && status === 'pendente';
+                })
                 .reduce((acc, i) => acc + (i.valor_total || 0), 0);
             totalG += saldo;
 
             comprasValidas.forEach(cp => {
-                if (cp.data && new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0 && cp.status !== 'pago' && cp.status !== 'brinde' && cp.status !== 'quitado') {
+                const status = cp.status || 'pago';
+                if (cp.data && new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0 && status === 'pendente') {
                     totalH += cp.valor_total;
                 }
             });
@@ -1131,7 +1136,10 @@
         let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
         const comprasApenas = c.compras
             .filter(i => i.valor_total > 0)
-            .filter(i => i.status !== 'pago' && i.status !== 'brinde' && i.status !== 'quitado')
+            .filter(i => {
+                const status = i.status || 'pago';
+                return status === 'pendente';
+            })
             .sort((a,b) => new Date(a.data) - new Date(b.data));
         
         itensPendentesGlobal = [];
