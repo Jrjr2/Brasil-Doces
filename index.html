@@ -673,9 +673,6 @@
         
         <div class="extrato-container" id="corpoExtrato"></div>
         
-        <button onclick="enviarZapResumo()" class="btn-zap-novo no-print" style="margin-top: 15px; background: linear-gradient(135deg, #10b981 0%, #34d399 100%);">
-            <i class="fa-brands fa-whatsapp"></i> ENVIAR RESUMO POR WHATSAPP
-        </button>  
 
         <button onclick="window.print()" class="btn-zap-novo no-print" style="margin-top: 10px;">
             <i class="fa-solid fa-file-pdf"></i> SALVAR EXTRATO MENSAL (PDF)
@@ -903,11 +900,15 @@
 
             filtrados.forEach(c => {
                 const comprasValidas = c.compras || [];
-                const saldo = comprasValidas.reduce((acc, i) => acc + (i.valor_total || 0), 0);
+                
+                // Calcula saldo: soma apenas itens pendentes (não pagos, não brindes)
+                const saldo = comprasValidas
+                    .filter(i => i.valor_total > 0 && i.status !== 'pago' && i.status !== 'brinde')
+                    .reduce((acc, i) => acc + (i.valor_total || 0), 0);
                 totalG += saldo;
 
                 comprasValidas.forEach(cp => {
-                    if (cp.data && new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0) {
+                    if (cp.data && new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0 && cp.status !== 'pago' && cp.status !== 'brinde') {
                         totalH += cp.valor_total;
                     }
                 });
@@ -1152,7 +1153,10 @@
         const { data: cData } = await _supabase.from('clientes').select('*, compras(*)').eq('id', id).single();
         const c = cData || dbClientes.find(x => x.id === id);
         
-        const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
+        const comprasApenas = c.compras
+            .filter(i => i.valor_total > 0)
+            .filter(i => i.status !== 'pago' && i.status !== 'brinde' && i.status !== 'pagamento')
+            .sort((a,b) => new Date(a.data) - new Date(b.data));
         let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
         
         itensPendentesGlobal = [];
@@ -1258,12 +1262,21 @@
         const c = dbClientes.find(x => x.id === id);
         document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
         
-        // --- 1. MATEMÁTICA: SEPARA APENAS O QUE FOI PAGO (QUITADO) ---
+        // --- 1. MATEMÁTICA: SEPARA ITENS QUITADOS (PAGO/BRINDE) E ITENS PENDENTES ---
         let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
-        const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
         
+        // Items pagos diretamente (sem necessidade de pagamento adicional)
+        const itensPagos = c.compras.filter(i => i.status === 'pago');
+        
+        // Items brindes
+        const itensBrindes = c.compras.filter(i => i.status === 'brinde');
+        
+        // Itens pendentes (precisam de pagamento)
+        const itensPendentes = c.compras.filter(i => i.status === 'pendente');
+        
+        // Calcula quitados baseado em pagamentos
         let itensQuitados = [];
-        comprasApenas.forEach(item => { 
+        itensPendentes.forEach(item => { 
             if (totalPagos >= item.valor_total) { 
                 itensQuitados.push({...item, valor_pago: item.valor_total});
                 totalPagos -= item.valor_total; 
@@ -1272,12 +1285,19 @@
                 totalPagos = 0; 
             }
         });
+        
+        // Junta todos os quitados: pagos diretos + brindes + quitados por pagamento
+        let todosQuitados = [
+            ...itensPagos.map(i => ({...i, valor_pago: i.valor_total})),
+            ...itensBrindes.map(i => ({...i, valor_pago: 0})),
+            ...itensQuitados
+        ].sort((a,b) => new Date(a.data) - new Date(b.data));
 
         // --- 2. REGRA DOS 30 DIAS ---
         const dataLimite = new Date();
         dataLimite.setDate(dataLimite.getDate() - 30);
         
-        const quitadosRecentes = itensQuitados.filter(i => new Date(i.data) >= dataLimite);
+        const quitadosRecentes = todosQuitados.filter(i => new Date(i.data) >= dataLimite);
 
         // --- 3. MONTA A TABELA ---
         const corpo = document.getElementById('corpoExtrato');
@@ -1290,7 +1310,7 @@
                 const dataObj = new Date(i.data);
                 const dataFmt = dataObj.toLocaleDateString('pt-BR').substring(0,5);
                 const horaFmt = dataObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-                const isBrinde = i.valor_total === 0;
+                const isBrinde = i.status === 'brinde';
                 
                 corpo.innerHTML += `
                 <div class="extrato-item" style="grid-template-columns: 85px 35px 1fr 70px;">
@@ -1481,23 +1501,26 @@
         let totalPagoAgora = 0;
 
         _vendaResults.forEach(res => {
-            let valorTotal, descricao;
+            let valorTotal, descricao, status;
             if (res.tipo === 'pago') {
                 valorTotal = res.qt * res.vl;
                 descricao  = `💰 ${res.it}`; // Tag de Pago
+                status = 'pago'; //바로 지불됨
                 totalPagoAgora += valorTotal;
             } else if (res.tipo === 'brinde') {
                 valorTotal = 0;
                 descricao  = `🎁 ${res.it}`; // Tag de Brinde
+                status = 'brinde';
             } else {
                 valorTotal = res.qt * res.vl;
                 descricao  = `📒 ${res.it}`; // Tag de Anotado
+                status = 'pendente'; //계정에서 대기 중
             }
-            inserts.push({ cliente_id: id, descricao, qtd: res.qt, valor_total: valorTotal });
+            inserts.push({ cliente_id: id, descricao, qtd: res.qt, valor_total: valorTotal, status });
         });
 
         if (totalPagoAgora > 0) {
-            inserts.push({ cliente_id: id, descricao: "PAGAMENTO EFETUADO (BALCÃO)", qtd: 1, valor_total: -totalPagoAgora });
+            inserts.push({ cliente_id: id, descricao: "PAGAMENTO EFETUADO (BALCÃO)", qtd: 1, valor_total: -totalPagoAgora, status: 'pagamento' });
         }
 
         const { error } = await _supabase.from('compras').insert(inserts);
@@ -1627,51 +1650,6 @@
     }
 };
 
-    // ================== WHATSAPP RESUMO PAGO ==================
-    window.enviarZapResumo = () => {
-        const c = dbClientes.find(x => x.id === clienteAbertoId);
-        if (!c || !c.tel) return alert('Cliente ou telefone não encontrado!');
-
-        // Captura os dados do extrato (mesma lógica do modal)
-        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
-        const comprasApenas = c.compras.filter(i => i.valor_total > 0).sort((a,b) => new Date(a.data) - new Date(b.data));
-        
-        let itensQuitados = [];
-        comprasApenas.forEach(item => { 
-            if (totalPagos >= item.valor_total) { 
-                itensQuitados.push({...item, valor_pago: item.valor_total});
-                totalPagos -= item.valor_total; 
-            } else if (totalPagos > 0) {
-                itensQuitados.push({...item, valor_pago: totalPagos});
-                totalPagos = 0; 
-            }
-        });
-
-        const dataLimite = new Date();
-        dataLimite.setDate(dataLimite.getDate() - 30);
-        const quitadosRecentes = itensQuitados.filter(i => new Date(i.data) >= dataLimite);
-
-        if (quitadosRecentes.length === 0) return alert("Não há produtos quitados nos últimos 30 dias para enviar!");
-
-        const telLimpo = c.tel.replace(/\D/g, '');
-        const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
-
-        let listaMsg = quitadosRecentes.map(i => {
-            const d = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
-            const status = i.valor_total === 0 ? '[🎁 BRINDE]' : '[💰 PAGO]';
-            // Remove emojis da descrição original para não duplicar no Zap
-            const descLimpa = i.descricao.replace(/💰|🎁|📒/g, '').trim();
-            return `✅ ${d} - ${i.qtd}x ${descLimpa} ${status}`;
-        }).join('%0A');
-
-        let texto = `*Brasil Doces®* 🍰%0A%0A`;
-        texto += `Olá, *${c.nome}*! ✨%0A%0A`;
-        texto += `Estou enviando o seu *Histórico de Pedidos Quitados* dos últimos 30 dias (%0A)*${mesAtual}*:%0A%0A`;
-        texto += `${listaMsg}%0A%0A`;
-        texto += `Qualquer dúvida estou à disposição! Muito obrigada pela preferência! ❤️`;
-
-        window.open(`https://wa.me/55${telLimpo}?text=${texto}`, '_blank');
-    };
 
 
 
