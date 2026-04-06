@@ -1164,7 +1164,6 @@
     clienteAbertoId = id;
     document.getElementById('modalResumo').style.display = 'none'; // Fecha o outro por segurança
     const c = dbClientes.find(x => x.id === id);
-        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
         const comprasApenas = c.compras
             .filter(i => i.valor_total > 0)
             .filter(i => {
@@ -1175,8 +1174,7 @@
         
         itensPendentesGlobal = [];
         comprasApenas.forEach(item => { 
-            if (totalPagos >= item.valor_total) { totalPagos -= item.valor_total; } 
-            else { itensPendentesGlobal.push({...item, valor_exibir: item.valor_total - totalPagos}); totalPagos = 0; } 
+            itensPendentesGlobal.push({...item, valor_exibir: item.valor_total});
         });
 
         document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
