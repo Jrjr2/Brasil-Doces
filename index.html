@@ -998,10 +998,8 @@
                 ${chipsHtml}
                 ${cartHtml}
 
-                 <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
-                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="🔍 Pesquisar Doce..." onfocus="focarBotaoInteligente(this)" oninput="window.filtrarDocesCard(this, ${c.id}); atualizarPreco(this, ${c.id});">
-                    <input type="number" id="qt-${c.id}" value="1" onfocus="focarBotaoInteligente(this)">
-                    <input type="text" inputmode="decimal" id="vl-${c.id}" placeholder="R$" onfocus="focarBotaoInteligente(this)" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
+                 <div style="margin-bottom: 10px;">
+                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="🔍 Pesquisar Doce..." onfocus="focarBotaoInteligente(this)" oninput="window.filtrarDocesCard(this, ${c.id});">
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 8px;">
@@ -1150,8 +1148,15 @@
         
         itensPendentesGlobal = [];
         comprasApenas.forEach(item => { 
-            if (totalPagos >= item.valor_total) { totalPagos -= item.valor_total; } 
-            else { itensPendentesGlobal.push({...item, valor_exibir: item.valor_total - totalPagos}); totalPagos = 0; } 
+            // Ignora brindes da lista de cobrança
+            if (item.valor_total <= 0) return;
+
+            if (totalPagos >= item.valor_total) { 
+                totalPagos -= item.valor_total; 
+            } else { 
+                itensPendentesGlobal.push({...item, valor_exibir: item.valor_total - totalPagos}); 
+                totalPagos = 0; 
+            } 
         });
 
         document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
@@ -1488,7 +1493,7 @@
                 document.getElementById('bsComprovanteOverlay').classList.add('active');
                 document.getElementById('bsComprovanteSheet').classList.add('active');
             }
-            carregarDados();
+            await carregarDados(); // Aguarda o recarregamento total antes de seguir
         }
 
         // Limpa estado
