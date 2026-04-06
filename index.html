@@ -874,148 +874,149 @@
 
 
     function render() {
-    try {
-         const busca = buscaInput.value.trim().toLowerCase();
-        const listaDiv = document.getElementById('lista');
-        
-        // Limpa e recria o datalist de produtos para o autocomplete
-        let datalist = document.getElementById('lista-prod');
-        if (!datalist) {
-            datalist = document.createElement('datalist');
-            datalist.id = 'lista-prod';
-            document.body.appendChild(datalist);
-        }
-        datalist.innerHTML = dbProdutos.map(p => `<option value="${p.nome}">`).join('');
+        try {
+            const buscaInput = document.getElementById('buscaCliente');
+            if (!buscaInput) return;
 
-        listaDiv.innerHTML = '';
+            const busca = buscaInput.value.trim().toLowerCase();
+            const listaDiv = document.getElementById('lista');
+            
+            // Limpa e recria o datalist de produtos para o autocomplete
+            let datalist = document.getElementById('lista-prod');
+            if (!datalist) {
+                datalist = document.createElement('datalist');
+                datalist.id = 'lista-prod';
+                document.body.appendChild(datalist);
+            }
+            datalist.innerHTML = dbProdutos.map(p => `<option value="${p.nome}">`).join('');
 
-        let totalH = 0, totalG = 0;
-        const hoje = new Date().toLocaleDateString('pt-BR').substring(0, 5);
+            listaDiv.innerHTML = '';
 
-        const filtrados = dbClientes.filter(c => 
-            c.nome && 
-            c.nome !== 'VENDA AVULSA (BALCÃO)' && 
-            c.nome.toLowerCase().trim().startsWith(busca)
-        );
+            let totalH = 0, totalG = 0;
+            const hoje = new Date().toLocaleDateString('pt-BR').substring(0, 5);
 
-        filtrados.forEach(c => {
-            const comprasValidas = c.compras || [];
-            const saldo = comprasValidas.reduce((acc, i) => acc + (i.valor_total || 0), 0);
-            totalG += saldo;
+            const filtrados = dbClientes.filter(c => 
+                c.nome && 
+                c.nome !== 'VENDA AVULSA (BALCÃO)' && 
+                c.nome.toLowerCase().trim().startsWith(busca)
+            );
 
-            comprasValidas.forEach(cp => {
-                if (cp.data && new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0) {
-                    totalH += cp.valor_total;
+            filtrados.forEach(c => {
+                const comprasValidas = c.compras || [];
+                const saldo = comprasValidas.reduce((acc, i) => acc + (i.valor_total || 0), 0);
+                totalG += saldo;
+
+                comprasValidas.forEach(cp => {
+                    if (cp.data && new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0) {
+                        totalH += cp.valor_total;
+                    }
+                });
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                // PREPARAÇÃO DOS CHIPS DA VITRINE
+                let chipsHtml = '';
+                if (dbProdutos && dbProdutos.length > 0) {
+                    const getIconeDoce = (n) => {
+                        n = n.toLowerCase();
+                        if (n.includes('pote') || n.includes('copo') || n.includes('taça')) return '🧁';
+                        if (n.includes('bolo') || n.includes('torta')) return '🍰';
+                        if (n.includes('brigadeiro') || n.includes('beijinho')) return '🟤';
+                        if (n.includes('brownie')) return '🟫';
+                        if (n.includes('bombom') || n.includes('trufa')) return '🍬';
+                        if (n.includes('cookie') || n.includes('biscoito')) return '🍪';
+                        if (n.includes('donut')) return '🍩';
+                        if (n.includes('morango')) return '🍓';
+                        if (n.includes('uva')) return '🍇';
+                        if (n.includes('ninho')) return '🥛';
+                        if (n.includes('barra') || n.includes('chocolate')) return '🍫';
+                        const iconesGen = ['✨', '🍡', '🍧', '🍥', '🍨'];
+                        return iconesGen[n.length % iconesGen.length];
+                    };
+                    
+                    chipsHtml += '<div class="quick-products-row">';
+                    dbProdutos.forEach((p) => {
+                        let ico = getIconeDoce(p.nome); 
+                        let nomeSeguro = p.nome.replace(/'/g, "\\'");
+                        chipsHtml += `
+                        <div class="btn-pill" onclick="adicionarAoCarrinho(${c.id}, '${nomeSeguro}', ${p.preco})">
+                            <span style="font-size: 16px; margin-bottom: 2px;">${ico}</span>
+                            ${p.nome}
+                            <small>R$ ${p.preco.toFixed(2)}</small>
+                        </div>`;
+                    });
+                    chipsHtml += '</div>';
                 }
+
+                // ÁREA DO CARRINHO (Aparece se houver itens)
+                let cartHtml = '';
+                const itemsCart = carrinhos[c.id] || [];
+                if (itemsCart.length > 0) {
+                    let totalCart = itemsCart.reduce((sum, i) => sum + (i.qt * i.vl), 0);
+                    cartHtml = `
+                    <div style="background: rgba(255, 92, 138, 0.05); border: 1px dashed var(--accent); border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+                        <span style="font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase;">🛒 CESTA DE COMPRAS</span>
+                        <div style="margin-top: 8px;">
+                            ${itemsCart.map((it, idx) => `
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                                <span>${it.qt}x ${it.it}</span>
+                                <span style="display: flex; align-items: center; gap: 8px;">
+                                    R$ ${(it.qt * it.vl).toFixed(2)}
+                                    <i class="fa-solid fa-circle-xmark" style="color: var(--danger); cursor: pointer;" onclick="removerDoCarrinho(${c.id}, ${idx})"></i>
+                                </span>
+                            </div>`).join('')}
+                        </div>
+                        <div style="border-top: 1px solid var(--accent); margin-top: 8px; padding-top: 8px; display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; color: var(--accent);">
+                            <span>TOTAL CESTA:</span>
+                            <span>R$ ${totalCart.toFixed(2)}</span>
+                        </div>
+                    </div>`;
+                }
+
+                // VERIFICA SE É ANIVERSÁRIO HOJE
+                let niverHtml = '';
+                if (c.aniversario && c.aniversario === hoje) {
+                    niverHtml = `
+                    <div style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #7a1f3d; padding: 8px 12px; border-radius: 12px; font-weight: 800; font-size: 11px; margin-bottom: 15px; border: 1px solid rgba(255, 133, 162, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255, 133, 162, 0.2);">
+                        <i class="fa-solid fa-gift" style="color: #d81b60; font-size: 15px;"></i> 
+                        ESPECIAL: HOJE É ANIVERSÁRIO DO CLIENTE! 🎉
+                    </div>`;
+                }
+
+                card.innerHTML = `
+                <div class="card-header">
+                    <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
+                    <div style="gap:10px; display:flex;">
+                        <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+                ${niverHtml}
+                <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
+                
+                ${chipsHtml}
+                ${cartHtml}
+
+                 <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
+                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto Manual..." onfocus="focarBotaoInteligente(this)" oninput="atualizarPreco(this, ${c.id})">
+                    <input type="number" id="qt-${c.id}" value="1" onfocus="focarBotaoInteligente(this)">
+                    <input type="text" inputmode="decimal" id="vl-${c.id}" placeholder="R$" onfocus="focarBotaoInteligente(this)" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                     <button class="btn-main" style="background: var(--brown); font-size: 12px; padding: 12px;" onclick="adicionarManual(${c.id})">ADICIONAR À CESTA</button>
+                     <button class="btn-main" style="font-size: 12px; padding: 12px;" onclick="salvarVenda(${c.id})">ANOTAR PEDIDOS</button>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                    <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
+                    <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO DA CONTA</button>
+                </div>`;
+                listaDiv.appendChild(card);
             });
 
-            const card = document.createElement('div');
-            card.className = 'card';
-            
-            // PREPARAÇÃO DOS CHIPS DA VITRINE
-            let chipsHtml = '';
-            if (dbProdutos && dbProdutos.length > 0) {
-                const getIconeDoce = (n) => {
-                    n = n.toLowerCase();
-                    if (n.includes('pote') || n.includes('copo') || n.includes('taça')) return '🧁';
-                    if (n.includes('bolo') || n.includes('torta')) return '🍰';
-                    if (n.includes('brigadeiro') || n.includes('beijinho')) return '🟤';
-                    if (n.includes('brownie')) return '🟫';
-                    if (n.includes('bombom') || n.includes('trufa')) return '🍬';
-                    if (n.includes('cookie') || n.includes('biscoito')) return '🍪';
-                    if (n.includes('donut')) return '🍩';
-                    if (n.includes('morango')) return '🍓';
-                    if (n.includes('uva')) return '🍇';
-                    if (n.includes('ninho')) return '🥛';
-                    if (n.includes('barra') || n.includes('chocolate')) return '🍫';
-                    const iconesGen = ['✨', '🍡', '🍧', '🍥', '🍨'];
-                    return iconesGen[n.length % iconesGen.length];
-                };
-                
-                chipsHtml += '<div class="quick-products-row">';
-                dbProdutos.forEach((p) => {
-                    let ico = getIconeDoce(p.nome); 
-                    let nomeSeguro = p.nome.replace(/'/g, "\\'");
-                    chipsHtml += `
-                    <div class="btn-pill" onclick="adicionarAoCarrinho(${c.id}, '${nomeSeguro}', ${p.preco})">
-                        <span style="font-size: 16px; margin-bottom: 2px;">${ico}</span>
-                        ${p.nome}
-                        <small>R$ ${p.preco.toFixed(2)}</small>
-                    </div>`;
-                });
-                chipsHtml += '</div>';
-            }
-
-            // ÁREA DO CARRINHO (Aparece se houver itens)
-            let cartHtml = '';
-            const itemsCart = carrinhos[c.id] || [];
-            if (itemsCart.length > 0) {
-                let totalCart = itemsCart.reduce((sum, i) => sum + (i.qt * i.vl), 0);
-                cartHtml = `
-                <div style="background: rgba(255, 92, 138, 0.05); border: 1px dashed var(--accent); border-radius: 12px; padding: 12px; margin-bottom: 12px;">
-                    <span style="font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase;">🛒 CESTA DE COMPRAS</span>
-                    <div style="margin-top: 8px;">
-                        ${itemsCart.map((it, idx) => `
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
-                            <span>${it.qt}x ${it.it}</span>
-                            <span style="display: flex; align-items: center; gap: 8px;">
-                                R$ ${(it.qt * it.vl).toFixed(2)}
-                                <i class="fa-solid fa-circle-xmark" style="color: var(--danger); cursor: pointer;" onclick="removerDoCarrinho(${c.id}, ${idx})"></i>
-                            </span>
-                        </div>`).join('')}
-                    </div>
-                    <div style="border-top: 1px solid var(--accent); margin-top: 8px; padding-top: 8px; display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; color: var(--accent);">
-                        <span>TOTAL CESTA:</span>
-                        <span>R$ ${totalCart.toFixed(2)}</span>
-                    </div>
-                </div>`;
-            }
-
-            // VERIFICA SE É ANIVERSÁRIO HOJE
-            let niverHtml = '';
-            if (c.aniversario && c.aniversario === hoje) {
-                niverHtml = `
-                <div style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #7a1f3d; padding: 8px 12px; border-radius: 12px; font-weight: 800; font-size: 11px; margin-bottom: 15px; border: 1px solid rgba(255, 133, 162, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255, 133, 162, 0.2);">
-                    <i class="fa-solid fa-gift" style="color: #d81b60; font-size: 15px;"></i> 
-                    ESPECIAL: HOJE É ANIVERSÁRIO DO CLIENTE! 🎉
-                </div>`;
-            }
-
-            card.innerHTML = `
-            <div class="card-header">
-                <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
-                <div style="gap:10px; display:flex;">
-                    <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
-                </div>
-            </div>
-            ${niverHtml}
-            <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
-            
-            ${chipsHtml}
-            ${cartHtml}
-
-             <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
-                <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto Manual..." onfocus="focarBotaoInteligente(this)" oninput="atualizarPreco(this, ${c.id})">
-                <input type="number" id="qt-${c.id}" value="1" onfocus="focarBotaoInteligente(this)">
-                <input type="text" inputmode="decimal" id="vl-${c.id}" placeholder="R$" onfocus="focarBotaoInteligente(this)" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-                 <button class="btn-main" style="background: var(--brown); font-size: 12px; padding: 12px;" onclick="adicionarManual(${c.id})">ADICIONAR À CESTA</button>
-                 <button class="btn-main" style="font-size: 12px; padding: 12px;" onclick="salvarVenda(${c.id})">ANOTAR PEDIDOS</button>
-            </div>
-
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                <button class="btn-action" onclick="abrirHistorico(${c.id})">COBRAR / PAGAR</button>
-                <button class="btn-action" onclick="abrirResumoConta(${c.id})">RESUMO DA CONTA</button>
-            </div>`;
-            listaDiv.appendChild(card);
-        });
-
-        document.getElementById('totalHoje').innerText = `R$ ${totalH.toFixed(2)}`;
-        document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
-document.getElementById('totalHoje').innerText = `R$ ${totalH.toFixed(2)}`;
+            document.getElementById('totalHoje').innerText = `R$ ${totalH.toFixed(2)}`;
             document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
         } catch (err) {
             console.error("Erro na renderização:", err);
