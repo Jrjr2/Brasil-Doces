@@ -999,14 +999,13 @@
                 ${cartHtml}
 
                  <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
-                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto Manual..." onfocus="focarBotaoInteligente(this)" oninput="atualizarPreco(this, ${c.id})">
+                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="🔍 Pesquisar Doce..." onfocus="focarBotaoInteligente(this)" oninput="window.filtrarDocesCard(this, ${c.id}); atualizarPreco(this, ${c.id});">
                     <input type="number" id="qt-${c.id}" value="1" onfocus="focarBotaoInteligente(this)">
                     <input type="text" inputmode="decimal" id="vl-${c.id}" placeholder="R$" onfocus="focarBotaoInteligente(this)" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-                     <button class="btn-main" style="background: var(--brown); font-size: 12px; padding: 12px;" onclick="adicionarManual(${c.id})">ADICIONAR À CESTA</button>
-                     <button class="btn-main" style="font-size: 12px; padding: 12px;" onclick="salvarVenda(${c.id})">ANOTAR PEDIDOS</button>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 8px;">
+                     <button class="btn-main" style="font-size: 15px; padding: 14px;" onclick="salvarVenda(${c.id})">ANOTAR PEDIDOS</button>
                 </div>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
@@ -1348,6 +1347,16 @@
     window.fecharComprovanteSheet = () => {
         document.getElementById('bsComprovanteSheet').classList.remove('active');
         document.getElementById('bsComprovanteOverlay').classList.remove('active');
+        _comprovanteData = null;
+    };
+
+    window.fecharBottomSheet = () => {
+        document.getElementById('bottomSheet').classList.remove('active');
+        document.getElementById('bsOverlay').classList.remove('active');
+        // Limpa a fila se cancelar
+        _vendaQueue = [];
+        _queueIndex = 0;
+        _vendaResults = [];
     };
 
     window.enviarComprovanteWap = () => {
@@ -1386,56 +1395,75 @@
     // ==========================================
 
     // =========== BOTTOM SHEET LOGIC ===========
-    let _pendingVenda = null; 
+    let _vendaQueue = []; 
+    let _queueIndex = 0;
+    let _vendaResults = [];
+    let _pendingClienteId = null;
 
     window.salvarVenda = (id) => {
         const itensCart = carrinhos[id] || [];
         if (itensCart.length === 0) return alert("Adicione pelo menos um produto à cesta primeiro!");
 
-        const totalGeral = itensCart.reduce((sum, i) => sum + (i.qt * i.vl), 0);
+        _pendingClienteId = id;
+        _vendaQueue = [...itensCart];
+        _queueIndex = 0;
+        _vendaResults = [];
         
-        // Formata o resumo da cesta para exibição no modal
-        let resumoTxt = itensCart.length > 1 
-            ? `${itensCart.length} PRODUTOS SELECIONADOS` 
-            : `${itensCart[0].qt}x ${itensCart[0].it}`;
-
-        _pendingVenda = { id, itens: itensCart, total: totalGeral };
-
-        document.getElementById('bsProductName').innerText = resumoTxt;
-        document.getElementById('bsProductVal').innerText  = `R$ ${totalGeral.toFixed(2)}`;
-
-        document.getElementById('bsOverlay').classList.add('active');
-        setTimeout(() => document.getElementById('bottomSheet').classList.add('active'), 10);
+        abrirFilaNoModal();
     };
 
-    window.confirmarVenda = async (tipo) => {
-        fecharBottomSheet();
-        if (!_pendingVenda) return;
+    function abrirFilaNoModal() {
+        if (_queueIndex >= _vendaQueue.length) {
+            finalizarVendaEmLote();
+            return;
+        }
 
-        const { id, itens, total } = _pendingVenda;
-        _pendingVenda = null;
+        const item = _vendaQueue[_queueIndex];
+        const progresso = `(${_queueIndex + 1} de ${_vendaQueue.length})`;
+        
+        document.getElementById('bsProductName').innerText = `${progresso} ${item.it}`;
+        document.getElementById('bsProductVal').innerText  = `R$ ${(item.qt * item.vl).toFixed(2)}`;
 
+        document.getElementById('bsOverlay').classList.add('active');
+        document.getElementById('bottomSheet').classList.add('active');
+    }
+
+    window.confirmarVenda = (tipo) => {
+        const item = _vendaQueue[_queueIndex];
+        _vendaResults.push({ ...item, tipo });
+
+        _queueIndex++;
+        if (_queueIndex < _vendaQueue.length) {
+            abrirFilaNoModal(); 
+        } else {
+            fecharBottomSheet();
+            finalizarVendaEmLote();
+        }
+    };
+
+    async function finalizarVendaEmLote() {
+        const id = _pendingClienteId;
         const inserts = [];
+        let totalPagoAgora = 0;
 
-        itens.forEach(item => {
+        _vendaResults.forEach(res => {
             let valorTotal, descricao;
-
-            if (tipo === 'pago') {
-                valorTotal = item.qt * item.vl;
-                descricao  = item.it;
-            } else if (tipo === 'brinde') {
+            if (res.tipo === 'pago') {
+                valorTotal = res.qt * res.vl;
+                descricao  = res.it;
+                totalPagoAgora += valorTotal;
+            } else if (res.tipo === 'brinde') {
                 valorTotal = 0;
-                descricao  = `🎁 ${item.it}`;
+                descricao  = `🎁 ${res.it}`;
             } else {
-                valorTotal = item.qt * item.vl;
-                descricao  = item.it;
+                valorTotal = res.qt * res.vl;
+                descricao  = res.it;
             }
-
-            inserts.push({ cliente_id: id, descricao, qtd: item.qt, valor_total: valorTotal });
+            inserts.push({ cliente_id: id, descricao, qtd: res.qt, valor_total: valorTotal });
         });
 
-        if (tipo === 'pago') {
-            inserts.push({ cliente_id: id, descricao: "PAGAMENTO EFETUADO (BALCÃO)", qtd: 1, valor_total: -total });
+        if (totalPagoAgora > 0) {
+            inserts.push({ cliente_id: id, descricao: "PAGAMENTO EFETUADO (BALCÃO)", qtd: 1, valor_total: -totalPagoAgora });
         }
 
         const { error } = await _supabase.from('compras').insert(inserts);
@@ -1444,16 +1472,47 @@
             console.error("Erro ao salvar:", error.message);
             alert("Erro no banco: " + error.message);
         } else {
-            carrinhos[id] = []; // Limpa o carrinho após salvar
+            carrinhos[id] = []; 
+            if (totalPagoAgora > 0) {
+                // Prepara dados para o comprovante
+                _comprovanteData = {
+                    clienteId: id,
+                    soma: totalPagoAgora,
+                    itens: _vendaResults.filter(r => r.tipo === 'pago').map(r => ({ desc: r.it, qtd: r.qt, valor: r.vl }))
+                };
+                const c = dbClientes.find(x => x.id === id);
+                document.getElementById('bsComprovanteValor').innerText = `R$ ${totalPagoAgora.toFixed(2)}`;
+                document.getElementById('bsComprovanteCliente').innerText = c ? c.nome : '';
+                
+                document.getElementById('bsComprovanteOverlay').classList.add('active');
+                document.getElementById('bsComprovanteSheet').classList.add('active');
+            }
             carregarDados();
         }
-    };
+
+        // Limpa estado
+        _vendaQueue = [];
+        _queueIndex = 0;
+        _vendaResults = [];
+        _pendingClienteId = null;
+    }
 
     // ================= CARRINHO ACTIONS =================
     window.adicionarAoCarrinho = (idCliente, it, vl) => {
         if (!carrinhos[idCliente]) carrinhos[idCliente] = [];
         carrinhos[idCliente].push({ it, qt: 1, vl });
         render();
+    };
+
+    window.filtrarDocesCard = (input, idCliente) => {
+        const busca = input.value.toLowerCase().trim();
+        const card = input.closest('.card');
+        if (!card) return;
+        const pills = card.querySelectorAll('.btn-pill');
+        pills.forEach(p => {
+            const texto = p.innerText.toLowerCase();
+            p.style.display = texto.includes(busca) ? 'flex' : 'none';
+        });
     };
 
     window.removerDoCarrinho = (idCliente, index) => {
@@ -1463,20 +1522,6 @@
         }
     };
 
-    window.adicionarManual = (idCliente) => {
-        const it = document.getElementById(`it-${idCliente}`).value.trim().toUpperCase();
-        const qt = parseInt(document.getElementById(`qt-${idCliente}`).value) || 1;
-        const vl = parseFloat(document.getElementById(`vl-${idCliente}`).value);
-
-        if (!it) return alert("Digite o nome do produto!");
-        if (!vl || vl <= 0) return alert("Insira o valor!");
-
-        adicionarAoCarrinho(idCliente, it, vl);
-        
-        // Limpa campos manuais
-        document.getElementById(`it-${idCliente}`).value = '';
-        document.getElementById(`vl-${idCliente}`).value = '';
-    };
 
 
 
