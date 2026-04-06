@@ -1276,12 +1276,13 @@
                 const dataObj = new Date(i.data);
                 const dataFmt = dataObj.toLocaleDateString('pt-BR').substring(0,5);
                 const horaFmt = dataObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                const isBrinde = i.valor_total === 0;
                 
                 corpo.innerHTML += `
                 <div class="extrato-item" style="grid-template-columns: 85px 35px 1fr 70px;">
                     <div style="font-size:10px; opacity:0.8; font-weight:700;">${dataFmt}<br><span style="font-weight:400">${horaFmt}</span></div>
                     <div class="qtd">${i.qtd}x</div>
-                    <div>${i.descricao}</div>
+                    <div>${i.descricao} ${isBrinde ? '<span style="font-size:9px; background:var(--accent); color:#fff; padding:2px 4px; border-radius:4px; margin-left:4px;">BRINDE</span>' : ''}</div>
                     <div class="valor">R$ ${i.valor_pago.toFixed(2)}</div>
                 </div>`;
             });
@@ -1450,14 +1451,14 @@
             let valorTotal, descricao;
             if (res.tipo === 'pago') {
                 valorTotal = res.qt * res.vl;
-                descricao  = res.it;
+                descricao  = `💰 ${res.it}`; // Tag de Pago
                 totalPagoAgora += valorTotal;
             } else if (res.tipo === 'brinde') {
                 valorTotal = 0;
-                descricao  = `🎁 ${res.it}`;
+                descricao  = `🎁 ${res.it}`; // Tag de Brinde
             } else {
                 valorTotal = res.qt * res.vl;
-                descricao  = res.it;
+                descricao  = `📒 ${res.it}`; // Tag de Anotado
             }
             inserts.push({ cliente_id: id, descricao, qtd: res.qt, valor_total: valorTotal });
         });
@@ -1624,7 +1625,10 @@
 
         let listaMsg = quitadosRecentes.map(i => {
             const d = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
-            return `✅ ${d} - ${i.qtd}x ${i.descricao}: R$ ${i.valor_pago.toFixed(2)}`;
+            const status = i.valor_total === 0 ? '[🎁 BRINDE]' : '[💰 PAGO]';
+            // Remove emojis da descrição original para não duplicar no Zap
+            const descLimpa = i.descricao.replace(/💰|🎁|📒/g, '').trim();
+            return `✅ ${d} - ${i.qtd}x ${descLimpa} ${status}`;
         }).join('%0A');
 
         let texto = `*Brasil Doces®* 🍰%0A%0A`;
