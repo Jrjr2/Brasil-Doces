@@ -595,19 +595,25 @@
         </div>
     </details>
 
-    <div class="card" style="border-top: 3px solid var(--success); border-left: none; margin-bottom: 25px;">
-    <div style="font-weight: 800; margin-bottom: 10px; color: var(--brown);">
-        <i class="fa-solid fa-cookie-bite"></i> CADASTRAR NOVO PRODUTO
-    </div>
-        
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
-        <input type="text" id="prodNome" placeholder="Nome do Doce (ex: Brigadeiro)">
-        <input type="text" inputmode="decimal" id="prodPreco" placeholder="Preço R$" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
-    </div>
-    <button id="btnSalvarProduto" class="btn-main" style="background: var(--success);">
-        <i class="fa-solid fa-plus"></i> SALVAR PRODUTO
-    </button>
-</div>
+    <details class="dashboard-details" id="formProdutoCollapse" style="margin-bottom: 25px;">
+        <summary class="dashboard-summary" style="border-radius: 16px;">
+            <span><i class="fa-solid fa-cookie-bite" style="margin-right: 6px;"></i> Cadastrar Novo Produto</span>
+            <i class="fa-solid fa-chevron-down icon-arrow"></i>
+        </summary>
+        <div class="card" style="border-top: 3px solid var(--success); border-left: none; margin-top: 0; border-radius: 0 0 20px 20px;">
+            <div style="font-weight: 800; margin-bottom: 10px; color: var(--brown);">
+                <i class="fa-solid fa-cookie-bite"></i> CADASTRAR NOVO PRODUTO
+            </div>
+                
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+                <input type="text" id="prodNome" placeholder="Nome do Doce (ex: Brigadeiro)">
+                <input type="text" inputmode="decimal" id="prodPreco" placeholder="Preço R$" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
+            </div>
+            <button id="btnSalvarProduto" class="btn-main" style="background: var(--success);">
+                <i class="fa-solid fa-plus"></i> SALVAR PRODUTO
+            </button>
+        </div>
+    </details>
 
     <input type="text" id="buscaCliente" placeholder="🔍 Procurar por nome..." onkeyup="render()">
     <div id="lista"></div>
@@ -861,6 +867,17 @@
         setTimeout(centralizar, 800); // Para o lag da primeira abertura
     };
 
+    window.filtrarDocesCard = (input, idCliente) => {
+        const busca = input.value.toLowerCase().trim();
+        const card = input.closest('.card');
+        if (!card) return;
+        const pills = card.querySelectorAll('.btn-pill');
+        pills.forEach(p => {
+            const texto = p.innerText.toLowerCase();
+            p.style.display = texto.includes(busca) ? 'flex' : 'none';
+        });
+    };
+
 
 
     function render() {
@@ -969,11 +986,8 @@
                 
                 ${chipsHtml}
 
-                 <div style="display:grid; grid-template-columns: 2fr 1fr 1.2fr; gap:5px; margin-bottom: 10px;">
-
-                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="Produto" onfocus="focarBotaoInteligente(this)" oninput="atualizarPreco(this, ${c.id})">
-                    <input type="number" id="qt-${c.id}" value="1" onfocus="focarBotaoInteligente(this)">
-                    <input type="text" inputmode="decimal" id="vl-${c.id}" placeholder="R$" onfocus="focarBotaoInteligente(this)" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
+                <div style="margin-bottom: 10px;">
+                    <input type="text" id="it-${c.id}" list="lista-prod" placeholder="🔍 Pesquisar Doce..." onfocus="focarBotaoInteligente(this)" oninput="window.filtrarDocesCard(this, ${c.id})">
                 </div>
 
                 <button class="btn-main" onclick="salvarVenda(${c.id})">ANOTAR PEDIDO</button>
@@ -1431,18 +1445,31 @@
     let _pendingVenda = null; // Guarda os dados enquanto o usuário escolhe o tipo
 
     window.salvarVenda = (id) => {
-        const it = document.getElementById(`it-${id}`).value.trim().toUpperCase() || "DOCES";
-        const qt = parseInt(document.getElementById(`qt-${id}`).value) || 1;
-        const vl = parseFloat(document.getElementById(`vl-${id}`).value);
+        const nomeDigitado = document.getElementById(`it-${id}`).value.trim().toUpperCase() || "DOCES";
+        
+        // Busca o produto no banco de produtos
+        const prod = dbProdutos.find(p => p.nome.toUpperCase() === nomeDigitado);
+        
+        let qt = 1;
+        let vl = 0;
+        
+        if (prod) {
+            vl = prod.preco;
+        } else {
+            // Se não encontrou, pergunta o valor
+            const valorStr = prompt(`Produto "${nomeDigitado}" não cadastrado. Digite o valor:`);
+            vl = parseFloat(valorStr?.replace(',', '.'));
+            if (!vl || vl <= 0) return alert("Valor inválido!");
+        }
 
         if (!vl || vl <= 0) return alert("Insira o valor do produto!");
 
         // Armazena de forma temporária
-        _pendingVenda = { id, it, qt, vl };
+        _pendingVenda = { id, it: nomeDigitado, qt, vl };
 
         // Preenche o preview no bottom sheet
         const total = qt * vl;
-        document.getElementById('bsProductName').innerText = `${qt}x ${it}`;
+        document.getElementById('bsProductName').innerText = `${qt}x ${nomeDigitado}`;
         document.getElementById('bsProductVal').innerText  = `R$ ${total.toFixed(2)}`;
 
         // Abre o bottom sheet
