@@ -911,10 +911,21 @@
         filtrados.forEach(c => {
             const comprasValidas = c.compras || [];
             
-            // Calcula saldo: soma apenas itens pendentes (não pagos, não brindes)
-            const saldo = comprasValidas
-                .filter(i => i.valor_total > 0 && i.status !== 'pago' && i.status !== 'brinde')
-                .reduce((acc, i) => acc + (i.valor_total || 0), 0);
+            // Calcula saldo: itens pendentes menos os pagamentos já realizados
+            let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
+            
+            const pendentes = comprasValidas.filter(i => i.valor_total > 0 && i.status !== 'pago' && i.status !== 'brinde');
+            let saldo = 0;
+            
+            pendentes.forEach(item => {
+                if (totalPagos >= item.valor_total) {
+                    totalPagos -= item.valor_total;
+                } else {
+                    saldo += (item.valor_total - totalPagos);
+                    totalPagos = 0;
+                }
+            });
+            
             totalG += saldo;
 
             comprasValidas.forEach(cp => {
