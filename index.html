@@ -145,6 +145,8 @@
         .header-actions { display: flex; gap: 8px; align-items: center; }
         .btn-logout { background: white; border: 1px solid var(--danger); color: var(--danger); padding: 8px 15px; border-radius: 10px; font-size: 12px; width: auto; margin: 0; font-weight: 700; }
         .btn-theme { background: var(--card); border: 1px solid var(--border); color: var(--accent); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; }
+        .money-value { transition: filter 0.2s ease, opacity 0.2s ease; }
+        body.hide-values .money-value { filter: blur(6px); user-select: none; }
 
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
@@ -548,6 +550,9 @@
             <button onclick="window.location.reload()" class="btn-theme" title="Atualizar">
                 <i class="fa-solid fa-rotate"></i>
             </button>
+            <button class="btn-theme" onclick="toggleValores()" id="visibilityBtn" title="Ocultar valores">
+                <i class="fa-solid fa-eye"></i>
+            </button>
             <button class="btn-theme" onclick="toggleTheme()" id="themeBtn" title="Alternar Tema">
                 <i class="fa-solid fa-moon"></i>
             </button>
@@ -556,8 +561,8 @@
     </div>
 
     <div class="dashboard-grid">
-        <div class="dash-box"><span class="dash-label">PEDIDOS HOJE</span><div class="dash-val" id="totalHoje">R$ 0,00</div></div>
-        <div class="dash-box"><span class="dash-label">SALDO CLIENTES</span><div class="dash-val" id="totalGeral">R$ 0,00</div></div>
+        <div class="dash-box"><span class="dash-label">PEDIDOS HOJE</span><div class="dash-val money-value" id="totalHoje">R$ 0,00</div></div>
+        <div class="dash-box"><span class="dash-label">SALDO CLIENTES</span><div class="dash-val money-value" id="totalGeral">R$ 0,00</div></div>
     </div>
 
     <details class="dashboard-details">
@@ -634,7 +639,7 @@
         <div id="containerSoma" style="display: none; background: var(--bg); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border);">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-size: 12px; font-weight: bold; color: var(--brown);">TOTAL SELECIONADO:</span>
-                <span id="txtSoma" style="font-size: 18px; font-weight: 800; color: var(--accent);">R$ 0,00</span>
+                <span id="txtSoma" class="money-value" style="font-size: 18px; font-weight: 800; color: var(--accent);">R$ 0,00</span>
             </div>
             <button id="btnPagarSelecionados" class="btn-main" style="margin-top: 10px; background: var(--success);" onclick="processarPagamento(clienteAbertoId)">
                 <i class="fa-solid fa-check-double"></i> PAGAR SELECIONADOS
@@ -691,7 +696,7 @@
     <!-- Preview do produto/valor -->
     <div class="bs-product-preview">
         <span class="bs-product-name" id="bsProductName">—</span>
-        <span class="bs-product-val" id="bsProductVal">R$ 0,00</span>
+        <span class="bs-product-val money-value" id="bsProductVal">R$ 0,00</span>
     </div>
 
     <div class="bs-options">
@@ -737,7 +742,7 @@
             <i class="fa-solid fa-circle-check" style="font-size:28px; color:var(--success);"></i>
         </div>
         <div style="font-weight:800; font-size:16px; color:var(--success);">PAGAMENTO CONFIRMADO! ✨</div>
-        <div id="bsComprovanteValor" style="font-size:22px; font-weight:900; color:var(--accent); margin-top:4px;">R$ 0,00</div>
+        <div id="bsComprovanteValor" class="money-value" style="font-size:22px; font-weight:900; color:var(--accent); margin-top:4px;">R$ 0,00</div>
         <div id="bsComprovanteCliente" style="font-size:11px; color:#999; font-weight:700; margin-top:2px; text-transform:uppercase;"></div>
     </div>
 
@@ -780,9 +785,11 @@
     let _queueIndex = 0;
     let _vendaResults = [];
     let _pendingClienteId = null; 
+    let valoresOcultos = false;
 
     async function checkUser() {
     carregarTema();
+    carregarVisibilidadeValores();
     const { data: { session } } = await _supabase.auth.getSession();
     
     if (session) {
@@ -848,6 +855,26 @@
     }
 
     function carregarTema() { if (localStorage.getItem('tema') === 'dark') document.body.classList.add('dark-mode'); }
+    function atualizarBotaoValores() {
+        const btn = document.getElementById('visibilityBtn');
+        if (!btn) return;
+        btn.title = valoresOcultos ? 'Mostrar valores' : 'Ocultar valores';
+        btn.innerHTML = `<i class="fa-solid ${valoresOcultos ? 'fa-eye-slash' : 'fa-eye'}"></i>`;
+    }
+    function aplicarVisibilidadeValores() {
+        document.body.classList.toggle('hide-values', valoresOcultos);
+        atualizarBotaoValores();
+    }
+    function carregarVisibilidadeValores() {
+        valoresOcultos = localStorage.getItem('valoresOcultos') === 'true';
+        aplicarVisibilidadeValores();
+    }
+    function toggleValores() {
+        valoresOcultos = !valoresOcultos;
+        localStorage.setItem('valoresOcultos', valoresOcultos ? 'true' : 'false');
+        aplicarVisibilidadeValores();
+        setTimeout(renderDashboard, 100);
+    }
     function mascaraData(input) { let v = input.value.replace(/\D/g, ""); if (v.length > 2) v = v.substring(0, 2) + "/" + v.substring(2, 4); input.value = v; }
     
     function configurarRealtime() { 
@@ -966,7 +993,7 @@
                     <div class="btn-pill" onclick="preencherRapido(${c.id}, '${nomeSeguro}', ${p.preco})">
                         <span style="font-size: 16px; margin-bottom: 2px;">${ico}</span>
                         ${p.nome}
-                        <small>R$ ${p.preco.toFixed(2)}</small>
+                        <small class="money-value">R$ ${p.preco.toFixed(2)}</small>
                     </div>`;
                 });
                 
@@ -996,14 +1023,14 @@
                         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
                             <span>${it.qt}x ${it.it}</span>
                             <span style="display: flex; align-items: center; gap: 8px;">
-                                R$ ${(it.qt * it.vl).toFixed(2)}
+                                <span class="money-value">R$ ${(it.qt * it.vl).toFixed(2)}</span>
                                 <i class="fa-solid fa-circle-xmark" style="color: var(--danger); cursor: pointer;" onclick="removerDoCarrinho(${c.id}, ${idx})"></i>
                             </span>
                         </div>`).join('')}
                     </div>
                     <div style="border-top: 1px solid var(--accent); margin-top: 8px; padding-top: 8px; display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; color: var(--accent);">
                         <span>TOTAL CESTA:</span>
-                        <span>R$ ${totalCart.toFixed(2)}</span>
+                        <span class="money-value">R$ ${totalCart.toFixed(2)}</span>
                     </div>
                 </div>`;
             }
@@ -1017,7 +1044,7 @@
                     </div>
                 </div>
                 ${niverHtml}
-                <span class="price-tag">R$ ${saldo.toFixed(2)}</span>
+                <span class="price-tag money-value">R$ ${saldo.toFixed(2)}</span>
                 
                 ${chipsHtml}
                 ${cartHtml}
@@ -1138,11 +1165,23 @@
                     options: {
                         responsive: true,
                         plugins: {
-                            legend: { display: false }
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => valoresOcultos ? 'Recebido: R$ ----' : `Recebido: R$ ${Number(context.parsed.y || 0).toFixed(2)}`
+                                }
+                            }
                         },
                         scales: {
                             x: { ticks: { color: textColor }, grid: { display: false } },
-                            y: { ticks: { color: textColor }, grid: { color: gridColor }, beginAtZero: true }
+                            y: {
+                                ticks: {
+                                    color: textColor,
+                                    callback: (value) => valoresOcultos ? '----' : `R$ ${Number(value).toFixed(2)}`
+                                },
+                                grid: { color: gridColor },
+                                beginAtZero: true
+                            }
                         }
                     }
                 });
@@ -1158,6 +1197,7 @@
         originalToggle();
         setTimeout(renderDashboard, 100);
     };
+    window.toggleValores = toggleValores;
 
     window.abrirHistorico = (id) => {
     sessionStorage.setItem('modalAberto', 'hist-'+id);
@@ -1190,7 +1230,7 @@
         
         itensPendentesGlobal.forEach(i => {
             const qT = i.qtd > 1 ? `${i.qtd}x ` : "";
-            listAbertos.innerHTML += `<label class="item-selecionavel"><input type="checkbox" class="chk-item" data-id="${i.id}" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" data-qtd="${i.qtd}"><div class="item-detalhe"><div><small>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</small><br>${qT}${i.descricao}</div><b>R$ ${i.valor_exibir.toFixed(2)}</b></div></label>`;
+            listAbertos.innerHTML += `<label class="item-selecionavel"><input type="checkbox" class="chk-item" data-id="${i.id}" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" data-qtd="${i.qtd}"><div class="item-detalhe"><div><small>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</small><br>${qT}${i.descricao}</div><b class="money-value">R$ ${i.valor_exibir.toFixed(2)}</b></div></label>`;
         });
 
         document.querySelectorAll('.chk-item').forEach(el => el.addEventListener('change', atualizarSoma));
@@ -1364,7 +1404,7 @@
                     <div style="font-size:10px; opacity:0.8; font-weight:700;">${dataFmt}<br><span style="font-weight:400">${horaFmt}</span></div>
                     <div class="qtd">${i.qtd}x</div>
                     <div>${i.descricao} ${isBrinde ? '<span style="font-size:9px; background:var(--accent); color:#fff; padding:2px 4px; border-radius:4px; margin-left:4px;">BRINDE</span>' : ''}</div>
-                    <div class="valor">R$ ${i.valor_pago.toFixed(2)}</div>
+                    <div class="valor money-value">R$ ${i.valor_pago.toFixed(2)}</div>
                 </div>`;
             });
         }
