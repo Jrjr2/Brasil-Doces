@@ -252,6 +252,166 @@
 
         #containerSoma { background: var(--bg); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border); display: none; }
 
+        #modalHistorico {
+            background: rgba(4, 6, 16, 0.76);
+            backdrop-filter: blur(8px);
+        }
+        #modalHistorico .modal-content {
+            padding: 24px;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .modal-close-btn {
+            width: 40px;
+            min-width: 40px;
+            height: 40px;
+            margin-top: 0;
+            margin-left: auto;
+            padding: 0;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 133, 162, 0.16);
+            background: rgba(255,255,255,0.05);
+            color: #999;
+            box-shadow: none;
+        }
+        .modal-close-btn:hover {
+            color: var(--text);
+            border-color: rgba(255, 133, 162, 0.32);
+            background: rgba(255, 133, 162, 0.12);
+        }
+        .account-modal-name {
+            text-align: center;
+            font-size: 1.55em;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.05;
+            margin: 0 0 6px;
+            color: var(--brown);
+            text-transform: uppercase;
+        }
+        .btn-pix { background: #6c5ce7; color: white; font-weight: 700; border-radius: 12px; }
+        .account-summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .account-stat {
+            padding: 14px 12px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 133, 162, 0.12);
+            background: rgba(255,255,255,0.03);
+        }
+        .account-stat.pending {
+            background: linear-gradient(180deg, rgba(239,68,68,0.10), rgba(239,68,68,0.05));
+            border-color: rgba(239,68,68,0.16);
+        }
+        .account-stat.paid {
+            background: linear-gradient(180deg, rgba(16,185,129,0.10), rgba(16,185,129,0.05));
+            border-color: rgba(16,185,129,0.16);
+        }
+        .account-stat-label {
+            font-size: 0.7em;
+            color: #999;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .account-stat-value {
+            font-size: 1.08em;
+            font-weight: 800;
+            margin: 6px 0 3px;
+        }
+        .account-stat-meta {
+            font-size: 0.75em;
+            color: #999;
+        }
+        .account-section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            color: #999;
+            font-size: 0.78em;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin: 16px 0 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 133, 162, 0.12);
+        }
+        .item-hist {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .item-hist-main {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex: 1;
+        }
+        .item-hist-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+        }
+        .item-hist-date {
+            font-size: 0.72em;
+            color: #8e736b;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        .item-hist-desc {
+            color: var(--text);
+            font-size: 0.92em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .item-hist-qty {
+            font-weight: 800;
+            margin-right: 6px;
+        }
+        .item-hist-value {
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .item-select {
+            width: 22px !important;
+            height: 22px !important;
+            margin: 0 !important;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+        .selection-total {
+            display: none;
+            text-align: center;
+            font-weight: 800;
+            padding: 13px;
+            background: linear-gradient(135deg, rgba(255, 92, 138, 0.92), rgba(245, 158, 11, 0.92));
+            color: white;
+            border-radius: 14px;
+            margin-top: 12px;
+            box-shadow: 0 14px 28px rgba(255, 92, 138, 0.22);
+        }
+        .account-empty {
+            text-align: center;
+            color: #999;
+            padding: 18px 12px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px dashed rgba(255, 133, 162, 0.16);
+        }
+
         @media print {
             body * { visibility: hidden; }
             #modalResumo, #modalResumo * { visibility: visible; }
@@ -626,56 +786,39 @@
 
 <div id="modalHistorico" class="modal">
     <div class="modal-content">
-        <h3 id="nomeClienteModal" style="margin-bottom: 5px; border-bottom: none;"></h3>
-        
-        <div style="text-align: center;">
-    <div class="btn-informar-modal" onclick="enviarZapDoces('informar')">
-        <i class="fa-brands fa-whatsapp"></i> APENAS INFORMAR CONSUMO
-    </div>
-</div>
-        <div id="contaResumoGrid" class="dashboard-grid" style="margin-bottom: 10px;"></div>
-        <span class="modal-section-title">Itens Pendentes</span>
+        <button onclick="fecharModalHistorico()" class="modal-close-btn" aria-label="Fechar conta"><i class="fa-solid fa-xmark"></i></button>
+        <div style="color: #999; text-align: center; font-size: 0.72em; font-weight: 800; letter-spacing: 1.2px; margin-bottom: 6px;">CONTA DO CLIENTE</div>
+        <h3 id="nomeClienteModal" class="account-modal-name"></h3>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 15px;">
+            <button id="btnZapRapido" class="btn-zap" style="border-radius: 12px;">
+                <i class="fa-brands fa-whatsapp"></i> INFORMAR CONSUMO
+            </button>
+            <button id="btnCobrarPix" class="btn-pix">
+                <i class="fa-solid fa-paper-plane"></i> COBRAR PIX
+            </button>
+        </div>
+
+        <button id="btnExtratoPdf" class="btn-action" style="margin-top: 0; margin-bottom: 15px; background:#e67e22; color:white;"><i class="fa-solid fa-file-pdf"></i> EXTRATO PDF</button>
+
         <div id="listaItensModal"></div>
 
-        <span class="modal-section-title">Quitados nos Últimos 30 Dias</span>
-        <div id="resumoContaHistorico" class="extrato-container"></div>
+        <div id="areaPix" style="margin-top: 15px;">
+            <label style="font-size: 0.7em; color: var(--accent); font-weight: 800;">DADOS PARA COBRANCA:</label>
+            <input type="text" id="cfgChavePix" placeholder="Chave PIX (Celular/CPF)" style="font-size: 13px; padding: 12px; margin-top: 8px; margin-bottom: 6px;">
+            <input type="text" id="cfgNomePix" placeholder="Nome do Titular" style="font-size: 13px; padding: 12px; margin: 0;">
+        </div>
 
-        <div id="containerSoma" style="display: none; background: var(--bg); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border);">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 12px; font-weight: bold; color: var(--brown);">TOTAL SELECIONADO:</span>
-                <span id="txtSoma" class="money-value" style="font-size: 18px; font-weight: 800; color: var(--accent);">R$ 0,00</span>
-            </div>
-            <button id="btnPagarSelecionados" class="btn-main" style="margin-top: 10px; background: var(--success);" onclick="processarPagamento(clienteAbertoId)">
-                <i class="fa-solid fa-check-double"></i> PAGAR SELECIONADOS
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top: 12px;">
+            <button id="btnMensagemCarinho" class="btn-action" onclick="enviarZapDoces('obrigado')">
+                <i class="fa-solid fa-heart"></i> AGRADECER
+            </button>
+            <button id="btnPedirNiver" class="btn-action" onclick="enviarZapDoces('aniversario')">
+                <i class="fa-solid fa-gift"></i> ANIVERSARIO
             </button>
         </div>
 
-        <div style="margin-top:20px; display:flex; flex-direction:column; gap:12px;">
-            
-            <div class="box-pix-novo">
-                <span style="font-size: 10px; font-weight: 800; color: #999; text-transform: uppercase; margin-bottom: 8px; display: block;">Dados para Cobrança</span>
-                <input type="text" id="cfgChavePix" placeholder="Chave PIX (Celular/CPF)" style="font-size: 13px; padding: 12px; margin-top: 0; margin-bottom: 6px;">
-                <input type="text" id="cfgNomePix" placeholder="Nome do Titular" style="font-size: 13px; padding: 12px; margin: 0;">
-            </div>
-
-            <button id="btnPixZap" class="btn-zap-novo" onclick="enviarZapDoces('pix')">
-                <i class="fa-solid fa-paper-plane"></i> COBRAR E ENVIAR CHAVE PIX
-            </button>
-
-            <button id="btnMensagemCarinho" class="btn-agradecer-novo" onclick="enviarZapDoces('obrigado')">
-                <i class="fa-solid fa-heart" ></i> AGRADECER PAGAMENTO
-            </button>
-
-            <button onclick="abrirResumoConta(clienteAbertoId)" class="btn-action">
-                <i class="fa-solid fa-file-pdf"></i> SALVAR EXTRATO MENSAL (PDF)
-            </button>
-
-            <button id="btnPedirNiver" style="background: rgba(255, 165, 0, 0.1); color: #e67e22; border: none; border-radius: 16px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 800; padding: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.2s; width: 100%; box-sizing: border-box;" onclick="enviarZapDoces('aniversario')">
-                <i class="fa-solid fa-gift"></i> DESCOBRIR ANIVERSÁRIO
-            </button>
-            
-            <button onclick="fecharModais()" class="btn-fechar-novo">FECHAR CONTA</button>
-        </div>
+        <button onclick="fecharModalHistorico()" class="btn-action" style="margin-top: 20px;">FECHAR</button>
     </div> 
 </div> 
 
@@ -786,6 +929,7 @@
         document.getElementById('modalResumo').style.display = 'none';
         sessionStorage.removeItem('modalAberto'); // Limpa a memória de reabertura ao fechar
     };
+    window.fecharModalHistorico = window.fecharModais;
 
     let itensPendentesGlobal = []; 
     let _pendingVenda = null;
@@ -1199,9 +1343,10 @@
     window.toggleValores = toggleValores;
 
     function obterQuitadosRecentes(cliente) {
-        const itensPagos = cliente.compras.filter(i => i.status === 'pago').map(i => ({ ...i, valor_pago: i.valor_total }));
-        const itensBrindes = cliente.compras.filter(i => i.status === 'brinde').map(i => ({ ...i, valor_pago: 0 }));
-        const itensQuitados = cliente.compras.filter(i => i.status === 'quitado').map(i => ({ ...i, valor_pago: i.valor_total }));
+        const compras = cliente.compras || [];
+        const itensPagos = compras.filter(i => i.status === 'pago').map(i => ({ ...i, valor_pago: i.valor_total }));
+        const itensBrindes = compras.filter(i => i.status === 'brinde').map(i => ({ ...i, valor_pago: 0 }));
+        const itensQuitados = compras.filter(i => i.status === 'quitado').map(i => ({ ...i, valor_pago: i.valor_total }));
         const dataLimite = new Date();
         dataLimite.setDate(dataLimite.getDate() - 30);
 
@@ -1256,37 +1401,67 @@
         const totalQuitado = quitadosRecentes.reduce((acc, i) => acc + (i.valor_pago || 0), 0);
 
         document.getElementById('nomeClienteModal').innerText = c.nome.toUpperCase();
-        document.getElementById('contaResumoGrid').innerHTML = `
-            <div class="dash-box">
-                <span class="dash-label">PENDENTE</span>
-                <div class="dash-val money-value">R$ ${totalPendente.toFixed(2)}</div>
-                <small style="display:block; margin-top:4px; color:#999; font-weight:700;">${itensPendentesGlobal.length} itens</small>
+        let html = '';
+
+        html += `<div class="account-summary-grid">
+            <div class="account-stat pending">
+                <div class="account-stat-label">Pendente</div>
+                <div class="account-stat-value money-value" style="color:var(--danger);">R$ ${totalPendente.toFixed(2)}</div>
+                <div class="account-stat-meta">${itensPendentesGlobal.length} itens</div>
             </div>
-            <div class="dash-box">
-                <span class="dash-label">QUITADO 30 DIAS</span>
-                <div class="dash-val money-value">R$ ${totalQuitado.toFixed(2)}</div>
-                <small style="display:block; margin-top:4px; color:#999; font-weight:700;">${quitadosRecentes.length} itens</small>
-            </div>`;
+            <div class="account-stat paid">
+                <div class="account-stat-label">Quitado 30 dias</div>
+                <div class="account-stat-value money-value" style="color:var(--success);">R$ ${totalQuitado.toFixed(2)}</div>
+                <div class="account-stat-meta">${quitadosRecentes.length} itens</div>
+            </div>
+        </div>`;
+
+        html += `<div class="account-section-title"><span>⚠️ PENDENTE</span><span>${itensPendentesGlobal.length} itens</span></div>`;
+
+        if (itensPendentesGlobal.length === 0) {
+            html += `<div class="account-empty">Nenhum item pendente</div>`;
+        } else {
+            itensPendentesGlobal.forEach(i => {
+                const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
+                html += `<div class="item-hist">
+                    <div class="item-hist-main">
+                        <input type="checkbox" class="item-select chk-item" data-id="${i.id}" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" data-qtd="${i.qtd}" onchange="atualizarSoma()">
+                        <div class="item-hist-copy">
+                            <span class="item-hist-date">${dataF}</span>
+                            <span class="item-hist-desc"><b class="item-hist-qty" style="color:var(--primary)">${i.qtd > 1 ? `${i.qtd}x` : '1x'}</b>${i.descricao}</span>
+                        </div>
+                    </div>
+                    <b class="item-hist-value money-value" style="color:var(--danger)">R$ ${i.valor_exibir.toFixed(2)}</b>
+                </div>`;
+            });
+            html += `<div id="somaSelecionados" class="selection-total"></div>`;
+            html += `<button id="btnBaixaSelecionados" onclick="processarPagamento(clienteAbertoId)" style="display:none; width:100%; margin-top:8px; padding:12px; background:var(--success); color:white; border:none; border-radius:10px; font-weight:700; box-shadow:0 4px 15px rgba(16,185,129,0.4);"><i class="fa-solid fa-check-circle"></i> PAGAR SELECIONADOS</button>`;
+        }
+
+        if (quitadosRecentes.length > 0) {
+            html += `<div class="account-section-title"><span>✅ QUITADO 30 DIAS</span><span>${quitadosRecentes.length} itens</span></div>`;
+            quitadosRecentes.forEach(i => {
+                const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
+                const isBrinde = i.status === 'brinde';
+                html += `<div class="item-hist">
+                    <div class="item-hist-main">
+                        <div class="item-hist-copy" style="margin-left:8px;">
+                            <span class="item-hist-date">${dataF}</span>
+                            <span class="item-hist-desc"><b class="item-hist-qty" style="color:var(--success)">${i.qtd > 1 ? `${i.qtd}x` : '1x'}</b>${i.descricao}${isBrinde ? ' <span style="font-size:9px; background:var(--accent); color:#fff; padding:2px 4px; border-radius:4px; margin-left:4px;">BRINDE</span>' : ''}</span>
+                        </div>
+                    </div>
+                    <b class="item-hist-value money-value" style="color:var(--success)">R$ ${i.valor_pago.toFixed(2)}</b>
+                </div>`;
+            });
+        }
+
         const listAbertos = document.getElementById('listaItensModal');
-        const resumoHistorico = document.getElementById('resumoContaHistorico');
-                listAbertos.innerHTML = itensPendentesGlobal.length === 0 
-            ? `<div style="text-align:center; padding: 30px 20px; background: rgba(16, 185, 129, 0.05); border-radius: 16px; margin: 10px 0 20px 0; border: 1px dashed rgba(16, 185, 129, 0.3); box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.02);">
-                 <i class="fa-solid fa-circle-check" style="font-size: 32px; color: var(--success); margin-bottom: 10px; opacity: 0.9;"></i>
-                 <div style="color: var(--success); font-weight: 800; font-size: 14px; letter-spacing: 0.5px; text-transform: uppercase;">Conta em dia! ✨</div>
-                 <div style="color: #999; font-size: 11px; font-weight: 600; margin-top: 5px;">Não há consumos pendentes para recebimento.</div>
-               </div>` 
-            : '';
-
-        
-        itensPendentesGlobal.forEach(i => {
-            const qT = i.qtd > 1 ? `${i.qtd}x ` : "";
-            listAbertos.innerHTML += `<label class="item-selecionavel"><input type="checkbox" class="chk-item" data-id="${i.id}" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" data-qtd="${i.qtd}"><div class="item-detalhe"><div><small>${new Date(i.data).toLocaleDateString('pt-BR').substring(0,5)}</small><br>${qT}${i.descricao}</div><b class="money-value">R$ ${i.valor_exibir.toFixed(2)}</b></div></label>`;
-        });
-
-        document.querySelectorAll('.chk-item').forEach(el => el.addEventListener('change', atualizarSoma));
-        preencherExtratoQuitados(resumoHistorico, quitadosRecentes);
+        listAbertos.innerHTML = html;
+        document.getElementById('btnZapRapido').onclick = () => enviarZapDoces('informar');
+        document.getElementById('btnCobrarPix').onclick = () => enviarZapDoces('pix');
+        document.getElementById('btnExtratoPdf').onclick = () => abrirResumoConta(id);
+        atualizarSoma();
         document.getElementById('modalHistorico').style.display='block';
-        document.getElementById('containerSoma').style.display='none';
     };
 
             async function enviarZapDoces(tipo) {
@@ -1428,9 +1603,21 @@
     
     window.atualizarSoma = () => {
         let soma = 0;
-        document.querySelectorAll('.chk-item:checked').forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
-        document.getElementById('txtSoma').innerText = `R$ ${soma.toFixed(2)}`;
-        document.getElementById('containerSoma').style.display = soma > 0 ? 'block' : 'none';
+        const selecionados = document.querySelectorAll('.chk-item:checked');
+        selecionados.forEach(cb => soma += parseFloat(cb.getAttribute('data-valor')));
+
+        const divSoma = document.getElementById('somaSelecionados');
+        const btnPagar = document.getElementById('btnBaixaSelecionados');
+        if (divSoma && btnPagar) {
+            if (selecionados.length > 0) {
+                divSoma.style.display = 'block';
+                divSoma.innerHTML = `PAGAR SELECIONADOS (${selecionados.length} itens): R$ ${soma.toFixed(2)}`;
+                btnPagar.style.display = 'flex';
+            } else {
+                divSoma.style.display = 'none';
+                btnPagar.style.display = 'none';
+            }
+        }
     };
 
     // ======= COMPROVANTE PÓS-PAGAMENTO =======
