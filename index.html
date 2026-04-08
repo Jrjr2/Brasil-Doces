@@ -968,8 +968,8 @@
             </div>
         </button>
 
-        <button class="bs-btn-confirm" id="btnConfirmarTipoVenda" onclick="confirmarVendaSelecionada()" disabled>
-            <i class="fa-solid fa-check"></i> CONFIRMAR ESCOLHA
+        <button class="bs-btn-confirm" id="btnConfirmarTipoVenda" onclick="salvarFilaVenda()" disabled>
+            <i class="fa-solid fa-check"></i> SALVAR
         </button>
 
         <button class="bs-btn-cancel" onclick="fecharBottomSheet()">✕ Cancelar</button>
@@ -1034,12 +1034,24 @@
     let valoresOcultos = false;
     let _tipoVendaSelecionado = null;
 
+    async function limparSessaoExpirada() {
+        await _supabase.auth.signOut();
+        document.getElementById('authContainer').style.display = 'flex';
+        document.getElementById('mainContainer').style.display = 'none';
+        alert('Sua sessao expirou. Faca login novamente.');
+    }
+
     async function checkUser() {
     carregarTema();
     carregarVisibilidadeValores();
     const { data: { session } } = await _supabase.auth.getSession();
     
     if (session) {
+        const { error: userError } = await _supabase.auth.getUser();
+        if (userError) {
+            await limparSessaoExpirada();
+            return;
+        }
         document.getElementById('authContainer').style.display = 'none';
         document.getElementById('mainContainer').style.display = 'block';
         
@@ -1080,6 +1092,10 @@
         const { data, error } = await _supabase.from('configuracoes').select('*').limit(1).single();
         
         if (error && error.code !== 'PGRST116') {
+            if ((error.message || '').toLowerCase().includes('jwt expired')) {
+                await limparSessaoExpirada();
+                return;
+            }
             alert("⚠️ Erro ao buscar Pìx do Banco: " + error.message);
         }
 
@@ -1133,6 +1149,14 @@
         if (tipo === 'brinde') return 'Brinde';
         if (tipo === 'conta') return 'Anotar';
         return 'Pendente';
+    }
+    function atualizarBotaoSalvarFila() {
+        const btnConfirmar = document.getElementById('btnConfirmarTipoVenda');
+        if (!btnConfirmar) return;
+
+        const faltantes = _vendaResults.filter(res => !res).length;
+        btnConfirmar.disabled = faltantes > 0;
+        btnConfirmar.innerHTML = `<i class="fa-solid fa-check"></i> ${faltantes > 0 ? `SALVAR (${_vendaQueue.length - faltantes}/${_vendaQueue.length})` : 'SALVAR'}`;
     }
     function mascaraData(input) { let v = input.value.replace(/\D/g, ""); if (v.length > 2) v = v.substring(0, 2) + "/" + v.substring(2, 4); input.value = v; }
     
@@ -1839,7 +1863,6 @@
 
     function abrirFilaNoModal() {
         if (_queueIndex >= _vendaQueue.length || !_vendaQueue.length) {
-            finalizarVendaEmLote();
             return;
         }
 
@@ -1852,13 +1875,6 @@
         document.querySelectorAll('#bottomSheet .bs-btn[data-tipo]').forEach(btn => {
             btn.classList.toggle('selected', btn.getAttribute('data-tipo') === _tipoVendaSelecionado);
         });
-
-        const btnConfirmar = document.getElementById('btnConfirmarTipoVenda');
-        if (btnConfirmar) {
-            const faltamOutros = _vendaResults.some((res, idx) => idx !== _queueIndex && !res);
-            btnConfirmar.disabled = !_tipoVendaSelecionado;
-            btnConfirmar.innerHTML = `<i class="fa-solid fa-check"></i> ${faltamOutros ? 'CONFIRMAR E PROXIMO' : 'CONFIRMAR E SALVAR'}`;
-        }
 
         const tabs = document.getElementById('bsQueueTabs');
         if (tabs) {
@@ -1874,6 +1890,8 @@
             }).join('');
         }
 
+        atualizarBotaoSalvarFila();
+
         document.getElementById('bsOverlay').classList.add('active');
         document.getElementById('bottomSheet').classList.add('active');
     }
@@ -1885,33 +1903,25 @@
     };
 
     window.selecionarTipoVenda = (tipo) => {
+        const item = _vendaQueue[_queueIndex];
+        if (!item) return;
+
+        _vendaResults[_queueIndex] = { ...item, tipo };
         _tipoVendaSelecionado = tipo;
         document.querySelectorAll('#bottomSheet .bs-btn[data-tipo]').forEach(btn => {
             btn.classList.toggle('selected', btn.getAttribute('data-tipo') === tipo);
         });
-        const btnConfirmar = document.getElementById('btnConfirmarTipoVenda');
-        if (btnConfirmar) btnConfirmar.disabled = false;
-    };
-
-    window.confirmarVendaSelecionada = () => {
-        if (!_tipoVendaSelecionado) return;
-        const item = _vendaQueue[_queueIndex];
-        _vendaResults[_queueIndex] = { ...item, tipo: _tipoVendaSelecionado };
 
         const proximoPendente = _vendaResults.findIndex((res, idx) => idx > _queueIndex && !res);
         if (proximoPendente !== -1) {
             _queueIndex = proximoPendente;
-            abrirFilaNoModal();
-            return;
         }
 
-        const primeiroPendente = _vendaResults.findIndex(res => !res);
-        if (primeiroPendente !== -1) {
-            _queueIndex = primeiroPendente;
-            abrirFilaNoModal();
-            return;
-        }
+        abrirFilaNoModal();
+    };
 
+    window.salvarFilaVenda = () => {
+        if (_vendaResults.some(res => !res)) return;
         fecharBottomSheet();
         finalizarVendaEmLote();
     };
