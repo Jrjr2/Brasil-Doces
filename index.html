@@ -921,7 +921,7 @@
         </summary>
         <div class="analytics-container" id="analyticsDashboard">
             <div class="chart-box">
-                <div class="chart-title"><i class="fa-solid fa-chart-line"></i> Faturamento</div>
+                <div class="chart-title"><i class="fa-solid fa-chart-line"></i> Faturamento por Mes</div>
                 <canvas id="faturamentoChart" height="200"></canvas>
             </div>
             <div class="chart-box">
@@ -1531,31 +1531,22 @@
                 }
             }
 
-            // 2. Processar Gráfico de Faturamento por Dia (Últimos 7 dias)
-            const faturamentoPorDia = {};
-            for(let i=6; i>=0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const rot = d.toLocaleDateString('pt-BR').substring(0,5);
-                faturamentoPorDia[rot] = 0;
-            }
+            // 2. Processar Gráfico de Faturamento por Mês (Ano Atual)
+            const anoAtual = new Date().getFullYear();
+            const nomesMeses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            const faturamentoPorMes = new Array(12).fill(0);
 
             todasCompras.forEach(compra => {
-                if (compra.valor_total < 0 && compra.data && compra.descricao === "PAGAMENTO EFETUADO") {
+                if (compra.valor_total < 0 && compra.data && compra.status === 'pagamento') {
                     const dataObj = new Date(compra.data);
-                    const limite = new Date();
-                    limite.setDate(limite.getDate() - 7);
-                    if (dataObj >= limite) {
-                        const rot = dataObj.toLocaleDateString('pt-BR').substring(0,5);
-                        if (faturamentoPorDia[rot] !== undefined) {
-                            faturamentoPorDia[rot] += Math.abs(compra.valor_total); // lucro q entrou
-                        }
+                    if (dataObj.getFullYear() === anoAtual) {
+                        faturamentoPorMes[dataObj.getMonth()] += Math.abs(compra.valor_total);
                     }
                 }
             });
 
-            const labels = Object.keys(faturamentoPorDia);
-            const dataValues = Object.values(faturamentoPorDia);
+            const labels = nomesMeses;
+            const dataValues = faturamentoPorMes;
 
             const isDark = document.body.classList.contains('dark-mode');
             const textColor = isDark ? '#f4e9ed' : '#5d4037';
@@ -1568,19 +1559,17 @@
                 Chart.defaults.font.family = "'Inter', sans-serif";
                 
                 profitChart = new Chart(ctx, {
-                    type: 'line',
+                    type: 'bar',
                     data: {
                         labels: labels,
                         datasets: [{
                             label: 'Recebido R$',
                             data: dataValues,
                             borderColor: '#ff5c8a',
-                            backgroundColor: 'rgba(255, 92, 138, 0.2)',
-                            tension: 0.4,
-                            fill: true,
-                            pointBackgroundColor: '#fff',
-                            pointBorderColor: '#ff5c8a',
-                            pointRadius: 4
+                            backgroundColor: 'rgba(255, 92, 138, 0.72)',
+                            borderRadius: 10,
+                            borderSkipped: false,
+                            maxBarThickness: 28
                         }]
                     },
                     options: {
@@ -1622,22 +1611,42 @@
 
     function obterQuitadosRecentes(cliente) {
         const compras = cliente.compras || [];
+        const hoje = new Date();
+        const mesAtual = hoje.getMonth();
+        const anoAtual = hoje.getFullYear();
         const itensPagos = compras.filter(i => i.status === 'pago').map(i => ({ ...i, valor_pago: i.valor_total }));
         const itensBrindes = compras.filter(i => i.status === 'brinde').map(i => ({ ...i, valor_pago: 0 }));
         const itensQuitados = compras.filter(i => i.status === 'quitado').map(i => ({ ...i, valor_pago: i.valor_total }));
-        const dataLimite = new Date();
-        dataLimite.setDate(dataLimite.getDate() - 30);
 
         return [...itensPagos, ...itensBrindes, ...itensQuitados]
             .sort((a, b) => new Date(a.data) - new Date(b.data))
-            .filter(i => new Date(i.data) >= dataLimite);
+            .filter(i => {
+                const dataItem = new Date(i.data);
+                return dataItem.getMonth() === mesAtual && dataItem.getFullYear() === anoAtual;
+            });
+    }
+    function obterQuitadosPdf(cliente) {
+        const compras = cliente.compras || [];
+        const hoje = new Date();
+        const inicioMesAnterior = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+
+        const itensPagos = compras.filter(i => i.status === 'pago').map(i => ({ ...i, valor_pago: i.valor_total }));
+        const itensBrindes = compras.filter(i => i.status === 'brinde').map(i => ({ ...i, valor_pago: 0 }));
+        const itensQuitados = compras.filter(i => i.status === 'quitado').map(i => ({ ...i, valor_pago: i.valor_total }));
+
+        return [...itensPagos, ...itensBrindes, ...itensQuitados]
+            .sort((a, b) => new Date(a.data) - new Date(b.data))
+            .filter(i => {
+                const dataItem = new Date(i.data);
+                return dataItem >= inicioMesAnterior;
+            });
     }
 
     function preencherExtratoQuitados(container, quitadosRecentes) {
         container.innerHTML = '<div class="extrato-header" style="grid-template-columns: 85px 35px 1fr 70px;"><div>DATA/HORA</div><div>QTD</div><div>PRODUTO</div><div style="text-align:right">PAGO</div></div>';
 
         if (quitadosRecentes.length === 0) {
-            container.innerHTML += '<div style="text-align:center; padding: 20px; color: #999; font-size:12px;">Nenhum produto quitado ou recente (ultimos 30 dias).</div>';
+            container.innerHTML += '<div style="text-align:center; padding: 20px; color: #999; font-size:12px;">Nenhum produto recebido no periodo.</div>';
             return;
         }
 
@@ -1690,9 +1699,9 @@
                 <div class="account-stat-meta">${itensPendentesGlobal.length} itens</div>
             </div>
             <div class="account-stat paid">
-                <div class="account-stat-label">Quitado 30 dias</div>
+                <div class="account-stat-label">Valores ja recebidos</div>
                 <div class="account-stat-value money-value" style="color:var(--success);">R$ ${totalQuitado.toFixed(2)}</div>
-                <div class="account-stat-meta">${quitadosRecentes.length} itens</div>
+                <div class="account-stat-meta">${quitadosRecentes.length} itens no mes</div>
             </div>
         </div>`;
 
@@ -1718,7 +1727,7 @@
         }
 
         if (quitadosRecentesAgrupados.length > 0) {
-            html += `<div class="account-section-title"><span>✅ QUITADO 30 DIAS</span><span>${quitadosRecentes.length} itens</span></div>`;
+            html += `<div class="account-section-title"><span>✅ RECEBIDOS NO MES</span><span>${quitadosRecentes.length} itens</span></div>`;
             quitadosRecentesAgrupados.forEach(i => {
                 html += `<div class="item-hist">
                     <div class="item-hist-main">
@@ -1849,8 +1858,13 @@
             const totalJaPago = totalPagoDoMes + totalQuitadoDoMes;
             const temPagamentoNoMes = totalJaPago > 0;
             const temBrindeNoMes = itensBrindesDoMes.length > 0;
+            const itensRecebidosDoMes = agruparItensConta([
+                ...itensPagosDoMes.map(i => ({ ...i, valor_exibir: i.valor_total, status: 'pago' })),
+                ...quitadosDoMes.map(i => ({ ...i, valor_exibir: i.valor_total, status: 'quitado' }))
+            ], 'valor_exibir');
 
             let listaConta = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+            let listaRecebidos = itensRecebidosDoMes.map(i => `   ✓ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor.toFixed(2)}`).join('%0A');
             
             if (!temPagamentoNoMes) {
                 texto = `Oi! ✨ Passando para te deixar ciente do que está anotado na sua conta aqui na Brasil Doces:%0A%0A`;
@@ -1863,6 +1877,9 @@
             } else {
                 texto = `Oi! ✨ Passando para te deixar ciente das suas movimentações aqui na Brasil Doces:%0A%0A`;
                 texto += `📒 *ITENS NA CONTA:*%0A${listaConta}%0A%0A`;
+                if (itensRecebidosDoMes.length > 0) {
+                    texto += `💚 *JA RECEBIDOS NO MES:*%0A${listaRecebidos}%0A%0A`;
+                }
                 if (temBrindeNoMes) {
                     texto += `🎁 *BRINDES:*%0A`;
                     texto += itensBrindesDoMes.map(i => `   🎉 ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}`).join('%0A') + '%0A%0A';
@@ -1890,7 +1907,7 @@
         
         const c = dbClientes.find(x => x.id === id);
         document.getElementById('nomeClienteResumo').innerText = c.nome.toUpperCase();
-        preencherExtratoQuitados(document.getElementById('corpoExtrato'), obterQuitadosRecentes(c));
+        preencherExtratoQuitados(document.getElementById('corpoExtrato'), obterQuitadosPdf(c));
         
         document.getElementById('modalResumo').style.display = 'block';
     };
