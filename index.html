@@ -1764,11 +1764,33 @@
         } else if (tipo === 'informar') {
             if (itensParaEnviar.length === 0) return alert("Não há itens para informar!");
 
-            // Aqui tbm a quantidade para apenas informar
-            let listaMsg = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+            const totalPendente = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
+            const totalPagoDoMes = itensPagosDoMes.reduce((acc, i) => acc + (i.valor_total || 0), 0);
+            const totalQuitadoDoMes = quitadosDoMes.reduce((acc, i) => acc + (i.valor_total || 0), 0);
+            const totalJaPago = totalPagoDoMes + totalQuitadoDoMes;
+            const temPagamentoNoMes = totalJaPago > 0;
+            const temBrindeNoMes = itensBrindesDoMes.length > 0;
+
+            let listaConta = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
             
-            texto = `Oi! ✨ Passando para te deixar ciente das suas últimas escolhas aqui na Brasil Doces:%0A%0A`;
-            texto += `${listaMsg}%0A%0A`;
+            if (!temPagamentoNoMes) {
+                texto = `Oi! ✨ Passando para te deixar ciente do que está anotado na sua conta aqui na Brasil Doces:%0A%0A`;
+                texto += `📒 *ITENS NA CONTA:*%0A${listaConta}%0A%0A`;
+                if (temBrindeNoMes) {
+                    texto += `🎁 *BRINDES:*%0A`;
+                    texto += itensBrindesDoMes.map(i => `   🎉 ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}`).join('%0A') + '%0A%0A';
+                }
+                texto += `📒 *VALOR TOTAL PENDENTE: R$ ${totalPendente.toFixed(2)}*%0A%0A`;
+            } else {
+                texto = `Oi! ✨ Passando para te deixar ciente das suas movimentações aqui na Brasil Doces:%0A%0A`;
+                texto += `📒 *ITENS NA CONTA:*%0A${listaConta}%0A%0A`;
+                if (temBrindeNoMes) {
+                    texto += `🎁 *BRINDES:*%0A`;
+                    texto += itensBrindesDoMes.map(i => `   🎉 ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}`).join('%0A') + '%0A%0A';
+                }
+                texto += `💚 *VALOR JA PAGO NO MES: R$ ${totalJaPago.toFixed(2)}*%0A`;
+                texto += `📒 *VALOR TOTAL PENDENTE: R$ ${totalPendente.toFixed(2)}*%0A%0A`;
+            }
             texto += `É só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
             
         } else if (tipo === 'obrigado') {
