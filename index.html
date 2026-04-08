@@ -147,6 +147,7 @@
         .btn-theme { background: var(--card); border: 1px solid var(--border); color: var(--accent); width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; }
         .money-value { transition: filter 0.2s ease, opacity 0.2s ease; }
         body.hide-values .money-value { filter: blur(6px); user-select: none; }
+        body.hide-values .money-value.keep-visible { filter: none; user-select: auto; }
 
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
@@ -172,7 +173,29 @@
 
         .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 18px; border: 1px solid var(--border); border-left: 5px solid var(--primary); position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .client-summary-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
         .price-tag { color: var(--brown); font-size: 1.8em; font-weight: 900; margin-bottom: 12px; display: block; }
+        .client-status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 0.72em;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+        }
+        .client-status-badge.is-pending {
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.22);
+            color: #dc2626;
+        }
+        .client-status-badge.is-clear {
+            background: rgba(16,185,129,0.12);
+            border: 1px solid rgba(16,185,129,0.22);
+            color: var(--success);
+        }
 
         input { width: 100%; padding: 14px; margin: 6px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); box-sizing: border-box; font-size: 16px; outline: none; }
         button { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
@@ -490,7 +513,7 @@
         }
 
                 /* ----- APLICA O VISUAL BOUTIQUE NA TELA INICIAL ----- */
-        /* Faz o botão principal ADICIONAR CLIENTE e ANOTAR PEDIDO ganhar o gradiente do PIX */
+        /* Faz o botão principal ADICIONAR CLIENTE e ANOTAR ganhar o gradiente do PIX */
         .btn-main { 
             background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); 
             color: white; 
@@ -630,6 +653,11 @@
             transition: all 0.2s;
         }
         .bs-btn:active { transform: scale(0.97); }
+        .bs-btn.selected {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+            outline: 2px solid rgba(255, 255, 255, 0.35);
+        }
         .bs-btn .bs-icon {
             width: 44px; height: 44px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
@@ -678,11 +706,22 @@
             width: 100%;
             padding: 10px;
         }
+        .bs-btn-confirm {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            color: white;
+            box-shadow: 0 8px 24px rgba(255, 92, 138, 0.28);
+        }
+        .bs-btn-confirm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
 
         /* Dark mode adaptations */
         body.dark-mode .bs-btn-pago   { color: #34d399; background: rgba(16,185,129,0.12); }
         body.dark-mode .bs-btn-brinde { color: #fbbf24; background: rgba(255,165,0,0.12); }
         body.dark-mode .bs-btn-conta  { color: var(--accent); background: rgba(255,92,138,0.12); }
+        body.dark-mode .bs-btn.selected { outline-color: rgba(255,255,255,0.18); }
 
 
     </style>
@@ -851,31 +890,32 @@
     </div>
 
     <div class="bs-options">
-        <!-- Opção 1: Pagou na hora -->
-        <button class="bs-btn bs-btn-pago" onclick="confirmarVenda('pago')">
+        <button class="bs-btn bs-btn-pago" data-tipo="pago" onclick="selecionarTipoVenda('pago')">
             <div class="bs-icon">💰</div>
             <div class="bs-text">
-                <span>PAGOU AGORA</span>
-                <small>Registra e dá baixa automática</small>
+                <span>PAGAMENTO</span>
+                <small>Recebido agora, com baixa automatica</small>
             </div>
         </button>
 
-        <!-- Opção 2: Brinde de aniversário -->
-        <button class="bs-btn bs-btn-brinde" onclick="confirmarVenda('brinde')">
+        <button class="bs-btn bs-btn-brinde" data-tipo="brinde" onclick="selecionarTipoVenda('brinde')">
             <div class="bs-icon">🎁</div>
             <div class="bs-text">
-                <span>BRINDE / CORTESIA</span>
-                <small>Sem cobrança, marca como presenteado</small>
+                <span>BRINDE</span>
+                <small>Sem cobranca, marca como cortesia</small>
             </div>
         </button>
 
-        <!-- Opção 3: Anotar na conta -->
-        <button class="bs-btn bs-btn-conta" onclick="confirmarVenda('conta')">
+        <button class="bs-btn bs-btn-conta" data-tipo="conta" onclick="selecionarTipoVenda('conta')">
             <div class="bs-icon">📒</div>
             <div class="bs-text">
-                <span>ANOTAR NA CONTA</span>
+                <span>ANOTAR</span>
                 <small>Fica pendente para cobrar depois</small>
             </div>
+        </button>
+
+        <button class="bs-btn-confirm" id="btnConfirmarTipoVenda" onclick="confirmarVendaSelecionada()" disabled>
+            <i class="fa-solid fa-check"></i> CONFIRMAR ESCOLHA
         </button>
 
         <button class="bs-btn-cancel" onclick="fecharBottomSheet()">✕ Cancelar</button>
@@ -938,6 +978,7 @@
     let _vendaResults = [];
     let _pendingClienteId = null; 
     let valoresOcultos = false;
+    let _tipoVendaSelecionado = null;
 
     async function checkUser() {
     carregarTema();
@@ -1096,6 +1137,12 @@
                     return i.valor_total > 0 && status === 'pendente';
                 })
                 .reduce((acc, i) => acc + (i.valor_total || 0), 0);
+            const pendentes = comprasValidas.filter(i => {
+                const status = i.status || 'pago';
+                return i.valor_total > 0 && status === 'pendente';
+            });
+            const textoPendencia = pendentes.length === 0 ? 'Conta em dia' : `${pendentes.length} pendente${pendentes.length > 1 ? 's' : ''}`;
+            const classePendencia = pendentes.length === 0 ? 'is-clear' : 'is-pending';
             totalG += saldo;
 
             comprasValidas.forEach(cp => {
@@ -1167,14 +1214,14 @@
                         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
                             <span>${it.qt}x ${it.it}</span>
                             <span style="display: flex; align-items: center; gap: 8px;">
-                                <span class="money-value">R$ ${(it.qt * it.vl).toFixed(2)}</span>
+                                <span class="money-value keep-visible">R$ ${(it.qt * it.vl).toFixed(2)}</span>
                                 <i class="fa-solid fa-circle-xmark" style="color: var(--danger); cursor: pointer;" onclick="removerDoCarrinho(${c.id}, ${idx})"></i>
                             </span>
                         </div>`).join('')}
                     </div>
                     <div style="border-top: 1px solid var(--accent); margin-top: 8px; padding-top: 8px; display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; color: var(--accent);">
                         <span>TOTAL CESTA:</span>
-                        <span class="money-value">R$ ${totalCart.toFixed(2)}</span>
+                        <span class="money-value keep-visible">R$ ${totalCart.toFixed(2)}</span>
                     </div>
                 </div>`;
             }
@@ -1188,7 +1235,10 @@
                     </div>
                 </div>
                 ${niverHtml}
-                <span class="price-tag money-value">R$ ${saldo.toFixed(2)}</span>
+                <div class="client-summary-row">
+                    <span class="price-tag money-value">R$ ${saldo.toFixed(2)}</span>
+                    <span class="client-status-badge ${classePendencia}">${textoPendencia}</span>
+                </div>
                 
                 ${chipsHtml}
                 ${cartHtml}
@@ -1197,7 +1247,7 @@
                     <input type="text" id="it-${c.id}" placeholder="🔍 Pesquisa" onfocus="focarBotaoInteligente(this)" oninput="window.filtrarDocesCard(this, ${c.id})">
                 </div>
 
-                <button class="btn-main" onclick="salvarVenda(${c.id})">${itemsCart.length > 0 ? 'CONFIRMAR VENDA' : 'ANOTAR PEDIDO'}</button>
+                <button class="btn-main" onclick="salvarVenda(${c.id})">${itemsCart.length > 0 ? 'CONFIRMAR VENDA' : 'ANOTAR'}</button>
                 <div style="display:grid; grid-template-columns: 1fr; gap:8px;">
                     <button class="btn-action" onclick="abrirHistorico(${c.id})"><i class="fa-solid fa-wallet"></i> CONTA</button>
                 </div>`;
@@ -1735,17 +1785,34 @@
 
         const item = _vendaQueue[_queueIndex];
         const progresso = `(${_queueIndex + 1} de ${_vendaQueue.length})`;
+        _tipoVendaSelecionado = null;
         
         document.getElementById('bsProductName').innerText = `${progresso} ${item.it}`;
         document.getElementById('bsProductVal').innerText  = `R$ ${(item.qt * item.vl).toFixed(2)}`;
+        document.querySelectorAll('#bottomSheet .bs-btn[data-tipo]').forEach(btn => btn.classList.remove('selected'));
+        document.getElementById('btnConfirmarTipoVenda').disabled = true;
 
         document.getElementById('bsOverlay').classList.add('active');
         document.getElementById('bottomSheet').classList.add('active');
     }
 
+    window.selecionarTipoVenda = (tipo) => {
+        _tipoVendaSelecionado = tipo;
+        document.querySelectorAll('#bottomSheet .bs-btn[data-tipo]').forEach(btn => {
+            btn.classList.toggle('selected', btn.getAttribute('data-tipo') === tipo);
+        });
+        document.getElementById('btnConfirmarTipoVenda').disabled = false;
+    };
+
+    window.confirmarVendaSelecionada = () => {
+        if (!_tipoVendaSelecionado) return;
+        confirmarVenda(_tipoVendaSelecionado);
+    };
+
     window.confirmarVenda = (tipo) => {
         const item = _vendaQueue[_queueIndex];
         _vendaResults.push({ ...item, tipo });
+        _tipoVendaSelecionado = null;
 
         _queueIndex++;
         if (_queueIndex < _vendaQueue.length) {
@@ -1814,6 +1881,10 @@
     }
 
     window.fecharBottomSheet = () => {
+        _tipoVendaSelecionado = null;
+        const btnConfirmar = document.getElementById('btnConfirmarTipoVenda');
+        if (btnConfirmar) btnConfirmar.disabled = true;
+        document.querySelectorAll('#bottomSheet .bs-btn[data-tipo]').forEach(btn => btn.classList.remove('selected'));
         document.getElementById('bottomSheet').classList.remove('active');
         document.getElementById('bsOverlay').classList.remove('active');
     };
