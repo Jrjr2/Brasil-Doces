@@ -170,6 +170,85 @@
         .top-product-item .nome { font-weight: 700; font-size: 13px; color: var(--text); }
         .top-product-item .qtd { font-weight: 800; color: var(--primary); font-size: 13px; background: rgba(255,255,255,0.5); padding: 2px 8px; border-radius: 10px; }
         body.dark-mode .top-product-item .qtd { background: rgba(0,0,0,0.3); }
+        .section-card {
+            border-radius: 22px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%), var(--card);
+            box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+        }
+        .section-title-row { display:flex; justify-content:space-between; align-items:center; }
+        .section-title {
+            display:flex;
+            align-items:center;
+            gap:10px;
+            font-weight:700;
+            color:var(--text);
+            font-size:0.92em;
+            letter-spacing:0.4px;
+        }
+        .section-title i {
+            width:34px;
+            height:34px;
+            border-radius:12px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background: rgba(255, 92, 138, 0.14);
+            color: var(--accent);
+        }
+        .chart-empty, .top-empty {
+            text-align: center;
+            color: #999;
+            padding: 18px 12px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px dashed rgba(255, 133, 162, 0.16);
+        }
+        .top-item {
+            display:flex;
+            align-items:center;
+            gap:12px;
+            padding:12px;
+            margin-bottom:10px;
+            border-radius:16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255, 133, 162, 0.10);
+        }
+        .top-rank {
+            width:36px;
+            height:36px;
+            border-radius:14px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:800;
+            color:#111;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
+        }
+        .top-meta { flex:1; min-width:0; }
+        .top-name {
+            font-weight:800;
+            font-size:0.92em;
+            color:var(--text);
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        .top-sub {
+            font-size:0.78em;
+            color:#999;
+            margin-top:2px;
+        }
+        .top-track {
+            margin-top:8px;
+            height:7px;
+            border-radius:999px;
+            background: rgba(255,255,255,0.06);
+            overflow:hidden;
+        }
+        .top-fill {
+            height:100%;
+            border-radius:999px;
+        }
 
         .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 18px; border: 1px solid var(--border); border-left: 5px solid var(--primary); position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -842,14 +921,14 @@
         </summary>
         <div class="analytics-container" id="analyticsDashboard">
             <div class="chart-box">
-                <div class="chart-title"><i class="fa-solid fa-chart-line"></i> Faturamento (7 Dias)</div>
+                <div class="chart-title"><i class="fa-solid fa-chart-line"></i> Faturamento</div>
                 <canvas id="faturamentoChart" height="200"></canvas>
             </div>
             <div class="chart-box">
                 <div class="chart-title"><i class="fa-solid fa-star"></i> Top 3 - Mais Vendidos</div>
-                <ul class="top-products-list" id="topProductsList">
-                    <li style="text-align:center; font-size:12px; color:#999;">Carregando...</li>
-                </ul>
+                <div id="top3Container">
+                    <div class="top-empty">Carregando...</div>
+                </div>
             </div>
         </div>
     </details>
@@ -1428,17 +1507,27 @@
             arrayProd.sort((a, b) => b.qtd - a.qtd);
             const top3 = arrayProd.slice(0, 3);
 
-            const ulTop = document.getElementById('topProductsList');
-            if (ulTop) {
+            const top3Container = document.getElementById('top3Container');
+            if (top3Container) {
                 if (top3.length === 0) {
-                    ulTop.innerHTML = '<li style="text-align:center; padding: 10px; font-size:12px; color:#999;">Ainda não há produtos registrados.</li>';
+                    top3Container.innerHTML = '<div class="top-empty">Ainda não há produtos registrados.</div>';
                 } else {
-                    ulTop.innerHTML = top3.map(p => `
-                        <li class="top-product-item">
-                            <span class="nome">${p.nome}</span>
-                            <span class="qtd">${p.qtd}x</span>
-                        </li>
-                    `).join('');
+                    const cores = ['#f6d365', '#4facfe', '#a18cd1'];
+                    const maxQtd = Math.max(...top3.map(p => p.qtd), 1);
+                    top3Container.innerHTML = top3.map((p, idx) => {
+                        const largura = (p.qtd / maxQtd) * 100;
+                        return `
+                            <div class="top-item">
+                                <div class="top-rank" style="background:${cores[idx]};">${idx + 1}</div>
+                                <div class="top-meta">
+                                    <div class="top-name">${p.nome}</div>
+                                    <div class="top-sub">${p.qtd} unidades vendidas</div>
+                                    <div class="top-track">
+                                        <div class="top-fill" style="width:${largura}%; background:${cores[idx]};"></div>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }).join('');
                 }
             }
 
@@ -1694,17 +1783,7 @@
 
         const itensPagosDoMes = comprasDoMes.filter(i => i.status === 'pago' || (i.valor_total > 0 && !i.status));
         const itensBrindesDoMes = comprasDoMes.filter(i => i.status === 'brinde');
-        
-        // Calcula quitados via pagamento
-        let totalPagos = Math.abs(c.compras.filter(i => i.valor_total < 0).reduce((acc, i) => acc + i.valor_total, 0));
-        const pendentesDoMes = comprasDoMes.filter(i => !i.status || i.status === 'pendente');
-        let quitadosDoMes = [];
-        pendentesDoMes.forEach(item => {
-            if (totalPagos >= item.valor_total) {
-                quitadosDoMes.push({...item});
-                totalPagos -= item.valor_total;
-            }
-        });
+        const quitadosDoMes = comprasDoMes.filter(i => i.status === 'quitado');
 
         let texto = "";
 
