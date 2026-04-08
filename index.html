@@ -2050,7 +2050,15 @@
         const nomeTitular = inputNome && inputNome.value ? inputNome.value : (pixConfig ? pixConfig.nome_pix : '');
 
         if (chave && (tipo === 'pix')) {
-            _supabase.from('configuracoes').upsert({ id: 1, chave_pix: chave, nome_pix: nomeTitular }).then();
+            const { data: configAtualizada, error: pixSaveError } = await _supabase.rpc('salvar_configuracoes_pix', {
+                p_chave_pix: chave,
+                p_nome_pix: nomeTitular
+            });
+            if (pixSaveError) {
+                alert('Nao foi possivel salvar a configuracao do PIX: ' + pixSaveError.message);
+            } else if (configAtualizada) {
+                pixConfig = configAtualizada;
+            }
         }
 
         const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
@@ -2239,29 +2247,24 @@
             qtd  : parseInt(cb.getAttribute('data-qtd')) || 1,
             valor: parseFloat(cb.getAttribute('data-valor'))
         }));
+        const idsSelecionados = itensSelecionados.flatMap(item => item.ids || []);
 
         if (!confirm(`Confirmar pagamento de R$ ${soma.toFixed(2)}?`)) return;
 
-        // Primeiro: atualiza o status dos itens selecionados para 'quitado'
-        for (const item of itensSelecionados) {
-            if (item.ids && item.ids.length > 0) {
-                await _supabase.from('compras').update({ status: 'quitado' }).in('id', item.ids);
-            }
-        }
-
-        // Segundo: insere o registro de pagamento negativo
-        const { error } = await _supabase.from('compras').insert([
-            { cliente_id: clienteId, descricao: "PAGAMENTO EFETUADO", valor_total: -soma, status: 'pagamento' }
-        ]);
+        const { data, error } = await _supabase.rpc('processar_pagamento', {
+            p_cliente_id: clienteId,
+            p_item_ids: idsSelecionados
+        });
 
         if (error) {
             alert("Erro: " + error.message);
         } else {
+            const somaFinal = Number(data && data.valor_pago ? data.valor_pago : soma);
             fecharModais();
-            _comprovanteData = { clienteId, soma, itens: itensSelecionados };
+            _comprovanteData = { clienteId, soma: somaFinal, itens: itensSelecionados };
 
             const c = dbClientes.find(x => x.id === clienteId);
-            document.getElementById('bsComprovanteValor').innerText  = `R$ ${soma.toFixed(2)}`;
+            document.getElementById('bsComprovanteValor').innerText  = `R$ ${somaFinal.toFixed(2)}`;
             document.getElementById('bsComprovanteCliente').innerText = c ? c.nome : '';
 
             document.getElementById('bsComprovanteOverlay').classList.add('active');
