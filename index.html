@@ -628,6 +628,58 @@
             text-align: center;
             margin-bottom: 8px;
         }
+        .bs-queue-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            margin-bottom: 12px;
+        }
+        .bs-queue-tab {
+            min-width: 90px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: flex-start;
+            justify-content: center;
+            margin-top: 0;
+            box-shadow: none;
+        }
+        .bs-queue-tab.active {
+            border-color: var(--accent);
+            background: rgba(255, 92, 138, 0.08);
+        }
+        .bs-queue-tab.done {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.25);
+        }
+        .bs-queue-tab-index {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: #999;
+        }
+        .bs-queue-tab-name {
+            font-size: 12px;
+            font-weight: 800;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .bs-queue-tab-status {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
         .bs-product-preview {
             background: var(--bg);
             border-radius: 14px;
@@ -722,6 +774,7 @@
         body.dark-mode .bs-btn-brinde { color: #fbbf24; background: rgba(255,165,0,0.12); }
         body.dark-mode .bs-btn-conta  { color: var(--accent); background: rgba(255,92,138,0.12); }
         body.dark-mode .bs-btn.selected { outline-color: rgba(255,255,255,0.18); }
+        body.dark-mode .bs-queue-tab.done { background: rgba(16, 185, 129, 0.14); }
 
 
     </style>
@@ -882,6 +935,7 @@
 <div class="bottom-sheet" id="bottomSheet">
     <div class="bs-handle"></div>
     <div class="bs-title">Como foi esse pedido?</div>
+    <div class="bs-queue-tabs" id="bsQueueTabs"></div>
 
     <!-- Preview do produto/valor -->
     <div class="bs-product-preview">
@@ -1073,6 +1127,12 @@
             .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '');
+    }
+    function getTipoVendaLabel(tipo) {
+        if (tipo === 'pago') return 'Pagamento';
+        if (tipo === 'brinde') return 'Brinde';
+        if (tipo === 'conta') return 'Anotar';
+        return 'Pendente';
     }
     function mascaraData(input) { let v = input.value.replace(/\D/g, ""); if (v.length > 2) v = v.substring(0, 2) + "/" + v.substring(2, 4); input.value = v; }
     
@@ -1768,7 +1828,7 @@
         _pendingClienteId = id;
         _vendaQueue = [...itensCart];
         _queueIndex = 0;
-        _vendaResults = [];
+        _vendaResults = new Array(_vendaQueue.length).fill(null);
         
         abrirFilaNoModal();
         
@@ -1778,40 +1838,87 @@
     };
 
     function abrirFilaNoModal() {
-        if (_queueIndex >= _vendaQueue.length) {
+        if (_queueIndex >= _vendaQueue.length || !_vendaQueue.length) {
             finalizarVendaEmLote();
             return;
         }
 
         const item = _vendaQueue[_queueIndex];
         const progresso = `(${_queueIndex + 1} de ${_vendaQueue.length})`;
-        _tipoVendaSelecionado = null;
+        _tipoVendaSelecionado = _vendaResults[_queueIndex] ? _vendaResults[_queueIndex].tipo : null;
         
         document.getElementById('bsProductName').innerText = `${progresso} ${item.it}`;
         document.getElementById('bsProductVal').innerText  = `R$ ${(item.qt * item.vl).toFixed(2)}`;
-        document.querySelectorAll('#bottomSheet .bs-btn[data-tipo]').forEach(btn => btn.classList.remove('selected'));
-        document.getElementById('btnConfirmarTipoVenda').disabled = true;
+        document.querySelectorAll('#bottomSheet .bs-btn[data-tipo]').forEach(btn => {
+            btn.classList.toggle('selected', btn.getAttribute('data-tipo') === _tipoVendaSelecionado);
+        });
+
+        const btnConfirmar = document.getElementById('btnConfirmarTipoVenda');
+        if (btnConfirmar) {
+            const faltamOutros = _vendaResults.some((res, idx) => idx !== _queueIndex && !res);
+            btnConfirmar.disabled = !_tipoVendaSelecionado;
+            btnConfirmar.innerHTML = `<i class="fa-solid fa-check"></i> ${faltamOutros ? 'CONFIRMAR E PROXIMO' : 'CONFIRMAR E SALVAR'}`;
+        }
+
+        const tabs = document.getElementById('bsQueueTabs');
+        if (tabs) {
+            tabs.innerHTML = _vendaQueue.map((filaItem, idx) => {
+                const resultado = _vendaResults[idx];
+                const activeClass = idx === _queueIndex ? 'active' : '';
+                const doneClass = resultado ? 'done' : '';
+                return `<button type="button" class="bs-queue-tab ${activeClass} ${doneClass}" onclick="irParaItemFila(${idx})">
+                    <span class="bs-queue-tab-index">Item ${idx + 1}</span>
+                    <span class="bs-queue-tab-name">${filaItem.it}</span>
+                    <span class="bs-queue-tab-status">${getTipoVendaLabel(resultado ? resultado.tipo : null)}</span>
+                </button>`;
+            }).join('');
+        }
 
         document.getElementById('bsOverlay').classList.add('active');
         document.getElementById('bottomSheet').classList.add('active');
     }
+
+    window.irParaItemFila = (index) => {
+        if (index < 0 || index >= _vendaQueue.length) return;
+        _queueIndex = index;
+        abrirFilaNoModal();
+    };
 
     window.selecionarTipoVenda = (tipo) => {
         _tipoVendaSelecionado = tipo;
         document.querySelectorAll('#bottomSheet .bs-btn[data-tipo]').forEach(btn => {
             btn.classList.toggle('selected', btn.getAttribute('data-tipo') === tipo);
         });
-        document.getElementById('btnConfirmarTipoVenda').disabled = false;
+        const btnConfirmar = document.getElementById('btnConfirmarTipoVenda');
+        if (btnConfirmar) btnConfirmar.disabled = false;
     };
 
     window.confirmarVendaSelecionada = () => {
         if (!_tipoVendaSelecionado) return;
-        confirmarVenda(_tipoVendaSelecionado);
+        const item = _vendaQueue[_queueIndex];
+        _vendaResults[_queueIndex] = { ...item, tipo: _tipoVendaSelecionado };
+
+        const proximoPendente = _vendaResults.findIndex((res, idx) => idx > _queueIndex && !res);
+        if (proximoPendente !== -1) {
+            _queueIndex = proximoPendente;
+            abrirFilaNoModal();
+            return;
+        }
+
+        const primeiroPendente = _vendaResults.findIndex(res => !res);
+        if (primeiroPendente !== -1) {
+            _queueIndex = primeiroPendente;
+            abrirFilaNoModal();
+            return;
+        }
+
+        fecharBottomSheet();
+        finalizarVendaEmLote();
     };
 
     window.confirmarVenda = (tipo) => {
         const item = _vendaQueue[_queueIndex];
-        _vendaResults.push({ ...item, tipo });
+        _vendaResults[_queueIndex] = { ...item, tipo };
         _tipoVendaSelecionado = null;
 
         _queueIndex++;
@@ -1828,7 +1935,7 @@
         const inserts = [];
         let totalPagoAgora = 0;
 
-        _vendaResults.forEach(res => {
+        _vendaResults.filter(Boolean).forEach(res => {
             let valorTotal, descricao, status;
             if (res.tipo === 'pago') {
                 valorTotal = res.qt * res.vl;
@@ -1862,7 +1969,7 @@
                 _comprovanteData = {
                     clienteId: id,
                     soma: totalPagoAgora,
-                    itens: _vendaResults.filter(r => r.tipo === 'pago').map(r => ({ desc: r.it, qtd: r.qt, valor: r.vl }))
+                    itens: _vendaResults.filter(r => r && r.tipo === 'pago').map(r => ({ desc: r.it, qtd: r.qt, valor: r.vl }))
                 };
                 const c = dbClientes.find(x => x.id === id);
                 document.getElementById('bsComprovanteValor').innerText = `R$ ${totalPagoAgora.toFixed(2)}`;
@@ -1885,6 +1992,8 @@
         const btnConfirmar = document.getElementById('btnConfirmarTipoVenda');
         if (btnConfirmar) btnConfirmar.disabled = true;
         document.querySelectorAll('#bottomSheet .bs-btn[data-tipo]').forEach(btn => btn.classList.remove('selected'));
+        const tabs = document.getElementById('bsQueueTabs');
+        if (tabs) tabs.innerHTML = '';
         document.getElementById('bottomSheet').classList.remove('active');
         document.getElementById('bsOverlay').classList.remove('active');
     };
