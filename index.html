@@ -1894,7 +1894,7 @@
         const progresso = `(${_queueIndex + 1} de ${_vendaQueue.length})`;
         _tipoVendaSelecionado = _vendaResults[_queueIndex] ? _vendaResults[_queueIndex].tipo : null;
         
-        document.getElementById('bsProductName').innerText = `${progresso} ${item.it}`;
+        document.getElementById('bsProductName').innerText = `${progresso} ${item.qt}x ${item.it}`;
         document.getElementById('bsProductVal').innerText  = `R$ ${(item.qt * item.vl).toFixed(2)}`;
         document.querySelectorAll('#bottomSheet .bs-btn[data-tipo]').forEach(btn => {
             btn.classList.toggle('selected', btn.getAttribute('data-tipo') === _tipoVendaSelecionado);
@@ -1909,7 +1909,7 @@
                 const tipoClass = resultado ? getTipoVendaClasse(resultado.tipo) : '';
                 return `<button type="button" class="bs-queue-tab ${activeClass} ${doneClass} ${tipoClass}" onclick="irParaItemFila(${idx})">
                     <span class="bs-queue-tab-index">Item ${idx + 1}</span>
-                    <span class="bs-queue-tab-name">${filaItem.it}</span>
+                    <span class="bs-queue-tab-name">${filaItem.qt}x ${filaItem.it}</span>
                     <span class="bs-queue-tab-status">${getTipoVendaLabel(resultado ? resultado.tipo : null)}</span>
                 </button>`;
             }).join('');
