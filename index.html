@@ -149,7 +149,7 @@
         body.hide-values .money-value { filter: blur(6px); user-select: none; }
         body.hide-values .money-value.keep-visible { filter: none; user-select: auto; }
 
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; margin-bottom: 20px; }
         .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .dash-label { font-size: 10px; color: #999; text-transform: uppercase; display: block; margin-bottom: 5px; font-weight: 700; }
         .dash-val { font-size: 1.2em; font-weight: 800; color: var(--accent); }
@@ -165,6 +165,69 @@
         .analytics-container { display: grid; grid-template-columns: 1fr; gap: 20px; }
         .chart-box { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
         .chart-title { font-weight: 800; color: var(--brown); font-size: 12px; text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .modern-chart-box {
+            background:
+                radial-gradient(circle at top right, rgba(255, 92, 138, 0.14), transparent 34%),
+                linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+                var(--card);
+            box-shadow: 0 16px 34px rgba(0,0,0,0.08);
+        }
+        .chart-head {
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:12px;
+            margin-bottom:14px;
+        }
+        .chart-subtitle {
+            font-size:0.8em;
+            color:#999;
+            margin-top:-8px;
+        }
+        .chart-period {
+            padding:8px 12px;
+            border-radius:999px;
+            background: rgba(255, 92, 138, 0.10);
+            color: var(--accent);
+            border: 1px solid rgba(255, 92, 138, 0.18);
+            font-size: 0.78em;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .chart-kpis {
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap:10px;
+            margin-bottom:14px;
+        }
+        .chart-kpi {
+            padding:12px 14px;
+            border-radius:16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .chart-kpi span {
+            display:block;
+            font-size:0.72em;
+            color:#999;
+            text-transform:uppercase;
+            letter-spacing:0.7px;
+            margin-bottom:4px;
+            font-weight:800;
+        }
+        .chart-kpi strong {
+            display:block;
+            font-size:1.02em;
+            color:var(--text);
+            letter-spacing:-0.02em;
+        }
+        .chart-canvas-shell {
+            padding:14px 12px 8px;
+            border-radius:18px;
+            min-height:260px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+            border: 1px solid rgba(255,255,255,0.06);
+        }
         .top-products-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
         .top-product-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 92, 138, 0.05); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(255, 92, 138, 0.1); }
         .top-product-item .nome { font-weight: 700; font-size: 13px; color: var(--text); }
@@ -910,8 +973,9 @@
     </div>
 
     <div class="dashboard-grid">
-        <div class="dash-box"><span class="dash-label">PEDIDOS HOJE</span><div class="dash-val money-value" id="totalHoje">R$ 0,00</div></div>
-        <div class="dash-box"><span class="dash-label">SALDO CLIENTES</span><div class="dash-val money-value" id="totalGeral">R$ 0,00</div></div>
+        <div class="dash-box"><span class="dash-label">VENDIDO HOJE</span><div class="dash-val money-value" id="totalHoje">R$ 0,00</div></div>
+        <div class="dash-box"><span class="dash-label">A VISTA</span><div class="dash-val money-value" id="totalAVista">R$ 0,00</div></div>
+        <div class="dash-box"><span class="dash-label">A RECEBER</span><div class="dash-val money-value" id="totalGeral">R$ 0,00</div></div>
     </div>
 
     <details class="dashboard-details">
@@ -920,9 +984,27 @@
             <i class="fa-solid fa-chevron-down icon-arrow"></i>
         </summary>
         <div class="analytics-container" id="analyticsDashboard">
-            <div class="chart-box">
-                <div class="chart-title"><i class="fa-solid fa-chart-line"></i> Faturamento por Mes</div>
-                <canvas id="faturamentoChart" height="200"></canvas>
+            <div class="chart-box modern-chart-box">
+                <div class="chart-head">
+                    <div>
+                        <div class="chart-title"><i class="fa-solid fa-chart-line"></i> Faturamento por Mes</div>
+                        <div class="chart-subtitle">Recebimentos acumulados no ano atual</div>
+                    </div>
+                    <div class="chart-period" id="chartPeriodo">----</div>
+                </div>
+                <div class="chart-kpis">
+                    <div class="chart-kpi">
+                        <span>Total no ano</span>
+                        <strong id="chartTotalAno" class="money-value">R$ 0,00</strong>
+                    </div>
+                    <div class="chart-kpi">
+                        <span>Melhor mes</span>
+                        <strong id="chartMelhorMes">--</strong>
+                    </div>
+                </div>
+                <div class="chart-canvas-shell">
+                    <canvas id="faturamentoChart" height="200"></canvas>
+                </div>
             </div>
             <div class="chart-box">
                 <div class="chart-title"><i class="fa-solid fa-star"></i> Top 3 - Mais Vendidos</div>
@@ -1335,7 +1417,7 @@
         
         listaDiv.innerHTML = '';
 
-        let totalH = 0, totalG = 0;
+        let totalH = 0, totalG = 0, totalAVista = 0;
         const hoje = new Date().toLocaleDateString('pt-BR').substring(0, 5);
 
         const filtrados = dbClientes.filter(c => 
@@ -1365,8 +1447,12 @@
 
             comprasValidas.forEach(cp => {
                 const status = cp.status || 'pago';
-                if (cp.data && new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje && cp.valor_total > 0 && status === 'pendente') {
+                const ehHoje = cp.data && new Date(cp.data).toLocaleDateString('pt-BR').substring(0, 5) === hoje;
+                if (ehHoje && cp.valor_total > 0) {
                     totalH += cp.valor_total;
+                }
+                if (ehHoje && cp.valor_total > 0 && status === 'pago') {
+                    totalAVista += cp.valor_total;
                 }
             });
 
@@ -1473,6 +1559,7 @@
         });
 
         document.getElementById('totalHoje').innerText = `R$ ${totalH.toFixed(2)}`;
+        document.getElementById('totalAVista').innerText = `R$ ${totalAVista.toFixed(2)}`;
         document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
     } catch (err) {
         console.error("Erro na renderização:", err);
@@ -1547,10 +1634,23 @@
 
             const labels = nomesMeses;
             const dataValues = faturamentoPorMes;
+            const mesAtual = new Date().getMonth();
+            const totalAno = dataValues.reduce((acc, val) => acc + val, 0);
+            const maiorValor = Math.max(...dataValues, 0);
+            const melhorMes = maiorValor > 0 ? `${labels[dataValues.indexOf(maiorValor)]} - R$ ${maiorValor.toFixed(2)}` : 'Sem recebimentos';
 
             const isDark = document.body.classList.contains('dark-mode');
             const textColor = isDark ? '#f4e9ed' : '#5d4037';
             const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+            const barColors = dataValues.map((_, idx) => idx === mesAtual ? 'rgba(255, 92, 138, 0.95)' : 'rgba(255, 92, 138, 0.34)');
+            const borderColors = dataValues.map((_, idx) => idx === mesAtual ? '#ff5c8a' : 'rgba(255, 92, 138, 0.58)');
+
+            const chartPeriodo = document.getElementById('chartPeriodo');
+            const chartTotalAno = document.getElementById('chartTotalAno');
+            const chartMelhorMes = document.getElementById('chartMelhorMes');
+            if (chartPeriodo) chartPeriodo.innerText = String(anoAtual);
+            if (chartTotalAno) chartTotalAno.innerText = valoresOcultos ? 'R$ ----' : `R$ ${totalAno.toFixed(2)}`;
+            if (chartMelhorMes) chartMelhorMes.innerText = valoresOcultos && maiorValor > 0 ? `${labels[dataValues.indexOf(maiorValor)]} - R$ ----` : melhorMes;
 
             const ctx = document.getElementById('faturamentoChart');
             if (ctx) {
@@ -1565,31 +1665,51 @@
                         datasets: [{
                             label: 'Recebido R$',
                             data: dataValues,
-                            borderColor: '#ff5c8a',
-                            backgroundColor: 'rgba(255, 92, 138, 0.72)',
-                            borderRadius: 10,
+                            borderColor: borderColors,
+                            backgroundColor: barColors,
+                            hoverBackgroundColor: '#ff7aa3',
+                            borderRadius: 14,
                             borderSkipped: false,
-                            maxBarThickness: 28
+                            maxBarThickness: 30,
+                            barPercentage: 0.62,
+                            categoryPercentage: 0.72
                         }]
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 800,
+                            easing: 'easeOutQuart'
+                        },
                         plugins: {
                             legend: { display: false },
                             tooltip: {
+                                displayColors: false,
+                                backgroundColor: isDark ? 'rgba(19, 17, 24, 0.96)' : 'rgba(255,255,255,0.96)',
+                                titleColor: isDark ? '#fff' : '#5d4037',
+                                bodyColor: isDark ? '#f8dfe7' : '#7a4458',
+                                borderColor: 'rgba(255, 92, 138, 0.18)',
+                                borderWidth: 1,
+                                padding: 12,
                                 callbacks: {
                                     label: (context) => valoresOcultos ? 'Recebido: R$ ----' : `Recebido: R$ ${Number(context.parsed.y || 0).toFixed(2)}`
                                 }
                             }
                         },
                         scales: {
-                            x: { ticks: { color: textColor }, grid: { display: false } },
+                            x: {
+                                ticks: { color: textColor, font: { weight: '700' } },
+                                grid: { display: false },
+                                border: { display: false }
+                            },
                             y: {
                                 ticks: {
                                     color: textColor,
                                     callback: (value) => valoresOcultos ? '----' : `R$ ${Number(value).toFixed(2)}`
                                 },
-                                grid: { color: gridColor },
+                                grid: { color: gridColor, drawBorder: false },
+                                border: { display: false },
                                 beginAtZero: true
                             }
                         }
