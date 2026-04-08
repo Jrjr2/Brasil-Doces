@@ -148,6 +148,139 @@
         .money-value { transition: filter 0.2s ease, opacity 0.2s ease; }
         body.hide-values .money-value { filter: blur(6px); user-select: none; }
         body.hide-values .money-value.keep-visible { filter: none; user-select: auto; }
+        .daily-greeting-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(18, 10, 18, 0.62);
+            backdrop-filter: blur(10px);
+            z-index: 1400;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 22px;
+            box-sizing: border-box;
+        }
+        .daily-greeting-overlay.active { display: flex; }
+        .daily-greeting-card {
+            width: 100%;
+            max-width: 390px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 28px;
+            padding: 24px 22px 20px;
+            background:
+                radial-gradient(circle at top right, rgba(255, 255, 255, 0.35), transparent 26%),
+                linear-gradient(145deg, rgba(255, 240, 245, 0.98), rgba(255, 227, 236, 0.96));
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            box-shadow: 0 26px 60px rgba(71, 24, 46, 0.28);
+            color: #6b2e46;
+        }
+        .daily-greeting-card::before {
+            content: '';
+            position: absolute;
+            inset: 0 auto auto 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, #ff8caf, #f59e0b);
+        }
+        .daily-greeting-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .daily-greeting-badge {
+            width: 58px;
+            height: 58px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(255, 140, 175, 0.95), rgba(245, 158, 11, 0.82));
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 16px 32px rgba(255, 140, 175, 0.28);
+            flex-shrink: 0;
+        }
+        .daily-greeting-close {
+            width: 38px;
+            min-width: 38px;
+            height: 38px;
+            margin: 0;
+            padding: 0;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.55);
+            color: #9a5c76;
+            border: 1px solid rgba(154, 92, 118, 0.14);
+            box-shadow: none;
+        }
+        .daily-greeting-close:hover { background: rgba(255, 255, 255, 0.8); }
+        .daily-greeting-overline {
+            font-size: 0.72em;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 800;
+            color: #b26b87;
+            margin-bottom: 6px;
+        }
+        .daily-greeting-title {
+            font-size: 1.45em;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            color: #6b2e46;
+            margin-bottom: 8px;
+        }
+        .daily-greeting-text {
+            font-size: 0.98em;
+            line-height: 1.6;
+            color: #81455d;
+            margin-bottom: 18px;
+        }
+        .daily-greeting-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .daily-greeting-chip {
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.55);
+            border: 1px solid rgba(154, 92, 118, 0.12);
+            font-size: 0.75em;
+            font-weight: 800;
+            color: #9a5c76;
+        }
+        .daily-greeting-btn {
+            width: auto;
+            margin: 0;
+            padding: 12px 16px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #ff7fa7, #ff5c8a);
+            color: white;
+            box-shadow: 0 14px 28px rgba(255, 92, 138, 0.28);
+        }
+        body.dark-mode .daily-greeting-card {
+            background:
+                radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 28%),
+                linear-gradient(145deg, rgba(49, 26, 39, 0.98), rgba(28, 16, 25, 0.98));
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #f9dbe6;
+        }
+        body.dark-mode .daily-greeting-overline { color: #e7a0ba; }
+        body.dark-mode .daily-greeting-title { color: #fff1f6; }
+        body.dark-mode .daily-greeting-text { color: #efc6d5; }
+        body.dark-mode .daily-greeting-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #efb7ca;
+        }
+        body.dark-mode .daily-greeting-close {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #efb7ca;
+        }
 
         .dashboard-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; margin-bottom: 20px; }
         .dash-box { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
@@ -1026,7 +1159,6 @@
             <input type="text" id="novoNome" placeholder="Nome Completo">
             <input type="tel" id="novoTel" placeholder="WhatsApp">
             <input type="tel" id="novoNiver" placeholder="Aniversário (Ex: 15/04)" maxlength="5" oninput="mascaraData(this)">
-            <input type="number" id="novoLimite" placeholder="Limite de Crédito" value="1000">
             <button id="btnCadastrar" class="btn-main">ADICIONAR CLIENTE</button>
         </div>
     </details>
@@ -1053,6 +1185,22 @@
 
     <input type="text" id="buscaCliente" placeholder="🔍 Procurar por nome..." onkeyup="render()">
     <div id="lista"></div>
+</div>
+
+<div id="dailyGreetingOverlay" class="daily-greeting-overlay">
+    <div class="daily-greeting-card">
+        <div class="daily-greeting-top">
+            <div class="daily-greeting-badge"><i class="fa-solid fa-sun"></i></div>
+            <button class="daily-greeting-close" onclick="fecharMensagemFer()" aria-label="Fechar mensagem"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="daily-greeting-overline">Bom te ver por aqui</div>
+        <div class="daily-greeting-title">Bom dia, Fer.</div>
+        <div class="daily-greeting-text">Hoje é mais um dia para adoçar a vida de muita gente.</div>
+        <div class="daily-greeting-footer">
+            <div class="daily-greeting-chip">Brasil Doces</div>
+            <button class="daily-greeting-btn" onclick="fecharMensagemFer()">Comecar o dia</button>
+        </div>
+    </div>
 </div>
 
 <div id="modalHistorico" class="modal">
@@ -1213,6 +1361,26 @@
     let valoresOcultos = false;
     let _tipoVendaSelecionado = null;
 
+    function obterChaveMensagemFerHoje() {
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoje.getDate()).padStart(2, '0');
+        return `mensagemFer-${ano}-${mes}-${dia}`;
+    }
+    window.fecharMensagemFer = () => {
+        const overlay = document.getElementById('dailyGreetingOverlay');
+        if (overlay) overlay.classList.remove('active');
+    };
+    function exibirMensagemFerDoDia() {
+        const chaveHoje = obterChaveMensagemFerHoje();
+        if (localStorage.getItem(chaveHoje) === 'ok') return;
+        const overlay = document.getElementById('dailyGreetingOverlay');
+        if (!overlay) return;
+        overlay.classList.add('active');
+        localStorage.setItem(chaveHoje, 'ok');
+    }
+
     async function limparSessaoExpirada() {
         await _supabase.auth.signOut();
         document.getElementById('authContainer').style.display = 'flex';
@@ -1238,6 +1406,7 @@
         await carregarConfiguracoes();
         configurarRealtime();
         render();
+        exibirMensagemFerDoDia();
     } else { // O erro costuma ser aqui se o bloco de cima não fechou direito
         document.getElementById('authContainer').style.display = 'flex';
         document.getElementById('mainContainer').style.display = 'none';
@@ -2315,7 +2484,7 @@
     window.prepararEdicao = (id) => {
         const c = dbClientes.find(x => x.id === id); clienteEmEdicao = id;
         document.getElementById('novoNome').value = c.nome; document.getElementById('novoTel').value = c.tel;
-        document.getElementById('novoLimite').value = c.limite; document.getElementById('novoNiver').value = c.aniversario || '';
+        document.getElementById('novoNiver').value = c.aniversario || '';
         document.getElementById('btnCadastrar').innerText = "SALVAR ALTERAÇÕES"; 
         
         // Abre o formulário automaticamente ao editar
@@ -2330,12 +2499,12 @@
     };
 
     document.getElementById('btnCadastrar').onclick = async () => {
-        const nome = document.getElementById('novoNome').value, tel = document.getElementById('novoTel').value, niver = document.getElementById('novoNiver').value, lim = document.getElementById('novoLimite').value;
+        const nome = document.getElementById('novoNome').value, tel = document.getElementById('novoTel').value, niver = document.getElementById('novoNiver').value;
         if(!nome || !tel) return alert("Preencha tudo!");
-        const payload = { nome, tel, aniversario: niver, limite: parseFloat(lim) };
+        const payload = { nome, tel, aniversario: niver };
         if(clienteEmEdicao) await _supabase.from('clientes').update(payload).eq('id', clienteEmEdicao);
         else await _supabase.from('clientes').insert([payload]);
-        clienteEmEdicao = null; document.getElementById('novoNome').value = ''; document.getElementById('novoTel').value = '';
+        clienteEmEdicao = null; document.getElementById('novoNome').value = ''; document.getElementById('novoTel').value = ''; document.getElementById('novoNiver').value = '';
         document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE"; 
         
         // Fecha o formulário após salvar
