@@ -1174,6 +1174,37 @@
         if (tipo === 'conta') return 'is-conta';
         return '';
     }
+    function agruparItensConta(itens, valorKey) {
+        const grupos = new Map();
+
+        itens.forEach(item => {
+            const dataFmt = new Date(item.data).toLocaleDateString('pt-BR').substring(0, 5);
+            const qtd = item.qtd || 1;
+            const valor = Number(item[valorKey] || 0);
+            const valorUnitario = qtd > 0 ? Number((valor / qtd).toFixed(4)) : valor;
+            const status = item.status || '';
+            const key = `${dataFmt}|${item.descricao}|${status}|${valorUnitario}`;
+
+            if (!grupos.has(key)) {
+                grupos.set(key, {
+                    ids: [],
+                    dataFmt,
+                    descricao: item.descricao,
+                    qtd: 0,
+                    valor: 0,
+                    status,
+                    isBrinde: status === 'brinde'
+                });
+            }
+
+            const grupo = grupos.get(key);
+            if (item.id) grupo.ids.push(item.id);
+            grupo.qtd += qtd;
+            grupo.valor += valor;
+        });
+
+        return Array.from(grupos.values());
+    }
     function atualizarBotaoSalvarFila() {
         const btnConfirmar = document.getElementById('btnConfirmarTipoVenda');
         if (!btnConfirmar) return;
@@ -1555,6 +1586,8 @@
         comprasApenas.forEach(item => { 
             itensPendentesGlobal.push({...item, valor_exibir: item.valor_total});
         });
+        const itensPendentesAgrupados = agruparItensConta(itensPendentesGlobal, 'valor_exibir');
+        const quitadosRecentesAgrupados = agruparItensConta(quitadosRecentes, 'valor_pago');
         const totalPendente = itensPendentesGlobal.reduce((acc, i) => acc + i.valor_exibir, 0);
         const totalQuitado = quitadosRecentes.reduce((acc, i) => acc + (i.valor_pago || 0), 0);
 
@@ -1579,36 +1612,33 @@
         if (itensPendentesGlobal.length === 0) {
             html += `<div class="account-empty">Nenhum item pendente</div>`;
         } else {
-            itensPendentesGlobal.forEach(i => {
-                const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
+            itensPendentesAgrupados.forEach(i => {
                 html += `<div class="item-hist">
                     <div class="item-hist-main">
-                        <input type="checkbox" class="item-select chk-item" data-id="${i.id}" data-valor="${i.valor_exibir}" data-desc="${i.descricao}" data-qtd="${i.qtd}" onchange="atualizarSoma()">
+                        <input type="checkbox" class="item-select chk-item" data-ids="${i.ids.join(',')}" data-valor="${i.valor}" data-desc="${i.descricao}" data-qtd="${i.qtd}" onchange="atualizarSoma()">
                         <div class="item-hist-copy">
-                            <span class="item-hist-date">${dataF}</span>
+                            <span class="item-hist-date">${i.dataFmt}</span>
                             <span class="item-hist-desc"><b class="item-hist-qty" style="color:var(--primary)">${i.qtd > 1 ? `${i.qtd}x` : '1x'}</b>${i.descricao}</span>
                         </div>
                     </div>
-                    <b class="item-hist-value money-value" style="color:var(--danger)">R$ ${i.valor_exibir.toFixed(2)}</b>
+                    <b class="item-hist-value money-value" style="color:var(--danger)">R$ ${i.valor.toFixed(2)}</b>
                 </div>`;
             });
             html += `<div id="somaSelecionados" class="selection-total"></div>`;
             html += `<button id="btnBaixaSelecionados" onclick="processarPagamento(clienteAbertoId)" style="display:none; width:100%; margin-top:8px; padding:12px; background:var(--success); color:white; border:none; border-radius:10px; font-weight:700; box-shadow:0 4px 15px rgba(16,185,129,0.4);"><i class="fa-solid fa-check-circle"></i> PAGAR SELECIONADOS</button>`;
         }
 
-        if (quitadosRecentes.length > 0) {
+        if (quitadosRecentesAgrupados.length > 0) {
             html += `<div class="account-section-title"><span>✅ QUITADO 30 DIAS</span><span>${quitadosRecentes.length} itens</span></div>`;
-            quitadosRecentes.forEach(i => {
-                const dataF = new Date(i.data).toLocaleDateString('pt-BR').substring(0,5);
-                const isBrinde = i.status === 'brinde';
+            quitadosRecentesAgrupados.forEach(i => {
                 html += `<div class="item-hist">
                     <div class="item-hist-main">
                         <div class="item-hist-copy" style="margin-left:8px;">
-                            <span class="item-hist-date">${dataF}</span>
-                            <span class="item-hist-desc"><b class="item-hist-qty" style="color:var(--success)">${i.qtd > 1 ? `${i.qtd}x` : '1x'}</b>${i.descricao}${isBrinde ? ' <span style="font-size:9px; background:var(--accent); color:#fff; padding:2px 4px; border-radius:4px; margin-left:4px;">BRINDE</span>' : ''}</span>
+                            <span class="item-hist-date">${i.dataFmt}</span>
+                            <span class="item-hist-desc"><b class="item-hist-qty" style="color:var(--success)">${i.qtd > 1 ? `${i.qtd}x` : '1x'}</b>${i.descricao}${i.isBrinde ? ' <span style="font-size:9px; background:var(--accent); color:#fff; padding:2px 4px; border-radius:4px; margin-left:4px;">BRINDE</span>' : ''}</span>
                         </div>
                     </div>
-                    <b class="item-hist-value money-value" style="color:var(--success)">R$ ${i.valor_pago.toFixed(2)}</b>
+                    <b class="item-hist-value money-value" style="color:var(--success)">R$ ${i.valor.toFixed(2)}</b>
                 </div>`;
             });
         }
@@ -1637,9 +1667,17 @@
         }
 
         const checks = Array.from(document.querySelectorAll('.chk-item:checked'));
-        const itensParaEnviar = checks.length > 0 
-            ? itensPendentesGlobal.filter((item, index) => document.querySelectorAll('.chk-item')[index].checked)
-            : itensPendentesGlobal;
+        const itensParaEnviar = checks.length > 0
+            ? checks.map(cb => ({
+                descricao: cb.getAttribute('data-desc') || '',
+                qtd: parseInt(cb.getAttribute('data-qtd')) || 1,
+                valor_exibir: parseFloat(cb.getAttribute('data-valor')) || 0
+            }))
+            : agruparItensConta(itensPendentesGlobal, 'valor_exibir').map(item => ({
+                descricao: item.descricao,
+                qtd: item.qtd,
+                valor_exibir: item.valor
+            }));
 
         const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
         
@@ -1789,7 +1827,7 @@
         if (soma <= 0) return alert("Selecione pelo menos um item para pagar!");
 
         const itensSelecionados = Array.from(selecionados).map(cb => ({
-            id: parseInt(cb.getAttribute('data-id')),
+            ids: (cb.getAttribute('data-ids') || '').split(',').map(v => parseInt(v)).filter(Boolean),
             desc : cb.getAttribute('data-desc') || '',
             qtd  : parseInt(cb.getAttribute('data-qtd')) || 1,
             valor: parseFloat(cb.getAttribute('data-valor'))
@@ -1799,8 +1837,8 @@
 
         // Primeiro: atualiza o status dos itens selecionados para 'quitado'
         for (const item of itensSelecionados) {
-            if (item.id) {
-                await _supabase.from('compras').update({ status: 'quitado' }).eq('id', item.id);
+            if (item.ids && item.ids.length > 0) {
+                await _supabase.from('compras').update({ status: 'quitado' }).in('id', item.ids);
             }
         }
 
@@ -1894,7 +1932,7 @@
         const progresso = `(${_queueIndex + 1} de ${_vendaQueue.length})`;
         _tipoVendaSelecionado = _vendaResults[_queueIndex] ? _vendaResults[_queueIndex].tipo : null;
         
-        document.getElementById('bsProductName').innerText = `${progresso} ${item.qt}x ${item.it}`;
+        document.getElementById('bsProductName').innerText = `${progresso} ${item.it}`;
         document.getElementById('bsProductVal').innerText  = `R$ ${(item.qt * item.vl).toFixed(2)}`;
         document.querySelectorAll('#bottomSheet .bs-btn[data-tipo]').forEach(btn => {
             btn.classList.toggle('selected', btn.getAttribute('data-tipo') === _tipoVendaSelecionado);
@@ -1909,7 +1947,7 @@
                 const tipoClass = resultado ? getTipoVendaClasse(resultado.tipo) : '';
                 return `<button type="button" class="bs-queue-tab ${activeClass} ${doneClass} ${tipoClass}" onclick="irParaItemFila(${idx})">
                     <span class="bs-queue-tab-index">Item ${idx + 1}</span>
-                    <span class="bs-queue-tab-name">${filaItem.qt}x ${filaItem.it}</span>
+                    <span class="bs-queue-tab-name">${filaItem.it}</span>
                     <span class="bs-queue-tab-status">${getTipoVendaLabel(resultado ? resultado.tipo : null)}</span>
                 </button>`;
             }).join('');
