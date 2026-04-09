@@ -9,6 +9,43 @@ import './style.css';
     let carrinhos = {}; // Formato: { idCliente: [{ it, qt, vl }] }
     let primeiraCarga = true;
 
+    window.filtroDevedoresAtivo = false;
+    window.clientesCobradosSessao = new Set();
+
+    window.toggleFiltroDevedores = () => {
+        window.filtroDevedoresAtivo = !window.filtroDevedoresAtivo;
+        const btn = document.getElementById('btnFiltroDevedores');
+        if (window.filtroDevedoresAtivo) {
+            btn.className = 'btn-filtro-on';
+            window.clientesCobradosSessao.clear(); // Reseta a sessão
+        } else {
+            btn.className = 'btn-filtro-off';
+        }
+        render();
+    };
+
+    window.cobrarWhatsAppSessao = (clienteId, nome, valor, pendentesQtd) => {
+        window.clientesCobradosSessao.add(clienteId);
+        
+        let texto = `Oi ${nome}, tudo bem? 😊\nPassando para avisar que sua sacola do Brasil Doces com ${pendentesQtd} itens (Total: *R$ ${valor.toFixed(2)}*) já está disponível para acerto!\n\nAgradeço muito a preferência e fico no aguardo!`;
+        let encoded = encodeURIComponent(texto);
+        
+        const cliente = dbClientes.find(c => c.id === clienteId);
+        let link = `https://wa.me/?text=${encoded}`;
+        
+        if (cliente && cliente.telefone && !cliente.telefone.includes('N/A')) {
+            let numero = cliente.telefone.replace(/\D/g, '');
+            if(numero.length >= 10 && numero.length <= 11) {
+                if(numero.length === 10) numero = '55' + numero.substring(0,2) + '9' + numero.substring(2);
+                else if(numero.length === 11) numero = '55' + numero;
+                link = `https://wa.me/${numero}?text=${encoded}`;
+            }
+        }
+        
+        window.open(link, '_blank');
+        render(); // Vai sumir da tela instantaneamente
+    };
+
     window.fecharModais = () => {
         document.getElementById('modalHistorico').style.display = 'none';
         document.getElementById('modalResumo').style.display = 'none';
@@ -371,27 +408,37 @@ import './style.css';
         let totalH = 0, totalG = 0, totalAVista = 0;
         const hoje = new Date().toLocaleDateString('pt-BR').substring(0, 5);
 
-        const filtrados = dbClientes.filter(c => 
+        let filtrados = dbClientes.filter(c => 
             c.nome && 
             c.nome !== 'VENDA AVULSA (BALCÃO)' && 
             c.nome.toLowerCase().trim().startsWith(busca)
-        );
-
-        filtrados.forEach(c => {
+        ).map(c => {
             const comprasValidas = c.compras || [];
-            
-            // Calcula saldo: apenas itens pendentes (não pagos, não brindes, não quitados)
-            // Trata null/undefined como 'pago' (para registros antigos)
             const saldo = comprasValidas
                 .filter(i => {
-                    const status = i.status || 'pago'; // Registros sem status são tratados como pagos
+                    const status = i.status || 'pago'; 
                     return i.valor_total > 0 && status === 'pendente';
                 })
                 .reduce((acc, i) => acc + (i.valor_total || 0), 0);
+            
             const pendentes = comprasValidas.filter(i => {
                 const status = i.status || 'pago';
                 return i.valor_total > 0 && status === 'pendente';
             });
+            
+            return { ...c, saldoCalculado: saldo, pendentesCalculados: pendentes, comprasValidas: comprasValidas };
+        });
+
+        if (window.filtroDevedoresAtivo) {
+            filtrados = filtrados.filter(c => c.saldoCalculado > 0 && !window.clientesCobradosSessao.has(c.id));
+            filtrados.sort((a,b) => b.saldoCalculado - a.saldoCalculado);
+        }
+
+        filtrados.forEach(c => {
+            const saldo = c.saldoCalculado;
+            const pendentes = c.pendentesCalculados;
+            const comprasValidas = c.comprasValidas;
+            
             const textoPendencia = pendentes.length === 0 ? 'Conta em dia' : `${pendentes.length} pendente${pendentes.length > 1 ? 's' : ''}`;
             const classePendencia = pendentes.length === 0 ? 'is-clear' : 'is-pending';
             totalG += saldo;
@@ -481,9 +528,16 @@ import './style.css';
                 </div>`;
             }
 
+            let botaoCobrarHtml = '';
+            if (saldo > 0) {
+                // Escape simple quotes on name
+                let nomeSafe = c.nome.replace(/'/g, "\\'");
+                botaoCobrarHtml = `<button class="btn-cobrar-whatsapp" onclick="cobrarWhatsAppSessao(${c.id}, '${nomeSafe}', ${saldo}, ${pendentes.length})" title="Cobrar este cliente (Tira da tela)"><i class="fa-brands fa-whatsapp"></i> COBRAR</button>`;
+            }
+
             card.innerHTML = `
                 <div class="card-header">
-                    <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
+                    <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()} ${botaoCobrarHtml}</span>
                     <details class="dropdown-dots" style="position: relative; margin: 0;">
                         <summary style="list-style: none; cursor: pointer; color: var(--brown); font-size: 18px; padding: 4px 10px; user-select: none;">
                             <i class="fa-solid fa-ellipsis-vertical"></i>
