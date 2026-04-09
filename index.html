@@ -85,6 +85,9 @@
                 <div class="chart-canvas-shell">
                     <canvas id="faturamentoChart" height="200"></canvas>
                 </div>
+                <button onclick="abrirRelatorioMensal(new Date().getMonth())" class="btn-main" style="margin-top: 15px; font-size: 11px; font-weight: 800; background: linear-gradient(135deg, #10b981 0%, #059669 100%); line-height: 1.2;">
+                    <i class="fa-solid fa-file-invoice"></i> EXTRAIR RELATÓRIO DO MÊS ATUAL
+                </button>
             </div>
             <div class="chart-box">
                 <div class="chart-title"><i class="fa-solid fa-star"></i> Top 3 - Mais Vendidos</div>
@@ -188,6 +191,27 @@
     </div> 
 </div> 
 
+
+<div id="modalRelatorioMensal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <h3 id="tituloRelatorioMensal" style="text-align:center; font-weight: 800; font-size: 1.25em; margin-bottom: 5px; text-transform: uppercase;">RELATÓRIO MENSAL</h3>
+        <p style="text-align:center; font-size:11px; color:#999; margin-bottom:15px; font-weight:700;">CONSOLIDADO DE MOVIMENTAÇÕES</p>
+        
+        <div class="account-summary-grid" id="kpisRelatorioMensal" style="margin-bottom: 20px;">
+            <!-- KPIs entrarão aqui via JS -->
+        </div>
+
+        <div id="corpoRelatorioMensal" style="margin-bottom: 20px; max-height: 50vh; overflow-y: auto; padding-right: 5px;">
+            <!-- Clientes agrupados entram aqui -->
+        </div>
+        
+        <button onclick="window.print()" class="btn-zap-novo no-print" style="margin-top: 15px; width: 100%;">
+            <i class="fa-solid fa-file-pdf"></i> SALVAR RELATÓRIO MENSAL O CORTE MENSAL (PDF)
+        </button>   
+        
+        <button onclick="fecharModais()" class="btn-fechar-novo no-print" style="margin-top:15px; margin-bottom: 5px; width: 100%;">FECHAR ABA DE RELATÓRIO</button>
+    </div>
+</div>
 
 <div id="modalResumo" class="modal">
     <div class="modal-content">
