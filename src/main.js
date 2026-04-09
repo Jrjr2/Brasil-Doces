@@ -523,9 +523,9 @@ import './style.css';
                             hoverBackgroundColor: '#ff7aa3',
                             borderRadius: 14,
                             borderSkipped: false,
-                            maxBarThickness: 30,
-                            barPercentage: 0.62,
-                            categoryPercentage: 0.72
+                            maxBarThickness: 45,
+                            barPercentage: 0.75,
+                            categoryPercentage: 0.85
                         }]
                     },
                     options: {
@@ -552,16 +552,18 @@ import './style.css';
                         },
                         scales: {
                             x: {
-                                ticks: { color: textColor, font: { weight: '700' } },
+                                ticks: { color: textColor, font: { weight: '800' } },
                                 grid: { display: false },
                                 border: { display: false }
                             },
                             y: {
                                 ticks: {
                                     color: textColor,
-                                    callback: (value) => valoresOcultos ? '----' : `R$ ${Number(value).toFixed(2)}`
+                                    maxTicksLimit: 5,
+                                    padding: 8,
+                                    callback: (value) => valoresOcultos ? '----' : `R$ ${Number(value).toFixed(0)}`
                                 },
-                                grid: { color: gridColor, drawBorder: false },
+                                grid: { color: gridColor, drawBorder: false, borderDash: [4, 4] },
                                 border: { display: false },
                                 beginAtZero: true
                             }
