@@ -12,7 +12,7 @@
     window.fecharModais = () => {
         document.getElementById('modalHistorico').style.display = 'none';
         document.getElementById('modalResumo').style.display = 'none';
-        sessionStorage.removeItem('modalAberto'); // Limpa a memÃ³ria de reabertura ao fechar
+        sessionStorage.removeItem('modalAberto'); // Limpa a memória de reabertura ao fechar
     };
     window.fecharModalHistorico = window.fecharModais;
 
@@ -71,7 +71,7 @@
         configurarRealtime();
         render();
         exibirMensagemFerDoDia();
-    } else { // O erro costuma ser aqui se o bloco de cima nÃ£o fechou direito
+    } else { // O erro costuma ser aqui se o bloco de cima não fechou direito
         document.getElementById('authContainer').style.display = 'flex';
         document.getElementById('mainContainer').style.display = 'none';
     }
@@ -96,7 +96,7 @@
         render();
         renderDashboard();
 
-        // Truque MÃ¡gico: Se a pÃ¡gina recarregar, abre automaticamente de onde estava!
+        // Truque Mágico: Se a página recarregar, abre automaticamente de onde estava!
         if (primeiraCarga) {
             primeiraCarga = false;
             const estadoModal = sessionStorage.getItem('modalAberto');
@@ -109,7 +109,7 @@
     }
 
 
-    // Crie uma funÃ§Ã£o para configurar os eventos apÃ³s o login
+    // Crie uma função para configurar os eventos após o login
     async function carregarConfiguracoes() {
         // Tenta puxar do banco pegando apenas o primeiro resultado
         const { data, error } = await _supabase.from('configuracoes').select('*').limit(1).single();
@@ -119,7 +119,7 @@
                 await limparSessaoExpirada();
                 return;
             }
-            alert("âš ï¸ Erro ao buscar PÃ¬x do Banco: " + error.message);
+            alert("⚠️ Erro ao buscar Pìx do Banco: " + error.message);
         }
 
         if (data) {
@@ -229,12 +229,12 @@
     }
 
     async function sair() { await _supabase.auth.signOut(); window.location.reload(); }
-            // ForÃ§a o scroll inteligente e lida com o "Lag" da primeira abertura na bateria
+            // Força o scroll inteligente e lida com o "Lag" da primeira abertura na bateria
     window.focarBotaoInteligente = (campo) => {
-        // Pulsa a centralizaÃ§Ã£o 3 vezes para acompanhar a velocidade real que o teclado sobe!
+        // Pulsa a centralização 3 vezes para acompanhar a velocidade real que o teclado sobe!
         const centralizar = () => campo.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setTimeout(centralizar, 150); // Para teclados rÃ¡pidos
-        setTimeout(centralizar, 450); // Para a mÃ©dia
+        setTimeout(centralizar, 150); // Para teclados rápidos
+        setTimeout(centralizar, 450); // Para a média
         setTimeout(centralizar, 800); // Para o lag da primeira abertura
     };
 
@@ -266,18 +266,18 @@
 
         const filtrados = dbClientes.filter(c => 
             c.nome && 
-            c.nome !== 'VENDA AVULSA (BALCÃƒO)' && 
+            c.nome !== 'VENDA AVULSA (BALCÃO)' && 
             c.nome.toLowerCase().trim().startsWith(busca)
         );
 
         filtrados.forEach(c => {
             const comprasValidas = c.compras || [];
             
-            // Calcula saldo: apenas itens pendentes (nÃ£o pagos, nÃ£o brindes, nÃ£o quitados)
+            // Calcula saldo: apenas itens pendentes (não pagos, não brindes, não quitados)
             // Trata null/undefined como 'pago' (para registros antigos)
             const saldo = comprasValidas
                 .filter(i => {
-                    const status = i.status || 'pago'; // Registros sem status sÃ£o tratados como pagos
+                    const status = i.status || 'pago'; // Registros sem status são tratados como pagos
                     return i.valor_total > 0 && status === 'pendente';
                 })
                 .reduce((acc, i) => acc + (i.valor_total || 0), 0);
@@ -302,23 +302,23 @@
 
             const card = document.createElement('div');
             card.className = 'card';
-                        // PREPARAÃ‡ÃƒO DOS CHIPS DA VITRINE
+                        // PREPARAÇÃO DOS CHIPS DA VITRINE
             let chipsHtml = '';
             if (dbProdutos && dbProdutos.length > 0) {
                 const getIconeDoce = (n) => {
                     n = n.toLowerCase();
-                    if (n.includes('pote') || n.includes('copo') || n.includes('taÃ§a')) return 'ðŸ§';
-                    if (n.includes('bolo') || n.includes('torta')) return 'ðŸ°';
-                    if (n.includes('brigadeiro') || n.includes('beijinho')) return 'ðŸŸ¤';
-                    if (n.includes('brownie')) return 'ðŸŸ«';
-                    if (n.includes('bombom') || n.includes('trufa')) return 'ðŸ¬';
-                    if (n.includes('cookie') || n.includes('biscoito')) return 'ðŸª';
-                    if (n.includes('donut')) return 'ðŸ©';
-                    if (n.includes('morango')) return 'ðŸ“';
-                    if (n.includes('uva')) return 'ðŸ‡';
-                    if (n.includes('ninho')) return 'ðŸ¥›';
-                    if (n.includes('barra') || n.includes('chocolate')) return 'ðŸ«';
-                    const iconesGen = ['âœ¨', 'ðŸ¡', 'ðŸ§', 'ðŸ¥', 'ðŸ¨'];
+                    if (n.includes('pote') || n.includes('copo') || n.includes('taça')) return '🧁';
+                    if (n.includes('bolo') || n.includes('torta')) return '🍰';
+                    if (n.includes('brigadeiro') || n.includes('beijinho')) return '🟤';
+                    if (n.includes('brownie')) return '🟫';
+                    if (n.includes('bombom') || n.includes('trufa')) return '🍬';
+                    if (n.includes('cookie') || n.includes('biscoito')) return '🍪';
+                    if (n.includes('donut')) return '🍩';
+                    if (n.includes('morango')) return '🍓';
+                    if (n.includes('uva')) return '🍇';
+                    if (n.includes('ninho')) return '🥛';
+                    if (n.includes('barra') || n.includes('chocolate')) return '🍫';
+                    const iconesGen = ['✨', '🍡', '🍧', '🍥', '🍨'];
                     return iconesGen[n.length % iconesGen.length];
                 };
                 
@@ -326,7 +326,7 @@
                 
                 dbProdutos.forEach((p) => {
                     let ico = getIconeDoce(p.nome); 
-                    // Garante que aspas nos nomes nÃ£o quebrem o cÃ³digo
+                    // Garante que aspas nos nomes não quebrem o código
                     let nomeSeguro = p.nome.replace(/'/g, "\\'");
                     chipsHtml += `
                     <div class="btn-pill" data-produto="${p.nome}" onclick="preencherRapido(${c.id}, '${nomeSeguro}', ${p.preco})">
@@ -339,24 +339,24 @@
                 chipsHtml += '</div>';
             }
 
-            // VERIFICA SE Ã‰ ANIVERSÃRIO HOJE
+            // VERIFICA SE É ANIVERSÁRIO HOJE
             let niverHtml = '';
             if (c.aniversario && c.aniversario === hoje) {
                 niverHtml = `
                 <div style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #7a1f3d; padding: 8px 12px; border-radius: 12px; font-weight: 800; font-size: 11px; margin-bottom: 15px; border: 1px solid rgba(255, 133, 162, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(255, 133, 162, 0.2);">
                     <i class="fa-solid fa-gift" style="color: #d81b60; font-size: 15px;"></i> 
-                    ESPECIAL: HOJE Ã‰ ANIVERSÃRIO DO CLIENTE! ðŸŽ‰
+                    ESPECIAL: HOJE É ANIVERSÁRIO DO CLIENTE! 🎉
                 </div>`;
             }
 
-            // O HTML DO CARD COM A ADIÃ‡ÃƒO DA VITRINE:
+            // O HTML DO CARD COM A ADIÇÃO DA VITRINE:
             let cartHtml = '';
             const itemsCart = carrinhos[c.id] || [];
             if (itemsCart.length > 0) {
                 let totalCart = itemsCart.reduce((sum, i) => sum + (i.qt * i.vl), 0);
                 cartHtml = `
                 <div style="background: rgba(255, 92, 138, 0.05); border: 1px dashed var(--accent); border-radius: 12px; padding: 12px; margin-bottom: 12px;">
-                    <span style="font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase;">ðŸ›’ CESTA DE COMPRAS</span>
+                    <span style="font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase;">🛒 CESTA DE COMPRAS</span>
                     <div style="margin-top: 8px;">
                         ${itemsCart.map((it, idx) => `
                         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
@@ -392,7 +392,7 @@
                 ${cartHtml}
 
                 <div style="margin-bottom: 10px;">
-                    <input type="text" id="it-${c.id}" placeholder="ðŸ” Pesquisa" onfocus="focarBotaoInteligente(this)" oninput="window.filtrarDocesCard(this, ${c.id})">
+                    <input type="text" id="it-${c.id}" placeholder="🔍 Pesquisa" onfocus="focarBotaoInteligente(this)" oninput="window.filtrarDocesCard(this, ${c.id})">
                 </div>
 
                 <button class="btn-main" onclick="salvarVenda(${c.id})">${itemsCart.length > 0 ? 'CONFIRMAR VENDA' : 'ANOTAR'}</button>
@@ -406,7 +406,7 @@
         document.getElementById('totalAVista').innerText = `R$ ${totalAVista.toFixed(2)}`;
         document.getElementById('totalGeral').innerText = `R$ ${totalG.toFixed(2)}`;
     } catch (err) {
-        console.error("Erro na renderizaÃ§Ã£o:", err);
+        console.error("Erro na renderização:", err);
     }
 }
 
@@ -441,7 +441,7 @@
             const top3Container = document.getElementById('top3Container');
             if (top3Container) {
                 if (top3.length === 0) {
-                    top3Container.innerHTML = '<div class="top-empty">Ainda nÃ£o hÃ¡ produtos registrados.</div>';
+                    top3Container.innerHTML = '<div class="top-empty">Ainda não há produtos registrados.</div>';
                 } else {
                     const cores = ['#f6d365', '#4facfe', '#a18cd1'];
                     const maxQtd = Math.max(...top3.map(p => p.qtd), 1);
@@ -462,7 +462,7 @@
                 }
             }
 
-            // 2. Processar GrÃ¡fico de Faturamento por MÃªs (Ano Atual)
+            // 2. Processar Gráfico de Faturamento por Mês (Ano Atual)
             const anoAtual = new Date().getFullYear();
             const nomesMeses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
             const faturamentoPorMes = new Array(12).fill(0);
@@ -565,7 +565,7 @@
         }
     }
 
-    // Hook para o botÃ£o de tema atualizar graficos
+    // Hook para o botão de tema atualizar graficos
     const originalToggle = toggleTheme;
     window.toggleTheme = function() {
         originalToggle();
@@ -633,7 +633,7 @@
     window.abrirHistorico = (id) => {
     sessionStorage.setItem('modalAberto', 'hist-'+id);
     clienteAbertoId = id;
-    document.getElementById('modalResumo').style.display = 'none'; // Fecha o outro por seguranÃ§a
+    document.getElementById('modalResumo').style.display = 'none'; // Fecha o outro por segurança
     const c = dbClientes.find(x => x.id === id);
         const quitadosRecentes = obterQuitadosRecentes(c);
         const comprasApenas = c.compras
@@ -669,7 +669,7 @@
             </div>
         </div>`;
 
-        html += `<div class="account-section-title"><span>âš ï¸ PENDENTE</span><span>${itensPendentesGlobal.length} itens</span></div>`;
+        html += `<div class="account-section-title"><span>⚠️ PENDENTE</span><span>${itensPendentesGlobal.length} itens</span></div>`;
 
         if (itensPendentesGlobal.length === 0) {
             html += `<div class="account-empty">Nenhum item pendente</div>`;
@@ -694,7 +694,7 @@
         }
 
         if (quitadosRecentesAgrupados.length > 0) {
-            html += `<div class="account-section-title"><span>âœ… RECEBIDOS NO MES</span><span>${quitadosRecentes.length} itens</span></div>`;
+            html += `<div class="account-section-title"><span>✅ RECEBIDOS NO MES</span><span>${quitadosRecentes.length} itens</span></div>`;
             quitadosRecentesAgrupados.forEach(i => {
                 html += `<div class="item-hist">
                     <div class="item-hist-main">
@@ -757,12 +757,12 @@
 
         const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' });
         
-        // pega mÃªs atual para filtrar
+        // pega mês atual para filtrar
         const dataAgora = new Date();
         const mesAtualNum = dataAgora.getMonth();
         const anoAtual = dataAgora.getFullYear();
 
-        // SEPARA ITENS DO MÃŠS ATUAL POR CATEGORIA
+        // SEPARA ITENS DO MÊS ATUAL POR CATEGORIA
         const comprasDoMes = c.compras.filter(i => {
             const dataItem = new Date(i.data);
             return dataItem.getMonth() === mesAtualNum && dataItem.getFullYear() === anoAtual;
@@ -780,55 +780,55 @@
             // Calcula total pendente
             let totalPendente = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
             
-            // Calcula totais do mÃªs
+            // Calcula totais do mês
             const totalPagoDoMes = itensPagosDoMes.reduce((acc, i) => acc + (i.valor_total || 0), 0);
             const totalBrindeDoMes = itensBrindesDoMes.length;
             const totalQuitadoDoMes = quitadosDoMes.reduce((acc, i) => acc + (i.valor_total || 0), 0);
 
-            texto = `OlÃ¡! Tudo bem? âœ¨%0A%0A`;
-            texto += `Aqui Ã© da Brasil Doces Passando o resumo do mÃªs de *${mesAtual}*:%0A%0A`;
+            texto = `Olá! Tudo bem? ✨%0A%0A`;
+            texto += `Aqui é da Brasil Doces Passando o resumo do mês de *${mesAtual}*:%0A%0A`;
 
             // Lista pagos
             if (itensPagosDoMes.length > 0) {
-                texto += `âœ… *PAGOS:*%0A`;
-                texto += itensPagosDoMes.map(i => `   âœ“ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${(i.valor_total || 0).toFixed(2)}`).join('%0A') + '%0A%0A';
+                texto += `✅ *PAGOS:*%0A`;
+                texto += itensPagosDoMes.map(i => `   ✓ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${(i.valor_total || 0).toFixed(2)}`).join('%0A') + '%0A%0A';
             }
 
             // Lista brindes
             if (itensBrindesDoMes.length > 0) {
-                texto += `ðŸŽ *BRINDES:*%0A`;
-                texto += itensBrindesDoMes.map(i => `   ðŸŽ‰ ${i.descricao}`).join('%0A') + '%0A%0A';
+                texto += `🎁 *BRINDES:*%0A`;
+                texto += itensBrindesDoMes.map(i => `   🎉 ${i.descricao}`).join('%0A') + '%0A%0A';
             }
 
-            // Lista quitados do mÃªs
+            // Lista quitados do mês
             if (quitadosDoMes.length > 0) {
-                texto += `ðŸ’š *QUITADOS ESTE MÃŠS:*%0A`;
-                texto += quitadosDoMes.map(i => `   âœ“ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${(i.valor_total || 0).toFixed(2)}`).join('%0A') + '%0A%0A';
+                texto += `💚 *QUITADOS ESTE MÊS:*%0A`;
+                texto += quitadosDoMes.map(i => `   ✓ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${(i.valor_total || 0).toFixed(2)}`).join('%0A') + '%0A%0A';
             }
 
             // Lista pendentes (o que vai cobrar)
             if (itensParaEnviar.length > 0) {
-                texto += `ðŸ“’ *PENDENTE:*%0A`;
-                texto += itensParaEnviar.map(i => `   â³ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A') + '%0A%0A';
+                texto += `📒 *PENDENTE:*%0A`;
+                texto += itensParaEnviar.map(i => `   ⏳ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A') + '%0A%0A';
             }
 
             // Total geral
             const totalGeral = totalPagoDoMes + totalBrindeDoMes + totalQuitadoDoMes + totalPendente;
-            texto += `â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”%0A`;
-            texto += `ðŸ’° *TOTAL DO MÃŠS: R$ ${totalGeral.toFixed(2)}*%0A`;
+            texto += `━━━━━━━━━━━━━━━━━━━━%0A`;
+            texto += `💰 *TOTAL DO MÊS: R$ ${totalGeral.toFixed(2)}*%0A`;
             if (totalPendente > 0) {
-                texto += `ðŸ“’ *PENDENTE: R$ ${totalPendente.toFixed(2)}*%0A`;
+                texto += `📒 *PENDENTE: R$ ${totalPendente.toFixed(2)}*%0A`;
             }
             texto += `%0A`;
             
             if (chave) {
-                texto += `ðŸ”‘ *PIX:* ${chave}%0A`;
-                if(nomeTitular) texto += `ðŸ‘¤ *NOME:* ${nomeTitular}%0A%0A`;
+                texto += `🔑 *PIX:* ${chave}%0A`;
+                if(nomeTitular) texto += `👤 *NOME:* ${nomeTitular}%0A%0A`;
             }
-            texto += `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! ðŸ°â¤ï¸`;
+            texto += `Quando puder, me avise para organizarmos o acerto? Muito obrigada pela parceria de sempre! 🍰❤️`;
 
         } else if (tipo === 'informar') {
-            if (itensParaEnviar.length === 0) return alert("NÃ£o hÃ¡ itens para informar!");
+            if (itensParaEnviar.length === 0) return alert("Não há itens para informar!");
 
             const totalPendente = itensParaEnviar.reduce((acc, i) => acc + i.valor_exibir, 0);
             const totalPagoDoMes = itensPagosDoMes.reduce((acc, i) => acc + (i.valor_total || 0), 0);
@@ -841,36 +841,36 @@
                 ...quitadosDoMes.map(i => ({ ...i, valor_exibir: i.valor_total, status: 'quitado' }))
             ], 'valor_exibir');
 
-            let listaConta = itensParaEnviar.map(i => `âœ¨ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
-            let listaRecebidos = itensRecebidosDoMes.map(i => `   âœ“ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor.toFixed(2)}`).join('%0A');
+            let listaConta = itensParaEnviar.map(i => `✨ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor_exibir.toFixed(2)}`).join('%0A');
+            let listaRecebidos = itensRecebidosDoMes.map(i => `   ✓ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}: R$ ${i.valor.toFixed(2)}`).join('%0A');
             
             if (!temPagamentoNoMes) {
-                texto = `Oi! âœ¨ Passando para te deixar ciente do que estÃ¡ anotado na sua conta aqui na Brasil Doces:%0A%0A`;
-                texto += `ðŸ“’ *ITENS NA CONTA:*%0A${listaConta}%0A%0A`;
+                texto = `Oi! ✨ Passando para te deixar ciente do que está anotado na sua conta aqui na Brasil Doces:%0A%0A`;
+                texto += `📒 *ITENS NA CONTA:*%0A${listaConta}%0A%0A`;
                 if (temBrindeNoMes) {
-                    texto += `ðŸŽ *BRINDES:*%0A`;
-                    texto += itensBrindesDoMes.map(i => `   ðŸŽ‰ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}`).join('%0A') + '%0A%0A';
+                    texto += `🎁 *BRINDES:*%0A`;
+                    texto += itensBrindesDoMes.map(i => `   🎉 ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}`).join('%0A') + '%0A%0A';
                 }
-                texto += `ðŸ“’ *VALOR TOTAL PENDENTE: R$ ${totalPendente.toFixed(2)}*%0A%0A`;
+                texto += `📒 *VALOR TOTAL PENDENTE: R$ ${totalPendente.toFixed(2)}*%0A%0A`;
             } else {
-                texto = `Oi! âœ¨ Passando para te deixar ciente das suas movimentaÃ§Ãµes aqui na Brasil Doces:%0A%0A`;
-                texto += `ðŸ“’ *ITENS NA CONTA:*%0A${listaConta}%0A%0A`;
+                texto = `Oi! ✨ Passando para te deixar ciente das suas movimentações aqui na Brasil Doces:%0A%0A`;
+                texto += `📒 *ITENS NA CONTA:*%0A${listaConta}%0A%0A`;
                 if (itensRecebidosDoMes.length > 0) {
-                    texto += `ðŸ’š *JA RECEBIDOS NO MES:*%0A${listaRecebidos}%0A%0A`;
+                    texto += `💚 *JA RECEBIDOS NO MES:*%0A${listaRecebidos}%0A%0A`;
                 }
                 if (temBrindeNoMes) {
-                    texto += `ðŸŽ *BRINDES:*%0A`;
-                    texto += itensBrindesDoMes.map(i => `   ðŸŽ‰ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}`).join('%0A') + '%0A%0A';
+                    texto += `🎁 *BRINDES:*%0A`;
+                    texto += itensBrindesDoMes.map(i => `   🎉 ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.descricao}`).join('%0A') + '%0A%0A';
                 }
-                texto += `ðŸ’š *VALOR JA PAGO NO MES: R$ ${totalJaPago.toFixed(2)}*%0A`;
-                texto += `ðŸ“’ *VALOR TOTAL PENDENTE: R$ ${totalPendente.toFixed(2)}*%0A%0A`;
+                texto += `💚 *VALOR JA PAGO NO MES: R$ ${totalJaPago.toFixed(2)}*%0A`;
+                texto += `📒 *VALOR TOTAL PENDENTE: R$ ${totalPendente.toFixed(2)}*%0A%0A`;
             }
-            texto += `Ã‰ sÃ³ para o seu controle mesmo, tÃ¡ bem? Qualquer dÃºvida estou Ã  disposiÃ§Ã£o! Beijos, Fer. â¤ï¸`;
+            texto += `É só para o seu controle mesmo, tá bem? Qualquer dúvida estou à disposição! Beijos, Fer. ❤️`;
             
         } else if (tipo === 'obrigado') {
-            texto = `Oi! Passando para agradecer pelo pagamento. âœ¨ Ã‰ um prazer ter vocÃª como cliente! â¤ï¸`;
+            texto = `Oi! Passando para agradecer pelo pagamento. ✨ É um prazer ter você como cliente! ❤️`;
         } else if (tipo === 'aniversario') {
-            texto = `Oi! âœ¨ Tudo bem?%0AEstou atualizando o meu sistema aqui na Brasil Doces e estou preparando brindes para datas especiais. VocÃª poderia me passar o dia e o mÃªs do seu aniversÃ¡rio? ðŸŽ‚â¤ï¸`;
+            texto = `Oi! ✨ Tudo bem?%0AEstou atualizando o meu sistema aqui na Brasil Doces e estou preparando brindes para datas especiais. Você poderia me passar o dia e o mês do seu aniversário? 🎂❤️`;
         }
 
         // Abre de fato no WhatsApp
@@ -891,7 +891,7 @@
     };
 
 
-    // ======== AS FUNÃ‡Ã•ES QUE TINHAM SUMIDO VOLTARAM ABAIXO ========
+    // ======== AS FUNÇÕES QUE TINHAM SUMIDO VOLTARAM ABAIXO ========
     
     window.atualizarSoma = () => {
         let soma = 0;
@@ -912,7 +912,7 @@
         }
     };
 
-    // ======= COMPROVANTE PÃ“S-PAGAMENTO =======
+    // ======= COMPROVANTE PÓS-PAGAMENTO =======
     let _comprovanteData = null; // Guarda os dados do pagamento para o comprovante
 
     window.processarPagamento = async (clienteId) => {
@@ -964,27 +964,27 @@
         if (!_comprovanteData) return;
 
         const c = dbClientes.find(x => x.id === _comprovanteData.clienteId);
-        if (!c || !c.tel) return alert('Telefone do cliente nÃ£o cadastrado!');
+        if (!c || !c.tel) return alert('Telefone do cliente não cadastrado!');
 
-        // Limpa o telefone para garantir que sÃ³ tenha nÃºmeros (regra do wa.me)
+        // Limpa o telefone para garantir que só tenha números (regra do wa.me)
         const telLimpo = c.tel.replace(/\D/g, '');
 
         const dataHoje = new Date().toLocaleDateString('pt-BR');
         let linhas = _comprovanteData.itens
-            .map(i => `âœ… ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.desc}: R$ ${i.valor.toFixed(2)}`)
+            .map(i => `✅ ${i.qtd > 1 ? i.qtd + 'x ' : ''}${i.desc}: R$ ${i.valor.toFixed(2)}`)
             .join('%0A');
 
-        let msg = `*Brasil DocesÂ®* ðŸ°%0A%0A`;
-        msg += `OlÃ¡, *${c.nome}*! Tudo bem? âœ¨%0A`;
+        let msg = `*Brasil Doces®* 🍰%0A%0A`;
+        msg += `Olá, *${c.nome}*! Tudo bem? ✨%0A`;
         msg += `Segue o comprovante do seu pagamento de hoje (${dataHoje}):%0A%0A`;
         msg += `${linhas}%0A%0A`;
-        msg += `ðŸ’° *TOTAL PAGO: R$ ${_comprovanteData.soma.toFixed(2)}*%0A%0A`;
-        msg += `Muito obrigada pela confianÃ§a! Feito com amor. â¤ï¸`;
+        msg += `💰 *TOTAL PAGO: R$ ${_comprovanteData.soma.toFixed(2)}*%0A%0A`;
+        msg += `Muito obrigada pela confiança! Feito com amor. ❤️`;
 
         const url = `https://wa.me/55${telLimpo}?text=${msg}`;
         window.open(url, '_blank');
 
-        // Fecha o sheet com um pequeno atraso para nÃ£o interferir no window.open
+        // Fecha o sheet com um pequeno atraso para não interferir no window.open
         setTimeout(fecharComprovanteSheet, 500);
     };
 
@@ -1000,7 +1000,7 @@
     window.salvarVenda = (id) => {
         let itensCart = carrinhos[id] || [];
 
-        if (itensCart.length === 0) return alert("Adicione pelo menos um produto Ã  cesta (clicando no botÃ£o do doce) primeiro!");
+        if (itensCart.length === 0) return alert("Adicione pelo menos um produto à cesta (clicando no botão do doce) primeiro!");
 
         _pendingClienteId = id;
         _vendaQueue = [...itensCart];
@@ -1108,7 +1108,7 @@
                 totalPagoAgora += valorTotal;
             } else if (res.tipo === 'brinde') {
                 valorTotal = 0;
-                descricao  = `ðŸŽ ${res.it}`;
+                descricao  = `🎁 ${res.it}`;
                 status = 'brinde';
             } else {
                 valorTotal = res.qt * res.vl;
@@ -1119,7 +1119,7 @@
         });
 
         if (totalPagoAgora > 0) {
-            inserts.push({ cliente_id: id, descricao: "PAGAMENTO EFETUADO (BALCÃƒO)", qtd: 1, valor_total: -totalPagoAgora, status: 'pagamento' });
+            inserts.push({ cliente_id: id, descricao: "PAGAMENTO EFETUADO (BALCÃO)", qtd: 1, valor_total: -totalPagoAgora, status: 'pagamento' });
         }
 
         const { error } = await _supabase.from('compras').insert(inserts);
@@ -1169,9 +1169,9 @@
         const c = dbClientes.find(x => x.id === id); clienteEmEdicao = id;
         document.getElementById('novoNome').value = c.nome; document.getElementById('novoTel').value = c.tel;
         document.getElementById('novoNiver').value = c.aniversario || '';
-        document.getElementById('btnCadastrar').innerText = "SALVAR ALTERAÃ‡Ã•ES"; 
+        document.getElementById('btnCadastrar').innerText = "SALVAR ALTERAÇÕES"; 
         
-        // Abre o formulÃ¡rio automaticamente ao editar
+        // Abre o formulário automaticamente ao editar
         document.getElementById('formClienteCollapse').open = true;
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -1191,7 +1191,7 @@
         clienteEmEdicao = null; document.getElementById('novoNome').value = ''; document.getElementById('novoTel').value = ''; document.getElementById('novoNiver').value = '';
         document.getElementById('btnCadastrar').innerText = "ADICIONAR CLIENTE"; 
         
-        // Fecha o formulÃ¡rio apÃ³s salvar
+        // Fecha o formulário após salvar
         document.getElementById('formClienteCollapse').open = false;
         carregarDados();
     };
@@ -1206,7 +1206,7 @@
     const preco = parseFloat(document.getElementById('prodPreco').value);
 
     if (!nome || !preco) {
-        return alert("Preencha o nome e o preÃ§o do produto!");
+        return alert("Preencha o nome e o preço do produto!");
     }
 
     const { error } = await _supabase
@@ -1215,12 +1215,12 @@
 
     if (error) {
         if (error.code === '23505') {
-            alert("Este produto jÃ¡ estÃ¡ cadastrado!");
+            alert("Este produto já está cadastrado!");
         } else {
             alert("Erro ao salvar produto: " + error.message);
         }
     } else {
-        alert("Produto cadastrado com sucesso! âœ¨");
+        alert("Produto cadastrado com sucesso! ✨");
         document.getElementById('prodNome').value = '';
         document.getElementById('prodPreco').value = '';
         carregarDados(); // Recarrega a lista para refletir o novo produto

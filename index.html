@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="#ff85a2">
     <meta name="theme-color" content="#ff85a2">
 
-    <title>Brasil DocesÂ®</title>
+    <title>Brasil Doces®</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -35,7 +35,7 @@
         <div class="zn-brand-container">
             <div class="zn-column-titles">
                 <h1 class="zn-brand-text">Brasil Doces</h1>
-                <span class="zn-slogan">Feito com amor â™¡</span>
+                <span class="zn-slogan">Feito com amor ♡</span>
             </div>
         </div>
         <div class="header-actions">
@@ -60,7 +60,7 @@
 
     <details class="dashboard-details">
         <summary class="dashboard-summary">
-            <span><i class="fa-solid fa-chart-pie" style="margin-right: 6px;"></i> Visualizar Desempenho e GrÃ¡ficos</span>
+            <span><i class="fa-solid fa-chart-pie" style="margin-right: 6px;"></i> Visualizar Desempenho e Gráficos</span>
             <i class="fa-solid fa-chevron-down icon-arrow"></i>
         </summary>
         <div class="analytics-container" id="analyticsDashboard">
@@ -105,7 +105,7 @@
             <div id="tituloFormCliente" style="font-weight: 800; margin-bottom: 10px; color: var(--brown);">CADASTRAR NOVO CLIENTE</div>
             <input type="text" id="novoNome" placeholder="Nome Completo">
             <input type="tel" id="novoTel" placeholder="WhatsApp">
-            <input type="tel" id="novoNiver" placeholder="AniversÃ¡rio (Ex: 15/04)" maxlength="5" oninput="mascaraData(this)">
+            <input type="tel" id="novoNiver" placeholder="Aniversário (Ex: 15/04)" maxlength="5" oninput="mascaraData(this)">
             <button id="btnCadastrar" class="btn-main">ADICIONAR CLIENTE</button>
         </div>
     </details>
@@ -122,7 +122,7 @@
                 
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
                 <input type="text" id="prodNome" placeholder="Nome do Doce (ex: Brigadeiro)">
-                <input type="text" inputmode="decimal" id="prodPreco" placeholder="PreÃ§o R$" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
+                <input type="text" inputmode="decimal" id="prodPreco" placeholder="Preço R$" oninput="this.value = this.value.replace(/[^0-9.,]/g, '').replace(',', '.');">
             </div>
             <button id="btnSalvarProduto" class="btn-main" style="background: var(--success);">
                 <i class="fa-solid fa-plus"></i> SALVAR PRODUTO
@@ -130,7 +130,7 @@
         </div>
     </details>
 
-    <input type="text" id="buscaCliente" placeholder="ðŸ” Procurar por nome..." onkeyup="render()">
+    <input type="text" id="buscaCliente" placeholder="🔍 Procurar por nome..." onkeyup="render()">
     <div id="lista"></div>
 </div>
 
@@ -142,7 +142,7 @@
         </div>
         <div class="daily-greeting-overline">Bom te ver por aqui</div>
         <div class="daily-greeting-title">Bom dia, Fer.</div>
-        <div class="daily-greeting-text">Hoje Ã© mais um dia para adoÃ§ar a vida de muita gente.</div>
+        <div class="daily-greeting-text">Hoje é mais um dia para adoçar a vida de muita gente.</div>
         <div class="daily-greeting-footer">
             <div class="daily-greeting-chip">Brasil Doces</div>
             <button class="daily-greeting-btn" onclick="fecharMensagemFer()">Comecar o dia</button>
@@ -192,7 +192,7 @@
 <div id="modalResumo" class="modal">
     <div class="modal-content">
         <h3 id="nomeClienteResumo"></h3>
-        <p style="text-align:center; font-size:11px; color:#999; margin-bottom:15px; font-weight:700;">HISTÃ“RICO DE PRODUTOS QUITADOS</p>
+        <p style="text-align:center; font-size:11px; color:#999; margin-bottom:15px; font-weight:700;">HISTÓRICO DE PRODUTOS QUITADOS</p>
         
         <div class="extrato-container" id="corpoExtrato"></div>
         
@@ -213,13 +213,13 @@
 
     <!-- Preview do produto/valor -->
     <div class="bs-product-preview">
-        <span class="bs-product-name" id="bsProductName">â€”</span>
+        <span class="bs-product-name" id="bsProductName">—</span>
         <span class="bs-product-val money-value" id="bsProductVal">R$ 0,00</span>
     </div>
 
     <div class="bs-options">
         <button class="bs-btn bs-btn-pago" data-tipo="pago" onclick="selecionarTipoVenda('pago')">
-            <div class="bs-icon">ðŸ’°</div>
+            <div class="bs-icon">💰</div>
             <div class="bs-text">
                 <span>PAGAMENTO</span>
                 <small>Recebido agora, com baixa automatica</small>
@@ -227,7 +227,7 @@
         </button>
 
         <button class="bs-btn bs-btn-brinde" data-tipo="brinde" onclick="selecionarTipoVenda('brinde')">
-            <div class="bs-icon">ðŸŽ</div>
+            <div class="bs-icon">🎁</div>
             <div class="bs-text">
                 <span>BRINDE</span>
                 <small>Sem cobranca, marca como cortesia</small>
@@ -235,7 +235,7 @@
         </button>
 
         <button class="bs-btn bs-btn-conta" data-tipo="conta" onclick="selecionarTipoVenda('conta')">
-            <div class="bs-icon">ðŸ“’</div>
+            <div class="bs-icon">📒</div>
             <div class="bs-text">
                 <span>ANOTAR</span>
                 <small>Fica pendente para cobrar depois</small>
@@ -246,21 +246,21 @@
             <i class="fa-solid fa-check"></i> SALVAR
         </button>
 
-        <button class="bs-btn-cancel" onclick="fecharBottomSheet()">âœ• Cancelar</button>
+        <button class="bs-btn-cancel" onclick="fecharBottomSheet()">✕ Cancelar</button>
     </div>
 </div>
 
-<!-- ========== BOTTOM SHEET: COMPROVANTE PÃ“S-PAGAMENTO ========== -->
+<!-- ========== BOTTOM SHEET: COMPROVANTE PÓS-PAGAMENTO ========== -->
 <div class="bottom-sheet-overlay" id="bsComprovanteOverlay" onclick="fecharComprovanteSheet()"></div>
 <div class="bottom-sheet" id="bsComprovanteSheet">
     <div class="bs-handle"></div>
 
-    <!-- CabeÃ§alho de sucesso -->
+    <!-- Cabeçalho de sucesso -->
     <div style="text-align:center; margin-bottom: 18px;">
         <div style="width:56px; height:56px; background: rgba(16,185,129,0.12); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:10px;">
             <i class="fa-solid fa-circle-check" style="font-size:28px; color:var(--success);"></i>
         </div>
-        <div style="font-weight:800; font-size:16px; color:var(--success);">PAGAMENTO CONFIRMADO! âœ¨</div>
+        <div style="font-weight:800; font-size:16px; color:var(--success);">PAGAMENTO CONFIRMADO! ✨</div>
         <div id="bsComprovanteValor" class="money-value" style="font-size:22px; font-weight:900; color:var(--accent); margin-top:4px;">R$ 0,00</div>
         <div id="bsComprovanteCliente" style="font-size:11px; color:#999; font-weight:700; margin-top:2px; text-transform:uppercase;"></div>
     </div>
@@ -268,16 +268,16 @@
     <div class="bs-title" style="margin-bottom:12px;">Deseja enviar o comprovante?</div>
 
     <div class="bs-options">
-        <!-- OpÃ§Ã£o 1: WhatsApp com itens quitados -->
+        <!-- Opção 1: WhatsApp com itens quitados -->
         <button class="bs-btn bs-btn-pago" onclick="enviarComprovanteWap()">
-            <div class="bs-icon">ðŸ“±</div>
+            <div class="bs-icon">📱</div>
             <div class="bs-text">
                 <span>ENVIAR POR WHATSAPP</span>
                 <small>Manda os itens quitados e o total pago</small>
             </div>
         </button>
 
-        <button class="bs-btn-cancel" onclick="fecharComprovanteSheet()">Agora nÃ£o, obrigada</button>
+        <button class="bs-btn-cancel" onclick="fecharComprovanteSheet()">Agora não, obrigada</button>
     </div>
 </div>
 

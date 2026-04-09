@@ -1,18 +1,18 @@
 ﻿                :root { 
-            --bg: #FFF5F8; /* Rosa "algodÃ£o doce" muito suave e elegante para o fundo geral */
-            --card: #ffffff; /* CartÃµes brancos puros para saltarem do fundo */
-            --primary: #ff758c; /* O rosa base do nosso botÃ£o brilhante do PIX */
+            --bg: #FFF5F8; /* Rosa "algodão doce" muito suave e elegante para o fundo geral */
+            --card: #ffffff; /* Cartões brancos puros para saltarem do fundo */
+            --primary: #ff758c; /* O rosa base do nosso botão brilhante do PIX */
             --accent: #ff477e;  /* O tom um pouco mais concentrado para os "R$ 52.00" */
             --text: #4a4a4a; /* Cinza escuro elegante. Preto puro fica muito agressivo */
             --danger: #ff4d4f; 
-            --border: #f4e6ea;  /* Borda levemente rosada quase invisÃ­vel (remove o aspecto caixa) */
+            --border: #f4e6ea;  /* Borda levemente rosada quase invisível (remove o aspecto caixa) */
             --success: #10b981; /* Verde Esmeralda premium, menos fluorescente */
-            --brown: #5d4037;   /* Marrom chocolate mais claro para as letras dos tÃ­tulos */
+            --brown: #5d4037;   /* Marrom chocolate mais claro para as letras dos títulos */
             --info: #3b82f6;
         }
 
         body.dark-mode {
-            --bg: #1a1516; /* Fundo escuro com micro gota de "chocolate" para nÃ£o ser sÃ³ preto */
+            --bg: #1a1516; /* Fundo escuro com micro gota de "chocolate" para não ser só preto */
             --card: #241d1f; 
             --text: #f0f0f0; 
             --border: #3d3134;
@@ -24,20 +24,20 @@
 
 
                 /* ==========================================================
-           ðŸŒ‘ LUXURY DARK MODE - TRUFFLE & NEON ROSE
+           🌑 LUXURY DARK MODE - TRUFFLE & NEON ROSE
            ========================================================== */
         body.dark-mode {
             --bg: #110d0f;       /* Quase preto OLED, mas aquecido com um tom Cacao */
-            --card: #1c1518;     /* SuperfÃ­cies luxuosas um tom acima do fundo */
-            --text: #f4e9ed;     /* Branco-rosado amigÃ¡vel para leitura no escuro */
-            --border: #2e2227;   /* Linhas bem finas em bordÃ´ escuro refinado */
-            --primary: #ff5c8a;  /* Rosa vibrante "Neon" (Para marca e botÃµes) */
+            --card: #1c1518;     /* Superfícies luxuosas um tom acima do fundo */
+            --text: #f4e9ed;     /* Branco-rosado amigável para leitura no escuro */
+            --border: #2e2227;   /* Linhas bem finas em bordô escuro refinado */
+            --primary: #ff5c8a;  /* Rosa vibrante "Neon" (Para marca e botões) */
             --accent: #ff85a2;   /* Rosa acetinado elegante (Para Valores em R$) */
-            --brown: #ffcad4;    /* O marrom vira um Rose Gold prateado nos tÃ­tulos! */
-            --success: #2dd4bf;  /* Verde Menta / Cyan brilhante (NÃ£o agride o olho) */
+            --brown: #ffcad4;    /* O marrom vira um Rose Gold prateado nos títulos! */
+            --success: #2dd4bf;  /* Verde Menta / Cyan brilhante (Não agride o olho) */
         }
 
-        /* ElevaÃ§Ã£o e Profundidade (Em vez da cara chapada cinza, colocamos um abismo) */
+        /* Elevação e Profundidade (Em vez da cara chapada cinza, colocamos um abismo) */
         body.dark-mode .card, 
         body.dark-mode .dash-box, 
         body.dark-mode .login-card, 
@@ -60,7 +60,7 @@
             box-shadow: 0 0 0 3px rgba(255, 92, 138, 0.2) !important; 
         }
 
-        /* BotÃµes secundÃ¡rios param de ser "Cinza" e ganham tom de Morango DiluÃ­do */
+        /* Botões secundários param de ser "Cinza" e ganham tom de Morango Diluído */
         body.dark-mode .btn-action { 
             background: rgba(255, 92, 138, 0.08) !important; 
             color: var(--primary) !important; 
@@ -68,7 +68,7 @@
         }
         body.dark-mode .btn-action:hover { background: rgba(255, 92, 138, 0.15) !important; }
 
-        /* BotÃµes Redondos do Topo (Minimalistas) */
+        /* Botões Redondos do Topo (Minimalistas) */
         body.dark-mode .btn-theme {
             background: rgba(255, 255, 255, 0.05) !important;
             color: #fff !important;
@@ -104,7 +104,7 @@
     font-family: 'Inter', sans-serif; 
     background-color: var(--bg); 
     color: var(--text); 
-    /* Adicionamos 400 pixels de espaÃ§o vazio no fim da tela (padding-bottom) para o scroll sempre ter pista livre */
+    /* Adicionamos 400 pixels de espaço vazio no fim da tela (padding-bottom) para o scroll sempre ter pista livre */
     padding: 20px 20px 400px 20px; 
     margin: 0; 
     transition: background 0.3s, color 0.3s; 
@@ -471,7 +471,7 @@
         cursor: pointer;
         transition: all 0.2s;
         margin-bottom: 15px;
-        margin-top: 5px; /* Adicionei um espacinho em cima tambÃ©m */
+        margin-top: 5px; /* Adicionei um espacinho em cima também */
     }
     
         .btn-informar-modal:hover {
@@ -706,11 +706,11 @@
         }
         input:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(255,133,162,0.1) !important; }
 
-        /* BotÃµes com Efeito TÃ¡til e TransiÃ§Ãµes rÃ¡pidas */
+        /* Botões com Efeito Tátil e Transições rápidas */
         button { transition: all 0.2s ease !important; }
         button:active { transform: scale(0.96); }
 
-        /* Novo BotÃ£o Principal (Gradiente Premium ao invÃ©s do Azul GenÃ©rico) */
+        /* Novo Botão Principal (Gradiente Premium ao invés do Azul Genérico) */
         .btn-zap-novo { 
             background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); 
             color: white; 
@@ -722,7 +722,7 @@
             padding: 16px;
         }
 
-        /* Novo BotÃ£o SecundÃ¡rio (Glassmorphism Suave) */
+        /* Novo Botão Secundário (Glassmorphism Suave) */
         .btn-agradecer-novo { 
             background: rgba(46, 204, 113, 0.1) !important; 
             color: #27ae60 !important; 
@@ -735,7 +735,7 @@
             padding: 16px;
         }
 
-        /* BotÃ£o Fechar InvisÃ­vel (Minimalista) */
+        /* Botão Fechar Invisível (Minimalista) */
         .btn-fechar-novo {
             background: transparent !important;
             color: #aaa !important;
@@ -767,7 +767,7 @@
         }
 
                 /* ----- APLICA O VISUAL BOUTIQUE NA TELA INICIAL ----- */
-        /* Faz o botÃ£o principal ADICIONAR CLIENTE e ANOTAR ganhar o gradiente do PIX */
+        /* Faz o botão principal ADICIONAR CLIENTE e ANOTAR ganhar o gradiente do PIX */
         .btn-main { 
             background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); 
             color: white; 
@@ -777,14 +777,14 @@
             letter-spacing: 0.5px;
         }
 
-        /* Tira as bordas feias dos botÃµezinhos no topo e coloca sombreamento */
+        /* Tira as bordas feias dos botõezinhos no topo e coloca sombreamento */
         .header-actions button { 
             box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
             border: none !important; 
         }
         .btn-theme { background: white !important; }
 
-                /* ----- VITRINE DE PRODUTOS RÃPIDOS (Pills) ----- */
+                /* ----- VITRINE DE PRODUTOS RÁPIDOS (Pills) ----- */
         .quick-products-row {
             display: flex;
             overflow-x: auto;
@@ -829,7 +829,7 @@
             color: var(--success);
         }
         
-        /* Ajuste do botÃ£o brilhante para o Modo Escuro */
+        /* Ajuste do botão brilhante para o Modo Escuro */
         body.dark-mode .btn-pill {
             background: rgba(255, 92, 138, 0.1);
             border-color: rgba(255,255,255,0.06);
