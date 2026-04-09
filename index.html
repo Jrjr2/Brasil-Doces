@@ -133,7 +133,12 @@
         </div>
     </details>
 
-    <input type="text" id="buscaCliente" placeholder="🔍 Procurar por nome..." onkeyup="render()">
+    <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center;">
+        <input type="text" id="buscaCliente" placeholder="🔍 Procurar por nome..." onkeyup="render()" style="margin-bottom: 0; flex: 1;">
+        <button id="btnFiltroDevedores" class="btn-filtro-off" onclick="toggleFiltroDevedores()">
+            <i class="fa-solid fa-filter-circle-dollar"></i>
+        </button>
+    </div>
     <div id="lista"></div>
 </div>
 
