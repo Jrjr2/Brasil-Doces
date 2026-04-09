@@ -490,7 +490,7 @@ import './style.css';
             const mesAtual = new Date().getMonth();
             const totalAno = dataValues.reduce((acc, val) => acc + val, 0);
             const maiorValor = Math.max(...dataValues, 0);
-            const melhorMes = maiorValor > 0 ? `${labels[dataValues.indexOf(maiorValor)]} - R$ ${maiorValor.toFixed(2)}` : 'Sem recebimentos';
+            const melhorMes = maiorValor > 0 ? `${labels[dataValues.indexOf(maiorValor)]}: R$ ${maiorValor.toFixed(2)}` : 'Sem recebimentos';
 
             const isDark = document.body.classList.contains('dark-mode');
             const textColor = isDark ? '#f4e9ed' : '#5d4037';
