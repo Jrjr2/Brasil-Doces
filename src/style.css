@@ -1049,3 +1049,6 @@
         body.dark-mode .bs-queue-tab.is-conta { background: rgba(255, 92, 138, 0.14); }
 
 
+
+body.dark-mode .login-logo { mix-blend-mode: normal; filter: drop-shadow(0 4px 15px rgba(255, 92, 138, 0.3)) drop-shadow(0 0 50px rgba(255, 255, 255, 0.2)); }
+@media (max-width: 480px) { .login-logo { width: 180px; margin-bottom: -15px; } }

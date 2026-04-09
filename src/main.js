@@ -1251,3 +1251,5 @@
     };
 
     checkUser();
+
+window.sair = sair;
