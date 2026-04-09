@@ -1417,7 +1417,18 @@
         const { data: p } = await _supabase.from('produtos').select('*').order('nome');
         dbProdutos = p || [];
         const { data: c } = await _supabase.from('clientes').select('*, compras(*)').order('nome');
-        dbClientes = c || [];
+        let clientesArray = c || [];
+        clientesArray.sort((a, b) => {
+            const getMaxInteraction = (cliente) => {
+                if (!cliente.compras || cliente.compras.length === 0) return 0;
+                return Math.max(...cliente.compras.map(comp => new Date(comp.data || 0).getTime()));
+            };
+            const dataA = getMaxInteraction(a);
+            const dataB = getMaxInteraction(b);
+            if (dataA !== dataB) return dataB - dataA;
+            return a.nome.localeCompare(b.nome);
+        });
+        dbClientes = clientesArray;
         render();
         renderDashboard();
 
@@ -2008,7 +2019,10 @@
                             <span class="item-hist-desc"><b class="item-hist-qty" style="color:var(--primary)">${i.qtd > 1 ? `${i.qtd}x` : '1x'}</b>${i.descricao}</span>
                         </div>
                     </div>
-                    <b class="item-hist-value money-value" style="color:var(--danger)">R$ ${i.valor.toFixed(2)}</b>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <b class="item-hist-value money-value" style="color:var(--danger)">R$ ${i.valor.toFixed(2)}</b>
+                        <button onclick="excluirItemConta(${clienteAbertoId}, '${i.ids.join(',')}')" style="background:transparent; color:#ff4d4f; border:none; padding:4px; font-size:12px; cursor:pointer;" title="Remover item da conta"><i class="fa-solid fa-trash"></i></button>
+                    </div>
                 </div>`;
             });
             html += `<div id="somaSelecionados" class="selection-total"></div>`;
@@ -2025,7 +2039,10 @@
                             <span class="item-hist-desc"><b class="item-hist-qty" style="color:var(--success)">${i.qtd > 1 ? `${i.qtd}x` : '1x'}</b>${i.descricao}${i.isBrinde ? ' <span style="font-size:9px; background:var(--accent); color:#fff; padding:2px 4px; border-radius:4px; margin-left:4px;">BRINDE</span>' : ''}</span>
                         </div>
                     </div>
-                    <b class="item-hist-value money-value" style="color:var(--success)">R$ ${i.valor.toFixed(2)}</b>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <b class="item-hist-value money-value" style="color:var(--success)">R$ ${i.valor.toFixed(2)}</b>
+                        <button onclick="excluirItemConta(${clienteAbertoId}, '${i.ids.join(',')}')" style="background:transparent; color:#ff4d4f; border:none; padding:4px; font-size:12px; cursor:pointer;" title="Remover este item"><i class="fa-solid fa-trash"></i></button>
+                    </div>
                 </div>`;
             });
         }
@@ -2559,6 +2576,14 @@
             carrinhos[cId].splice(index, 1);
             render();
         }
+    };
+
+    window.excluirItemConta = async (clienteId, idsStr) => {
+        if (!confirm("Tem certeza que deseja excluir permanentemente este item da conta do cliente?")) return;
+        const arrIds = idsStr.split(',').map(Number);
+        const { error } = await _supabase.from('compras').delete().in('id', arrIds);
+        if (error) alert("Erro ao excluir: " + error.message);
+        else { await carregarDados(); abrirHistorico(clienteId); }
     };
 
     checkUser();
