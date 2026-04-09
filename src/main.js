@@ -12,6 +12,8 @@ import './style.css';
     window.fecharModais = () => {
         document.getElementById('modalHistorico').style.display = 'none';
         document.getElementById('modalResumo').style.display = 'none';
+        const rel = document.getElementById('modalRelatorioMensal');
+        if (rel) rel.style.display = 'none';
         sessionStorage.removeItem('modalAberto'); // Limpa a memória de reabertura ao fechar
     };
     window.fecharModalHistorico = window.fecharModais;
@@ -104,9 +106,114 @@ import './style.css';
                 const partes = estadoModal.split('-');
                 if (partes[0] === 'hist') abrirHistorico(parseInt(partes[1]));
                 if (partes[0] === 'res') abrirResumoConta(parseInt(partes[1]));
+                if (partes[0] === 'rel') abrirRelatorioMensal(parseInt(partes[1]));
             }
         }
     }
+
+    window.abrirRelatorioMensal = (mesIndex) => {
+        sessionStorage.setItem('modalAberto', 'rel-' + mesIndex);
+        fecharModais(); // Fecha os outros modais por segurança
+        
+        const nomesMeses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        const anoAtual = new Date().getFullYear();
+        document.getElementById('tituloRelatorioMensal').innerText = `RELATÓRIO - ${nomesMeses[mesIndex].toUpperCase()} / ${anoAtual}`;
+
+        let totalGeral = 0;
+        let totalRecebido = 0;
+        let totalPendente = 0;
+        let qtdBrindes = 0;
+        
+        let clientesCompradores = [];
+
+        dbClientes.forEach(cliente => {
+            const comprasDoMes = (cliente.compras || []).filter(compra => {
+                if (!compra.data) return false;
+                const dataObj = new Date(compra.data);
+                // "quitado" é a grana que entrou hoje pagando conta antiga.
+                // Registramos o relatório baseado na data que o dinheiro entrou/venda feita.
+                return dataObj.getMonth() === mesIndex && dataObj.getFullYear() === anoAtual && compra.valor_total !== undefined;
+            });
+
+            if (comprasDoMes.length > 0) {
+                let resumoCliente = { nome: cliente.nome, itens: [], totalCliente: 0 };
+                
+                comprasDoMes.forEach(c => {
+                    const status = c.status || 'pago'; // Se não tem status, é antigo e pago na hora
+                    const ehBrinde = status === 'brinde';
+                    const valor = ehBrinde ? 0 : c.valor_total;
+                    const valorUnit = c.qtd > 0 ? (valor / c.qtd) : valor;
+
+                    resumoCliente.itens.push({
+                        desc: c.descricao,
+                        qtd: c.qtd || 1,
+                        val: valor,
+                        status: status
+                    });
+
+                    if (ehBrinde) {
+                        qtdBrindes++;
+                    } else if (valor > 0) { // Ignorar registros de 'baixa' puramente burocráticos (<0)
+                        totalGeral += valor;
+                        resumoCliente.totalCliente += valor;
+                        if (status === 'pago' || status === 'quitado') totalRecebido += valor;
+                        if (status === 'pendente') totalPendente += valor;
+                    }
+                });
+
+                if (resumoCliente.itens.length > 0) {
+                    clientesCompradores.push(resumoCliente);
+                }
+            }
+        });
+
+        // Ordenar compradores por quem gastou mais
+        clientesCompradores.sort((a, b) => b.totalCliente - a.totalCliente);
+
+        // Preencher KPIs
+        const kpisHtml = `
+            <div class="account-stat pending">
+                <div class="account-stat-label">Anotados</div>
+                <div class="account-stat-value money-value" style="color:var(--danger);">R$ ${totalPendente.toFixed(2)}</div>
+            </div>
+            <div class="account-stat paid">
+                <div class="account-stat-label">Já Recebido</div>
+                <div class="account-stat-value money-value" style="color:var(--success);">R$ ${totalRecebido.toFixed(2)}</div>
+            </div>
+        `;
+        document.getElementById('kpisRelatorioMensal').innerHTML = kpisHtml;
+
+        // Renderizar Lista de Clientes
+        let htmlCorpo = '';
+        if (clientesCompradores.length === 0) {
+            htmlCorpo = '<div class="account-empty">Nenhuma movimentação neste mês.</div>';
+        } else {
+            clientesCompradores.forEach(c => {
+                htmlCorpo += `<div class="relatorio-cliente">`;
+                htmlCorpo += `  <div class="relatorio-cliente-nome"><span>${c.nome}</span><span class="relatorio-cliente-total money-value">Total: R$ ${c.totalCliente.toFixed(2)}</span></div>`;
+                c.itens.forEach(i => {
+                    let badgeClass = 'bg-pago';
+                    let badgeTxt = 'PAGO';
+                    if (i.status === 'pendente') { badgeClass = 'bg-pendente'; badgeTxt = 'ANOTADO'; }
+                    if (i.status === 'quitado') { badgeClass = 'bg-quitado'; badgeTxt = 'QUITADO'; }
+                    if (i.status === 'brinde') { badgeClass = 'bg-brinde'; badgeTxt = 'BRINDE'; }
+
+                    htmlCorpo += `
+                        <div class="relatorio-item">
+                            <div class="qtd">${i.qtd}x</div>
+                            <div class="desc">${i.desc} <span class="badge-status ${badgeClass}">${badgeTxt}</span></div>
+                            <div class="val money-value">R$ ${i.val.toFixed(2)}</div>
+                        </div>`;
+                });
+                htmlCorpo += `</div>`;
+            });
+        }
+        
+        const containerCorpo = document.getElementById('corpoRelatorioMensal');
+        containerCorpo.innerHTML = htmlCorpo;
+
+        document.getElementById('modalRelatorioMensal').style.display = 'block';
+    };
 
 
     // Crie uma função para configurar os eventos após o login
@@ -529,6 +636,9 @@ import './style.css';
                         }]
                     },
                     options: {
+                        onClick: (event, elements) => {
+                            if (elements.length > 0) abrirRelatorioMensal(elements[0].index);
+                        },
                         responsive: true,
                         maintainAspectRatio: false,
                         animation: {

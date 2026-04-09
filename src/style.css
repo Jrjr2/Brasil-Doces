@@ -1,4 +1,4 @@
-﻿                :root { 
+                :root { 
             --bg: #FFF5F8; /* Rosa "algodão doce" muito suave e elegante para o fundo geral */
             --card: #ffffff; /* Cartões brancos puros para saltarem do fundo */
             --primary: #ff758c; /* O rosa base do nosso botão brilhante do PIX */
@@ -693,9 +693,26 @@
             body * { visibility: hidden; }
             #modalResumo, #modalResumo * { visibility: visible; }
             #modalResumo { position: absolute; left: 0; top: 0; width: 100%; height: auto; background: white; }
+            
+            #modalRelatorioMensal, #modalRelatorioMensal * { visibility: visible; }
+            #modalRelatorioMensal { position: absolute; left: 0; top: 0; width: 100%; height: auto; background: white; }
+            
             .modal-content { max-height: none !important; overflow: visible !important; border: none !important; width: 100% !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
             .no-print { display: none !important; }
         }
+
+        .relatorio-cliente { margin-bottom: 20px; border-bottom: 2px dashed var(--border); padding-bottom: 15px; }
+        .relatorio-cliente-nome { font-weight: 800; font-size: 14px; color: var(--brown); margin-bottom: 8px; text-transform: uppercase; display: flex; justify-content: space-between; }
+        .relatorio-cliente-total { color: var(--text); }
+        .relatorio-item { display: grid; grid-template-columns: 35px 1fr 65px; gap: 8px; font-size: 11px; margin-bottom: 4px; align-items: center; }
+        .relatorio-item .qtd { font-weight: 800; color: var(--accent); }
+        .relatorio-item .desc { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .relatorio-item .val { font-weight: 700; text-align: right; }
+        .badge-status { font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: 800; color: white; margin-left: 5px; }
+        .bg-pago { background: var(--success); }
+        .bg-pendente { background: var(--danger); }
+        .bg-brinde { background: var(--info); }
+        .bg-quitado { background: #6c5ce7; }
 
                 /* ---- UPGRADE PREMIUM ALTO-NIVEL ---- */
         input { 
