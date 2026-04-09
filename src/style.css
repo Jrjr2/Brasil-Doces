@@ -1052,3 +1052,5 @@
 
 body.dark-mode .login-logo { mix-blend-mode: normal; filter: drop-shadow(0 4px 15px rgba(255, 92, 138, 0.3)) drop-shadow(0 0 50px rgba(255, 255, 255, 0.2)); }
 @media (max-width: 480px) { .login-logo { width: 180px; margin-bottom: -15px; } }
+. d r o p d o w n - d o t s   s u m m a r y : : - w e b k i t - d e t a i l s - m a r k e r   {   d i s p l a y :   n o n e ;   }  
+ 

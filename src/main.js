@@ -1,4 +1,4 @@
-﻿import './style.css';
+import './style.css';
     const SUPABASE_URL = 'https://ebfkwuslmneswvovygwh.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViZmt3dXNsbW5lc3d2b3Z5Z3doIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzU3NzUsImV4cCI6MjA5MDc1MTc3NX0.ElCyWYPr330VLsY6LZIa41Fg9QR_VaHeBj36jQ8oVt0'; 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -377,10 +377,19 @@
             card.innerHTML = `
                 <div class="card-header">
                     <span style="font-weight:800; color: var(--brown);">${c.nome.toUpperCase()}</span>
-                    <div style="gap:10px; display:flex;">
-                        <button class="btn-edit" onclick="prepararEdicao(${c.id})"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn-delete" onclick="excluir(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
+                    <details class="dropdown-dots" style="position: relative; margin: 0;">
+                        <summary style="list-style: none; cursor: pointer; color: var(--brown); font-size: 18px; padding: 4px 10px; user-select: none;">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </summary>
+                        <div style="position: absolute; right: 0; top: 100%; min-width: 140px; background: var(--card); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 100; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--border); margin-top: 5px;">
+                            <button onclick="this.closest('details').removeAttribute('open'); prepararEdicao(${c.id})" style="padding: 12px 16px; border: none; background: transparent; text-align: left; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; border-radius: 0; justify-content: flex-start; margin: 0;">
+                                <i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i> Editar Cliente
+                            </button>
+                            <button onclick="this.closest('details').removeAttribute('open'); excluir(${c.id})" style="padding: 12px 16px; border: none; background: transparent; text-align: left; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--danger); display: flex; align-items: center; gap: 10px; border-radius: 0; justify-content: flex-start; margin: 0;">
+                                <i class="fa-solid fa-trash-can"></i> Excluir Conta
+                            </button>
+                        </div>
+                    </details>
                 </div>
                 ${niverHtml}
                 <div class="client-summary-row">
