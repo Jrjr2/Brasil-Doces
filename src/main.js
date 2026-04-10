@@ -400,7 +400,7 @@ import './style.css';
         const buscaInput = document.getElementById('buscaCliente');
         if (!buscaInput) return;
 
-        const busca = buscaInput.value.trim().toLowerCase();
+        const busca = normalizarTexto(buscaInput.value.trim());
         const listaDiv = document.getElementById('lista');
         
         listaDiv.innerHTML = '';
@@ -411,7 +411,7 @@ import './style.css';
         let filtrados = dbClientes.filter(c => 
             c.nome && 
             c.nome !== 'VENDA AVULSA (BALCÃO)' && 
-            c.nome.toLowerCase().trim().startsWith(busca)
+            normalizarTexto(c.nome).includes(busca)
         ).map(c => {
             const comprasValidas = c.compras || [];
             const saldo = comprasValidas
