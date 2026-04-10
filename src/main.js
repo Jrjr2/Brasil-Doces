@@ -411,7 +411,7 @@ import './style.css';
         let filtrados = dbClientes.filter(c => 
             c.nome && 
             c.nome !== 'VENDA AVULSA (BALCÃO)' && 
-            normalizarTexto(c.nome).includes(busca)
+            normalizarTexto(c.nome).startsWith(busca)
         ).map(c => {
             const comprasValidas = c.compras || [];
             const saldo = comprasValidas
