@@ -1428,3 +1428,5 @@ import './style.css';
     checkUser();
 
 window.sair = sair;
+window.render = render;
+window.normalizarTexto = normalizarTexto;
